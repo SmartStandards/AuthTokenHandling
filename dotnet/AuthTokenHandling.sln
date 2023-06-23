@@ -1,0 +1,89 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33627.172
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4130D21C-FE8F-4925-93E7-217B4AF1B7D9}"
+	ProjectSection(SolutionItems) = preProject
+		..\vers\changelog.md = ..\vers\changelog.md
+		..\readme.md = ..\readme.md
+		SmartStandards.AuthTokenHandling.nuspec = SmartStandards.AuthTokenHandling.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EFB5135D-039A-4D92-8FDD-9EA5D070F991}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C5272353-539E-4138-93FD-9DF437F6DA47}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AuthTokenHandling", "src\AuthTokenHandling\AuthTokenHandling.shproj", "{CF0A161A-99BA-4F01-AF5E-16C6FCBC85AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "js", "js", "{431B90E9-4591-4FBD-A87F-52866A67B36D}"
+	ProjectSection(SolutionItems) = preProject
+		..\js\src\authTokenConfig.ts = ..\js\src\authTokenConfig.ts
+		..\js\package.json = ..\js\package.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.net5.0", "src\AuthTokenHandling.net5.0\AuthTokenHandling.net5.0.csproj", "{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.net6.0", "src\AuthTokenHandling.net6.0\AuthTokenHandling.net6.0.csproj", "{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.net461", "src\AuthTokenHandling.net461\AuthTokenHandling.net461.csproj", "{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AuthTokenHandling.Tests", "test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.shproj", "{5E17C8E8-0BC8-4F7C-A022-C8104A415628}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.Tests.net6.0", "test\AuthTokenHandling.Tests.net6.0\AuthTokenHandling.Tests.net6.0.csproj", "{A6925214-F00D-4F5B-8C3A-60343769A83E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.Tests.net461", "test\AuthTokenHandling.Tests.net461\AuthTokenHandling.Tests.net461.csproj", "{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6925214-F00D-4F5B-8C3A-60343769A83E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6925214-F00D-4F5B-8C3A-60343769A83E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6925214-F00D-4F5B-8C3A-60343769A83E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6925214-F00D-4F5B-8C3A-60343769A83E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CF0A161A-99BA-4F01-AF5E-16C6FCBC85AE} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
+		{431B90E9-4591-4FBD-A87F-52866A67B36D} = {4130D21C-FE8F-4925-93E7-217B4AF1B7D9}
+		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
+		{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
+		{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
+		{5E17C8E8-0BC8-4F7C-A022-C8104A415628} = {C5272353-539E-4138-93FD-9DF437F6DA47}
+		{A6925214-F00D-4F5B-8C3A-60343769A83E} = {C5272353-539E-4138-93FD-9DF437F6DA47}
+		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13} = {C5272353-539E-4138-93FD-9DF437F6DA47}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D2F37C1D-32F0-4BF2-AAEB-46B9D8C07D23}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{5e17c8e8-0bc8-4f7c-a022-c8104a415628}*SharedItemsImports = 13
+		src\AuthTokenHandling\AuthTokenHandling.projitems*{7b5baea8-7e79-4a30-b6c1-4da4831af970}*SharedItemsImports = 5
+		src\AuthTokenHandling\AuthTokenHandling.projitems*{88f15535-fad8-4372-80dc-fd0d8c81ab4c}*SharedItemsImports = 5
+		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{a6925214-f00d-4f5b-8c3a-60343769a83e}*SharedItemsImports = 5
+		src\AuthTokenHandling\AuthTokenHandling.projitems*{b0ba06fe-6437-4b9e-8c76-3adfc8d191d2}*SharedItemsImports = 4
+		src\AuthTokenHandling\AuthTokenHandling.projitems*{cf0a161a-99ba-4f01-af5e-16c6fcbc85ae}*SharedItemsImports = 13
+		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{d0b8734c-340f-4b2a-80ee-c00afdd59e13}*SharedItemsImports = 4
+	EndGlobalSection
+EndGlobal

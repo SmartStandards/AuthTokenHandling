@@ -1,0 +1,14 @@
+# Change log
+This files contains a version history including all changes relevant for semantic Versioning...
+
+*(it is automatically maintained using the ['KornSW-VersioningUtil'](https://github.com/KornSW/VersioningUtil))*
+
+
+
+
+## Upcoming Changes
+
+ - initial Version of gen-2 (gen-1 was: [KornSW.TokenValidation](https://github.com/KornSW/KornSW.TokenValidation)) - **MVP** state already reached
+
+
+
