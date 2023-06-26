@@ -16,10 +16,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\AuthTokenConfigBasedValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\TokenValidationRulesetBasedValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\TokenValidationRuleset (Legacy).cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\..\..\..\%28git%29\SmartStandards\%28SmartStandards%29 AuthTokenHandling\dotnet\src\AuthTokenHandling\Introspection\OAuthTokenIntrospectionEndpointCaller.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\..\..\..\%28git%29\SmartStandards\%28SmartStandards%29 AuthTokenHandling\dotnet\src\AuthTokenHandling\Introspection\LocalJwtIntrospector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introspection\OAuthTokenIntrospectionEndpointCaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introspection\LocalJwtIntrospector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JwtContent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\..\..\..\%28git%29\SmartStandards\%28SmartStandards%29 AuthTokenHandling\dotnet\src\AuthTokenHandling\Introspection\IAccessTokenIntrospector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introspection\IAccessTokenIntrospector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\AuthTokenConfig (from UShell).cs" />
   </ItemGroup>
   <ItemGroup>
