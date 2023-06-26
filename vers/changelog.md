@@ -8,6 +8,12 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
+*(none)*
+
+
+
+## v 1.0.0
+released **2023-06-26**, including:
  - initial Version of gen-2 (gen-1 was: [KornSW.TokenValidation](https://github.com/KornSW/KornSW.TokenValidation)) - **MVP** state already reached
 
 

@@ -7,7 +7,7 @@
   "currentMajor": 1,
   "currentMinor": 0,
   "currentPatch": 0,
-  "versionDateInfo": "2023-05-24",
-  "versionTimeInfo": "13:04:54",
-  "versionNotes": "- moved from private repo (**MVP** state already reached)\n"
+  "versionDateInfo": "2023-06-26",
+  "versionTimeInfo": "15:57:15",
+  "versionNotes": "- initial Version of gen-2 (gen-1 was: [KornSW.TokenValidation](https://github.com/KornSW/KornSW.TokenValidation)) - **MVP** state already reached\n"
 }
