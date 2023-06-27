@@ -8,7 +8,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* removed unnecessary reference
+*(none)*
+
+
+
+## v 1.0.1
+released **2023-06-27**, including:
+ - removed unnecessary reference
 
 
 
