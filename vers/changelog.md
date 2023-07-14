@@ -12,6 +12,11 @@ This files contains a version history including all changes relevant for semanti
 * spitted ASP related parts into separate package (**breaking Change**)
 
 
+## v 1.0.1
+released **2023-06-27**, including:
+ - removed unnecessary reference
+
+
 
 ## v 1.0.0
 released **2023-06-26**, including:

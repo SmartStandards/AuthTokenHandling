@@ -1,13 +1,13 @@
 {
-  "currentVersion": "1.0.0",
-  "currentVersionWithSuffix": "1.0.0",
+  "currentVersion": "1.0.1",
+  "currentVersionWithSuffix": "1.0.1",
   "releaseType": "official",
-  "previousVersion": "0.0.0",
+  "previousVersion": "1.0.0",
   "changeGrade": "patch",
   "currentMajor": 1,
   "currentMinor": 0,
-  "currentPatch": 0,
-  "versionDateInfo": "2023-06-26",
-  "versionTimeInfo": "15:57:15",
-  "versionNotes": "- initial Version of gen-2 (gen-1 was: [KornSW.TokenValidation](https://github.com/KornSW/KornSW.TokenValidation)) - **MVP** state already reached\n"
+  "currentPatch": 1,
+  "versionDateInfo": "2023-06-27",
+  "versionTimeInfo": "12:18:35",
+  "versionNotes": "- removed unnecessary reference\n"
 }
