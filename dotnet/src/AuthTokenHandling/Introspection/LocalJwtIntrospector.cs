@@ -1,6 +1,8 @@
 ﻿using Jose;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 
 namespace Security.AccessTokenHandling {
 
@@ -15,13 +17,33 @@ namespace Security.AccessTokenHandling {
 
     private JwtSignatureValidationDelegate _JwtSignatureValidationMethod;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="jwtSignatureValidationMethod">
-    ///    if not provided, then the signature CANNOT BE VERIFIED, THIS CAN BE A RISK!
-    /// </param>
-    public LocalJwtIntrospector(JwtSignatureValidationDelegate jwtSignatureValidationMethod = null) {
+    public LocalJwtIntrospector(string signKey) {
+      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken,new Jwk(Encoding.ASCII.GetBytes(signKey)));
+    }
+
+    public LocalJwtIntrospector(byte[] signKey) {
+      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, new Jwk(signKey));
+    }
+
+    public LocalJwtIntrospector(Jwk jsonWebKey) {
+      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, jsonWebKey);
+    }
+
+    private static bool VerifySignature(string rawJwt, Jwk jsonWebKey) {
+      try {
+        //this method should implicit check signature and throw if invalid
+        string decodedToken = JWT.Decode(rawJwt, jsonWebKey);
+        if (!string.IsNullOrWhiteSpace(decodedToken)){
+          return true;
+        }
+      }
+      catch (Exception ex){
+        Debug.WriteLine($"JWT signature verification failed (Decode-Error): {ex.Message}");
+      }
+      return false;
+    }
+
+    public LocalJwtIntrospector(JwtSignatureValidationDelegate jwtSignatureValidationMethod) {
       _JwtSignatureValidationMethod = jwtSignatureValidationMethod;
     }
 

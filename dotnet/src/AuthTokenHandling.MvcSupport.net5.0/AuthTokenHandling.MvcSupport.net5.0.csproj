@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>SmartStandards.AuthTokenHandling</AssemblyName>
+    <AssemblyName>SmartStandards.AuthTokenHandling.MvcSupport</AssemblyName>
     <RootNamespace>System</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
   
   <PropertyGroup>
-    <PackageId>SmartStandards.AuthTokenHandling</PackageId>
+    <PackageId>SmartStandards.AuthTokenHandling.MvcSupport</PackageId>
     <Description>AuthTokenHandling</Description>
     <Product>SmartStandards.AuthTokenHandling</Product>
     <Company>(public domain)</Company>
@@ -21,7 +21,7 @@
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.xml</DocumentationFile>
+    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.MvcSupport.xml</DocumentationFile>
     <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
@@ -30,17 +30,22 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.xml</DocumentationFile>
+    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.MvcSupport.xml</DocumentationFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
     <DefineConstants>TRACE;NET5</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="..\AuthTokenHandling\AuthTokenHandling.projitems" Label="Shared" />
+  <Import Project="..\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems" Label="Shared" />
 
   <ItemGroup>
     <PackageReference Include="jose-jwt" Version="4.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AuthTokenHandling.net5.0\AuthTokenHandling.net5.0.csproj" />
   </ItemGroup>
 
 </Project>

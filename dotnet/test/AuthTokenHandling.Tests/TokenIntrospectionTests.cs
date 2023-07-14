@@ -22,7 +22,7 @@ namespace Security {
     [TestMethod]
     public void TestTokenIntrospection2() {
 
-      IAccessTokenIntrospector introspector = new LocalJwtIntrospector();
+      IAccessTokenIntrospector introspector = new LocalJwtIntrospector((T)=> true);
       var validator = new TokenValidationRulesetBasedValidator();
 
       int callNumer = 1;

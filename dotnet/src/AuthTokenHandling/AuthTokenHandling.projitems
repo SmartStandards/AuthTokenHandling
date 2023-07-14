@@ -10,14 +10,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AccessTokenValidator.Setup.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AspSupport\EvaluateBearerTokenAttribute.Net4Dummy.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AspSupport\EvaluateBearerTokenAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AccessTokenValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\AuthTokenConfigBasedValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\TokenValidationRulesetBasedValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\TokenValidationRuleset (Legacy).cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\OAuthTokenIntrospectionEndpointCaller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\LocalJwtIntrospector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\IOAuthService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JwtContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\IAccessTokenIntrospector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\AuthTokenConfig (from UShell).cs" />

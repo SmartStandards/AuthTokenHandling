@@ -9,6 +9,7 @@ This files contains a version history including all changes relevant for semanti
 ## Upcoming Changes
 
 * removed unnecessary reference
+* spitted ASP related parts into separate package (**breaking Change**)
 
 
 

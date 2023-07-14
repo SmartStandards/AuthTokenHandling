@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\vers\changelog.md = ..\vers\changelog.md
 		..\readme.md = ..\readme.md
+		SmartStandards.AuthTokenHandling.MvcSupport.nuspec = SmartStandards.AuthTokenHandling.MvcSupport.nuspec
 		SmartStandards.AuthTokenHandling.nuspec = SmartStandards.AuthTokenHandling.nuspec
 	EndProjectSection
 EndProject
@@ -34,6 +35,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.Tests.net
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.Tests.net461", "test\AuthTokenHandling.Tests.net461\AuthTokenHandling.Tests.net461.csproj", "{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AuthTokenHandling.MvcSupport", "src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.shproj", "{CF0A161A-99BA-4F01-AF5E-16C6FCBC95AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{ADA576B9-92C4-4C75-9605-06023D1026B2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.MvcSupport.net5.0", "src\AuthTokenHandling.MvcSupport.net5.0\AuthTokenHandling.MvcSupport.net5.0.csproj", "{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.MvcSupport.net6.0", "src\AuthTokenHandling.MvcSupport.net6.0\AuthTokenHandling.MvcSupport.net6.0.csproj", "{4AF041BF-8D36-46D6-9E83-737231CFCB26}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.MvcSupport.net461", "src\AuthTokenHandling.MvcSupport.net461\AuthTokenHandling.MvcSupport.net461.csproj", "{7D9056D5-590B-4A73-A001-597E4269FF78}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.TestApp", "src\AuthTokenHandling.TestApp\AuthTokenHandling.TestApp.csproj", "{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +73,21 @@ Global
 		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AF041BF-8D36-46D6-9E83-737231CFCB26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AF041BF-8D36-46D6-9E83-737231CFCB26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AF041BF-8D36-46D6-9E83-737231CFCB26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AF041BF-8D36-46D6-9E83-737231CFCB26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Debug|Any CPU.Build.0 = Debug|x86
+		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Release|Any CPU.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,23 +95,33 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{CF0A161A-99BA-4F01-AF5E-16C6FCBC85AE} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
 		{431B90E9-4591-4FBD-A87F-52866A67B36D} = {4130D21C-FE8F-4925-93E7-217B4AF1B7D9}
-		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
-		{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
-		{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
+		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{B0BA06FE-6437-4B9E-8C76-3ADFC8D191D2} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{5E17C8E8-0BC8-4F7C-A022-C8104A415628} = {C5272353-539E-4138-93FD-9DF437F6DA47}
 		{A6925214-F00D-4F5B-8C3A-60343769A83E} = {C5272353-539E-4138-93FD-9DF437F6DA47}
 		{D0B8734C-340F-4B2A-80EE-C00AFDD59E13} = {C5272353-539E-4138-93FD-9DF437F6DA47}
+		{CF0A161A-99BA-4F01-AF5E-16C6FCBC95AE} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
+		{ADA576B9-92C4-4C75-9605-06023D1026B2} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
+		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{4AF041BF-8D36-46D6-9E83-737231CFCB26} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{7D9056D5-590B-4A73-A001-597E4269FF78} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D2F37C1D-32F0-4BF2-AAEB-46B9D8C07D23}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems*{4af041bf-8d36-46d6-9e83-737231cfcb26}*SharedItemsImports = 5
 		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{5e17c8e8-0bc8-4f7c-a022-c8104a415628}*SharedItemsImports = 13
 		src\AuthTokenHandling\AuthTokenHandling.projitems*{7b5baea8-7e79-4a30-b6c1-4da4831af970}*SharedItemsImports = 5
+		src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems*{7d9056d5-590b-4a73-a001-597e4269ff78}*SharedItemsImports = 4
 		src\AuthTokenHandling\AuthTokenHandling.projitems*{88f15535-fad8-4372-80dc-fd0d8c81ab4c}*SharedItemsImports = 5
 		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{a6925214-f00d-4f5b-8c3a-60343769a83e}*SharedItemsImports = 5
 		src\AuthTokenHandling\AuthTokenHandling.projitems*{b0ba06fe-6437-4b9e-8c76-3adfc8d191d2}*SharedItemsImports = 4
+		src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems*{b5fe086a-d548-447b-93cd-3d4b3f37c3c9}*SharedItemsImports = 5
 		src\AuthTokenHandling\AuthTokenHandling.projitems*{cf0a161a-99ba-4f01-af5e-16c6fcbc85ae}*SharedItemsImports = 13
+		src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems*{cf0a161a-99ba-4f01-af5e-16c6fcbc95ae}*SharedItemsImports = 13
 		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{d0b8734c-340f-4b2a-80ee-c00afdd59e13}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
