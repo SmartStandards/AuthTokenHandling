@@ -1,13 +1,13 @@
 {
-  "currentVersion": "1.0.1",
-  "currentVersionWithSuffix": "1.0.1",
+  "currentVersion": "2.0.0",
+  "currentVersionWithSuffix": "2.0.0",
   "releaseType": "official",
-  "previousVersion": "1.0.0",
-  "changeGrade": "patch",
-  "currentMajor": 1,
+  "previousVersion": "1.0.1",
+  "changeGrade": "major",
+  "currentMajor": 2,
   "currentMinor": 0,
-  "currentPatch": 1,
-  "versionDateInfo": "2023-06-27",
-  "versionTimeInfo": "12:18:35",
-  "versionNotes": "- removed unnecessary reference\n"
+  "currentPatch": 0,
+  "versionDateInfo": "2023-07-17",
+  "versionTimeInfo": "06:19:41",
+  "versionNotes": "- spitted ASP related parts into separate package (breaking Change)\n- removed unnecessary reference\n"
 }

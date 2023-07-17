@@ -8,8 +8,16 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* removed unnecessary reference
-* spitted ASP related parts into separate package (**breaking Change**)
+*(none)*
+
+
+
+## v 2.0.0
+released **2023-07-17**, including:
+ - spitted ASP related parts into separate package (**breaking Change**)
+ - removed unnecessary reference
+
+
 
 ## v 1.0.1
 released **2023-06-27**, including:
