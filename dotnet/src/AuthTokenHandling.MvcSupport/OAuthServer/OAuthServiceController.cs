@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Security.Principal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
@@ -34,24 +36,47 @@ namespace Security.AccessTokenHandling.OAuthServer {
       [FromQuery(Name = "scope")] string rawScopePreference,
       [FromQuery(Name = "login_hint")] string loginHint,
       [FromQuery(Name = "err")] string errorMessage,
-      [FromQuery(Name = "otp")] string otp,
+      [FromQuery(Name = "otp")] string sessionOtp,
       [FromQuery(Name = "view_mode")] int viewMode
     ) {
 
       //validate clientId
       HostString apiCallerHost = this.HttpContext.Request.Host;
-      if (!_AuthService.ValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
+      if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
         string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewMode);
         return this.Content(errorPage, "text/html");
       }
 
       ScopeDescriptor[] availableScopes = null;
       string authFormTemplate;
-      if (String.IsNullOrWhiteSpace(otp)) {
-        authFormTemplate = _AuthPageBuilder.GetAuthForm(
-          "Please enter your credentials:",
-          loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, ""
-        );
+      if (String.IsNullOrWhiteSpace(sessionOtp)) {
+
+        string winUserName = null;
+#if NET6_0_OR_GREATER
+        if (loginHint == "WINAUTH") {
+          WindowsIdentity windowsUserIfIdentified = null;
+          try {
+            windowsUserIfIdentified = (WindowsIdentity) this.HttpContext.User.Identity!;
+            winUserName = windowsUserIfIdentified.Name?.ToString();
+          }
+          catch (Exception ex) {
+          }
+        }
+#endif
+
+        if (!String.IsNullOrWhiteSpace(winUserName)) {
+          authFormTemplate = _AuthPageBuilder.GetWinAuthForm(
+            "Please confirm pass-trough credentials:",
+            winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, ""
+          );
+        }
+        else {
+          authFormTemplate = _AuthPageBuilder.GetAuthForm(
+            "Please enter your credentials:",
+            loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, ""
+          );
+        }
+
       }
       else {
 
@@ -63,7 +88,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
           prefferredScopes = new string[] { };
         }
 
-        if (!_AuthService.GetAvailableScopesByOtp(clientId, otp, prefferredScopes, out availableScopes, out var msg2)) {
+        if (!_AuthService.TryGetAvailableScopesBySessionOtp(clientId, sessionOtp, prefferredScopes, out availableScopes, out var msg2)) {
           string errorPage = _AuthPageBuilder.GetErrorPage(msg2, viewMode);
           return this.Content(errorPage, "text/html");
         }
@@ -76,7 +101,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
           }
           authFormTemplate = _AuthPageBuilder.GetScopeConfirmationForm(
             "Please select the permissions to be granted:",
-            otp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessage
+            sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessage
           );
         }
       }
@@ -91,7 +116,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
       string login = null;
       string password = null;
-      string otp = null;
+      string sessionOtp = null;
       string clientId = null;
       string redirectUri = null;
       string state = null;
@@ -108,7 +133,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         password = passwordValue.ToString();
       }
       if (value.TryGetValue("otp", out var otpValue)) {
-        otp = otpValue.ToString();
+        sessionOtp = otpValue.ToString();
       }
       if (value.TryGetValue("clientId", out var clientIdValue)) {
         clientId = clientIdValue.ToString();
@@ -123,24 +148,51 @@ namespace Security.AccessTokenHandling.OAuthServer {
         Int32.TryParse(viewModeValue.ToString(), out viewMode);
       }
 
+      bool winAuthSuccess = false; 
+      if (string.IsNullOrEmpty(password)) {
+        login = "";
+#if NET6_0_OR_GREATER
+        WindowsIdentity windowsUserIfIdentified = null;
+        try {
+          windowsUserIfIdentified = (WindowsIdentity)this.HttpContext.User.Identity!;
+          login = windowsUserIfIdentified.Name?.ToString();
+        }
+        catch (Exception ex) {
+        }
+#endif
+        if (string.IsNullOrEmpty(login)) { 
+          string errorPage = _AuthPageBuilder.GetErrorPage("PASS-TROUGH FAILED!", viewMode);
+          return this.Content(errorPage, "text/html");
+        }
+        else {
+          winAuthSuccess = true;
+        }
+      }
+      else {
+        if (string.IsNullOrEmpty(login)) {
+          string errorPage = _AuthPageBuilder.GetErrorPage("NO USERNAME PROVIDED!", viewMode);
+          return this.Content(errorPage, "text/html");
+        }
+      }
+
       HostString apiCallerHost = this.HttpContext.Request.Host;
-      if (!_AuthService.ValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
+      if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
         string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewMode);
         return this.Content(errorPage, "text/html");
       }
 
       //beim ersten post (also noch kein OTP da....)
-      if (String.IsNullOrWhiteSpace(otp)) {
+      if (String.IsNullOrWhiteSpace(sessionOtp)) {
 
         //credentials prüfen...
-        bool logonSuccess = _AuthService.ValidateCredentialsAndGetOtp(
-          clientId, login, password, out otp, out var step1Msg
+        bool logonSuccess = _AuthService.TryAuthenticate(
+          clientId, login, password, winAuthSuccess, state, out sessionOtp, out var step1Msg
         );
 
         //und zurück zur seite leiten
         if (logonSuccess) {
           //inkl. übergabe des OTP
-          return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={otp}");
+          return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionOtp}");
         }
         else {
           //inkl. übergabe der fehlermeldung
@@ -153,12 +205,12 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
       string[] selectedScopes = value.Keys.Where((k) => k.StartsWith("scope_")).Select((k) => k.Substring(6)).ToArray();
 
-      string code = _AuthService.ValidateOtpAndCreateTokenCode(
-        clientId, login, otp, selectedScopes, out var step2Msg
+      string code = _AuthService.ValidateSessionOtpAndCreateRetrievalCode(
+        clientId, login, sessionOtp, selectedScopes, out var step2Msg
       );
 
       if (string.IsNullOrWhiteSpace(code)) {
-        return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={otp}&view_mode={viewMode}&err={step2Msg}");
+        return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionOtp}&view_mode={viewMode}&err={step2Msg}");
       }
 
       redirectUri = redirectUri + "?code=" + code;

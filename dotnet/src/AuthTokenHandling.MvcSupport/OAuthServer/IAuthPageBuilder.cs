@@ -32,6 +32,29 @@ namespace Security.AccessTokenHandling.OAuthServer {
     );
 
     /// <summary>
+    /// Generates the HTML LOGON Form
+    /// </summary>
+    /// <param name="prompt"></param>
+    /// <param name="identifiedWinUser"></param>
+    /// <param name="state"></param>
+    /// <param name="clientId"></param>
+    /// <param name="redirectUri"></param>
+    /// <param name="requestedScopes"></param>
+    /// <param name="viewMode">1=regular page / 2=optimized page for embedding in iframes (small width + white bg)</param>
+    /// <param name="error"></param>
+    /// <returns></returns>
+    string GetWinAuthForm(
+      string prompt,
+      string identifiedWinUser,
+      string state,
+      string clientId,
+      string redirectUri,
+      string requestedScopes,
+      int viewMode,
+      string error
+    );
+
+    /// <summary>
     /// Generates the HTML SCOPE SELECTION Form (Step 2)
     /// </summary>
     /// <param name="prompt"></param>

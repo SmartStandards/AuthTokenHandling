@@ -17,40 +17,53 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
     #region " for CIBA UI " 
 
-    bool ValidateApiClient(
+    bool TryValidateApiClient(
       string apiClientId,
       string apiCallerHost,
       string redirectUri,
       out string message
     );
 
-    bool ValidateCredentialsAndGetOtp(
+    /// <summary>
+    /// should return a sessionOtp
+    /// </summary>
+    /// <param name="apiClientId"></param>
+    /// <param name="login"></param>
+    /// <param name="password"> is empty when noPasswordNeeded</param>
+    /// <param name="noPasswordNeeded"> is true when windows pass-trough has already been processed</param>
+    /// <param name="clientProvidedState"></param>
+    /// <param name="sessionOtp"></param>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    bool TryAuthenticate(
       string apiClientId,
       string login,
       string password,
-      out string otp,
+      bool noPasswordNeeded,
+      string clientProvidedState,
+      out string sessionOtp,
       out string message
     );
 
-    bool GetAvailableScopesByOtp(
+    bool TryGetAvailableScopesBySessionOtp(
       string apiClientId,
-      string otp,
+      string sessionOtp,
       string[] prefferedScopes,
       out ScopeDescriptor[] availableScopes,
       out string message
     );
 
-    string ValidateOtpAndCreateTokenCode(
+    string ValidateSessionOtpAndCreateRetrievalCode(
       string apiClientId,
       string login,
-      string otp,
+      string sessionOtp,
       string[] selectedScopes,
       out string message
     );
 
     #endregion
 
-    bool ResolveCodeToClientIdAndSecret(string code, out string clientId, out string clientSecret);
+    bool TryResolveCodeToClientIdAndSecret(string code, out string clientId, out string clientSecret);
 
     //EnvironmentUiCustomizing GetEnvironmentUiCustomizing(string apiClientId);
 

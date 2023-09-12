@@ -291,6 +291,41 @@ namespace Security.AccessTokenHandling.OAuthServer {
       return sb.ToString();
     }
 
+    /// <summary>
+    /// Generates the HTML LOGON Form
+    /// </summary>
+    /// <param name="prompt"></param>
+    /// <param name="identifiedWinUser"></param>
+    /// <param name="state"></param>
+    /// <param name="clientId"></param>
+    /// <param name="redirectUri"></param>
+    /// <param name="requestedScopes"></param>
+    /// <param name="viewMode">1=regular page / 2=optimized page for embedding in iframes (small width + white bg)</param>
+    /// <param name="error"></param>
+    /// <returns></returns>
+    public string GetWinAuthForm(
+      string prompt, string identifiedWinUser, string state, string clientId, string redirectUri, string requestedScopes, int viewMode, string error
+    ) {
+      var sb = new StringBuilder(8000);
+      sb.Append(_HtmlBaseTemplateWithCSS);
+      if(viewMode == 2) {
+        sb.Replace("<body />", _AuthFormTemplateEmbeddedWinAuth);
+      }
+      else {
+        sb.Replace("<body />", _AuthFormTemplateWinAuth);
+      }
+      this.ReplaceCommonPlaceholders(sb);
+      sb.Replace("{{prompt}}", prompt);
+      sb.Replace("{{identifiedWinUser}}", identifiedWinUser);
+      sb.Replace("{{state}}", state);
+      sb.Replace("{{clientId}}", clientId);
+      sb.Replace("{{redirectUri}}", redirectUri);
+      sb.Replace("{{requestedScopes}}", requestedScopes);
+      sb.Replace("{{viewMode}}", viewMode.ToString());
+      sb.Replace("{{error}}", error);
+      return sb.ToString();
+    }
+
     private readonly string _AuthFormTemplate = (
 @"  <body>
     <div class=""login"">
@@ -317,6 +352,32 @@ namespace Security.AccessTokenHandling.OAuthServer {
     </div>
   </body>");
 
+    private readonly string _AuthFormTemplateWinAuth = (
+@"  <body>
+    <div class=""login"">
+      <h1>{{title}}</h1>
+      <form method=""post"" action=""./authorize"" enctype=""application/x-www-form-urlencoded"">
+        {{logo}}
+        <p>{{prompt}}</p>
+        <input type=""hidden"" id=""login"" name=""login"" value=""{{identifiedWinUser}}"">
+        <input type=""hidden"" id=""password"" name=""password"" value="""">
+        {{error}}
+        <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
+        <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">
+        <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
+        <input type=""hidden"" id=""requestedScopes"" name=""requestedScopes"" value=""{{requestedScopes}}"">
+        <input type=""hidden"" id=""viewMode"" name=""viewMode"" value=""{{viewMode}}"">
+        <p class=""submit""><input type=""submit"" name=""commit"" value=""Proceed as '{identifiedWinUser}'""></p>
+      </form>
+    </div>
+    <div class=""login-help"">
+      <p>Problems with your password?<br /><a rel=""noopener"" target=""_blank"" href=""{{portal_url}}"">Click here to go to the portal</a></p><br />
+      <br />
+      <br />
+      <p><a rel=""noopener"" target=""_blank"" href=""{{legal_url}}"">Impressum</a></p>
+    </div>
+  </body>");
+
     private readonly string _AuthFormTemplateEmbedded = (
 @"  <body>
     <div class=""login"">
@@ -333,6 +394,26 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <input type=""hidden"" id=""requestedScopes"" name=""requestedScopes"" value=""{{requestedScopes}}"">
         <input type=""hidden"" id=""viewMode"" name=""viewMode"" value=""{{viewMode}}"">
         <p class=""submit""><input type=""submit"" name=""commit"" value=""Login""></p>
+      </form>
+    </div>
+  </body>");
+
+    private readonly string _AuthFormTemplateEmbeddedWinAuth = (
+@"  <body>
+    <div class=""login"">
+      <h1>{{title}}</h1>
+      <form method=""post"" action=""./authorize"" enctype=""application/x-www-form-urlencoded"">
+        {{logo}}
+        <p>{{prompt}}</p>
+        <input type=""hidden"" id=""login"" name=""login"" value=""{{identifiedWinUser}}"">
+        <input type=""hidden"" id=""password"" name=""password"" value="""">
+        {{error}}
+        <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
+        <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">
+        <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
+        <input type=""hidden"" id=""requestedScopes"" name=""requestedScopes"" value=""{{requestedScopes}}"">
+        <input type=""hidden"" id=""viewMode"" name=""viewMode"" value=""{{viewMode}}"">
+        <p class=""submit""><input type=""submit"" name=""commit"" value=""Proceed as '{identifiedWinUser}'""></p>
       </form>
     </div>
   </body>");
