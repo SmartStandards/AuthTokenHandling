@@ -8,9 +8,15 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* added Winforms Client support (**new Feature**)
+*(none)*
 
-  
+
+
+## v 2.1.0
+released **2023-09-12**, including:
+ - added Winforms Client support (**new Feature**)
+
+
 
 ## v 2.0.0
 released **2023-07-17**, including:

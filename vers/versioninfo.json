@@ -1,13 +1,13 @@
 {
-  "currentVersion": "1.0.1",
-  "currentVersionWithSuffix": "1.0.1",
+  "currentVersion": "2.1.0",
+  "currentVersionWithSuffix": "2.1.0",
   "releaseType": "official",
-  "previousVersion": "1.0.0",
-  "changeGrade": "patch",
-  "currentMajor": 1,
-  "currentMinor": 0,
-  "currentPatch": 1,
-  "versionDateInfo": "2023-06-27",
-  "versionTimeInfo": "12:18:35",
-  "versionNotes": "- removed unnecessary reference\n"
+  "previousVersion": "2.0.0",
+  "changeGrade": "minor",
+  "currentMajor": 2,
+  "currentMinor": 1,
+  "currentPatch": 0,
+  "versionDateInfo": "2023-09-12",
+  "versionTimeInfo": "10:43:12",
+  "versionNotes": "- added Winforms Client support (new Feature)\n"
 }
