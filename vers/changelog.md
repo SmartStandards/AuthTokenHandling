@@ -8,7 +8,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* added Windows Authentication support (**new Feature**)
+*(none)*
+
+
+
+## v 2.2.0
+released **2023-09-12**, including:
+ - added Windows Authentication support (**new Feature**)
 
 
 
