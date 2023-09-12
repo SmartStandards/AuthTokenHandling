@@ -85,7 +85,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         [FromQuery(Name = "view_mode")] int viewMode
       ) {
 
-        var customizing = _OAuthService.GetEnvironmentUiCustomizing(clientId);
+        //var customizing = _OAuthService.GetEnvironmentUiCustomizing(clientId);
 
         //validate clientId
         HostString apiCallerHost = this.HttpContext.Request.Host;

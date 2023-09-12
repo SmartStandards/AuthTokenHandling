@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
+  //INFO: liegt bewusst in 'AuthTokenHandling' anstatt 'AuthTokenHandling.MvcSupport',
+  //weil die serverseitige Implementierung wahrscheinlich nicht im MVC Serviceprojekt, sondern in einer
+  //technologieunabhängigen Assembly leben wird. Letzterer wollen wir keine sub-Referenzen auf MVC Artefakte 
+  //aufzwingen, nur weil sie dieses Interface addressieren muss. Wenn überhaupt, müsste dieses Interface
+  //in eine ebenfalls technologieunabhängigen 'AuthTokenHandling.Server' assembly (wäre aktuell aber oversized)
+
   public interface IOAuthService : IAccessTokenIntrospector {
 
     #region " for CIBA UI " 

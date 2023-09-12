@@ -13,6 +13,13 @@ namespace Security.AccessTokenHandling {
     private Func<string> _EndpointUrlGetter;
     private Func<string> _AuthorizationHeaderGetter;
 
+
+    public OAuthTokenIntrospectionEndpointCaller(string endpointUrl) : this(()=> endpointUrl) {
+    }
+
+    public OAuthTokenIntrospectionEndpointCaller(string endpointUrl, string authorizationHeader) : this(() => endpointUrl, ()=> authorizationHeader) {
+    }
+
     public OAuthTokenIntrospectionEndpointCaller(Func<string> endpointUrlGetter, Func<string> authorizationHeaderGetter = null) {
 
       _EndpointUrlGetter = endpointUrlGetter;

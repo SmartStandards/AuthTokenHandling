@@ -10,6 +10,8 @@ This files contains a version history including all changes relevant for semanti
 
 * removed unnecessary reference
 * spitted ASP related parts into separate package (**breaking Change**)
+* added Winforms Client support (**new Feature**)
+* 
 
 ## v 1.0.1
 released **2023-06-27**, including:

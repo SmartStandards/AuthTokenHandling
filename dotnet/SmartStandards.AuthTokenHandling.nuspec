@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>SmartStandards.AuthTokenHandling</id>
-    <version>1.0.0-localbuild</version>
+    <version>999.0.2-localbuild</version>
     <title>SmartStandards.AuthTokenHandling</title>
     <authors>SmartStandards</authors>
     <owners>(public domain)</owners>
@@ -17,17 +17,14 @@
     <dependencies>
       <group targetFramework=".NETFramework4.6">
         <dependency id="jose-jwt" version="[4.0.1,4.9999]" />
-        <dependency id="Microsoft.AspNetCore.Mvc.Core" version="[2.2.5,2.9999]" />
         <dependency id="System.Text.Encodings.Web" version="[6.0.0,6.9999]" />
       </group>
       <group targetFramework="net5.0">
         <dependency id="jose-jwt" version="[4.0.1,4.9999]" />
-        <dependency id="Microsoft.AspNetCore.Mvc.Core" version="[2.2.5,2.9999]" />
         <dependency id="System.Text.Encodings.Web" version="[6.0.0,6.9999]" />
       </group>
       <group targetFramework="net6.0">
         <dependency id="jose-jwt" version="[4.0.1,4.9999]" />
-        <dependency id="Microsoft.AspNetCore.Mvc.Core" version="[2.2.5,2.9999]" />
         <dependency id="System.Text.Encodings.Web" version="[6.0.0,6.9999]" />
       </group>
     </dependencies>

@@ -10,7 +10,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
   [ApiController]
   [ApiExplorerSettings(GroupName = "OAuth")]
-  [Route("oauth")]
+  [Route("oauth2")]
   public partial class OAuthServiceController : ControllerBase {
 
     private readonly ILogger<OAuthServiceController> _Logger;
@@ -19,7 +19,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
     public OAuthServiceController(
       ILogger<OAuthServiceController> logger, IOAuthService authService, IAuthPageBuilder authPageBuilder
-    ) { 
+    ) {
       _Logger = logger;
       _AuthService = authService;
       _AuthPageBuilder = authPageBuilder;
@@ -31,7 +31,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       [FromQuery(Name = "client_id")] string clientId,
       [FromQuery(Name = "redirect_uri")] string redirectUri,
       [FromQuery(Name = "state")] string state,
-      [FromQuery(Name = "scope")]string rawScopePreference,
+      [FromQuery(Name = "scope")] string rawScopePreference,
       [FromQuery(Name = "login_hint")] string loginHint,
       [FromQuery(Name = "err")] string errorMessage,
       [FromQuery(Name = "otp")] string otp,
@@ -86,7 +86,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
     [Route("authorize")] //Step2 - POST
     [HttpPost(), Produces("text/html")]
-    [Consumes("application/x-www-form-urlencoded")] 
+    [Consumes("application/x-www-form-urlencoded")]
     public ActionResult PostLogonForm([FromForm] IFormCollection value) {
 
       string login = null;
@@ -120,7 +120,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         state = stateValue.ToString();
       }
       if (value.TryGetValue("viewMode", out var viewModeValue)) {
-        Int32.TryParse(viewModeValue.ToString(),out viewMode);
+        Int32.TryParse(viewModeValue.ToString(), out viewMode);
       }
 
       HostString apiCallerHost = this.HttpContext.Request.Host;
@@ -196,7 +196,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
     //https://www.rfc-editor.org/rfc/rfc7662
     [HttpPost(), Produces("application/json")]
-    [Route("introspect")] 
+    [Route("introspect")]
     [Consumes("application/x-www-form-urlencoded")]
     public Dictionary<string, object> Introspect([FromForm] IFormCollection value) {
 
@@ -212,7 +212,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         tokenTypeHint = tokenTypeHintValue.ToString();
       }
 
-    _AuthService.IntrospectAccessToken(token,out bool active,out var dict);
+      _AuthService.IntrospectAccessToken(token, out bool active, out var dict);
       dict["active"] = active;
       return dict;
     }

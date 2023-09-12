@@ -295,7 +295,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 @"  <body>
     <div class=""login"">
       <h1>{{title}}</h1>
-      <form method=""post"" action=""./oauth/authorize"" enctype=""application/x-www-form-urlencoded"">
+      <form method=""post"" action=""./authorize"" enctype=""application/x-www-form-urlencoded"">
         {{logo}}
         <p>{{prompt}}</p>
         <p><input type=""text"" name=""login"" value=""{{login_hint}}"" placeholder=""Login""></p>
@@ -321,7 +321,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 @"  <body>
     <div class=""login"">
       <h1>{{title}}</h1>
-      <form method=""post"" action=""./oauth/authorize"" enctype=""application/x-www-form-urlencoded"">
+      <form method=""post"" action=""./authorize"" enctype=""application/x-www-form-urlencoded"">
         {{logo}}
         <p>{{prompt}}</p>
         <p><input type=""text"" name=""login"" value=""{{login_hint}}"" placeholder=""Login""></p>
@@ -406,7 +406,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 @"  <body>
     <div class=""login"">
       <h1>{{title}}</h1>
-      <form method=""post"" action=""./oauth/authorize"" enctype=""application/x-www-form-urlencoded"">
+      <form method=""post"" action=""./authorize"" enctype=""application/x-www-form-urlencoded"">
         {{logo}}
         <p>{{prompt}}</p>
         {{error}}
@@ -433,7 +433,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 @"  <body>
     <div class=""login"">
       <h1>{{title}}</h1>
-      <form method=""post"" action=""./oauth/authorize"" enctype=""application/x-www-form-urlencoded"">
+      <form method=""post"" action=""./authorize"" enctype=""application/x-www-form-urlencoded"">
         {{logo}}
         <p>{{prompt}}</p>
         {{error}}
