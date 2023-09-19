@@ -7,6 +7,7 @@ This files contains a version history including all changes relevant for semanti
 ## Upcoming Changes
 
  - added unattended Authentication support for headless clients (**new Feature**)
+ - added http-get support for token retrieval
 
 
 ## v 2.2.2

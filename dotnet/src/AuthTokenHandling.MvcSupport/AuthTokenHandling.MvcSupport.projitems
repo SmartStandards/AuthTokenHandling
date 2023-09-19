@@ -13,6 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)EvaluateBearerTokenAttribute.Net4Dummy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\DefaultAuthPageBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\IAuthPageBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuthServiceController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuthServiceControllerBase.cs" />
   </ItemGroup>
 </Project>

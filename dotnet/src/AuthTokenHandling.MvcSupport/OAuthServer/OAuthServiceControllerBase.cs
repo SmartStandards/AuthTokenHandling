@@ -1,30 +1,30 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Security.Principal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using System.Diagnostics;
-using Microsoft.Extensions.Primitives;
+using System.Linq;
+using System.Security.Principal;
+using System.Text;
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
   /// <summary>
-  ///   [ApiController]
-  /// [ApiExplorerSettings(GroupName = "OAuth")]
-  /// [Route("oauth2")]
+  ///  YOU NEED IN INHERIT FROM THIS GLASS AND PLACE THE FOLLOWING CLASS-ATTRIBUTES:
+  ///  [ApiController]
+  ///  [ApiExplorerSettings(GroupName = "OAuth")]
+  ///  [Route("oauth2")]
   /// </summary>
-  public abstract partial class OAuthServiceController : ControllerBase {
+  public abstract partial class OAuthServiceControllerBase : ControllerBase {
 
-    private readonly ILogger<OAuthServiceController> _Logger;
+    private readonly ILogger<OAuthServiceControllerBase> _Logger;
     private readonly IOAuthService _AuthService;
     private readonly IAuthPageBuilder _AuthPageBuilder;
 
-    public OAuthServiceController(
-      ILogger<OAuthServiceController> logger, IOAuthService authService, IAuthPageBuilder authPageBuilder
+    public OAuthServiceControllerBase(
+      ILogger<OAuthServiceControllerBase> logger, IOAuthService authService, IAuthPageBuilder authPageBuilder
     ) {
       _Logger = logger;
       _AuthService = authService;
@@ -98,6 +98,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         }
 
         if (!string.IsNullOrWhiteSpace(errorMessageViaRoundtrip)) {
+          //HACK: hier darf natürlich kein html sein!
           errorMessageViaRoundtrip = $"<p><span style=\"color: red\">{errorMessageViaRoundtrip}</span><p>";
         }
         else {
@@ -134,6 +135,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         }
         else {
           if (!string.IsNullOrWhiteSpace(errorMessageViaRoundtrip)) {
+            //HACK: natürlich darf hier kein html sein
             errorMessageViaRoundtrip = $"<p><span style=\"color: red\">{errorMessageViaRoundtrip}</span><p>";
           }
           else {
@@ -152,7 +154,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     [Route("authorize")] //Step2 - POST
     [HttpPost(), Produces("text/html")]
     [Consumes("application/x-www-form-urlencoded")]
-    public ActionResult PostLogonForm([FromForm] IFormCollection value) {
+    public ActionResult PostLogonFormViaGet([FromForm] IFormCollection value) {
 
       string login = null;
       string password = null;
@@ -290,6 +292,29 @@ namespace Security.AccessTokenHandling.OAuthServer {
       OAuthTokenResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
 
       return result;
+    }
+
+    /// <summary>
+    /// This is just a proxy-mathod whis allows the usage of a http-get instead of post.
+    /// It is NOT part of the oauth2 standard, but resolved the problem, that browsers
+    /// will make CORS problems when a SPA is tying to retrieve a token via post using javascript.
+    /// </summary>
+    /// <param name="clientId"></param>
+    /// <param name="clientSecret"></param>
+    /// <param name="code"></param>
+    /// <returns></returns>
+    [HttpGet(), Produces("application/json")]
+    [Route("token")]
+    public OAuthTokenResult RetrieveTokenByCodeViaGet(
+      [FromQuery(Name = "client_id")] string clientId,
+      [FromQuery(Name = "client_secret")] string clientSecret,
+      [FromQuery(Name = "code")] string code
+    ) {
+      var args = new Dictionary<string, StringValues>();
+      args["client_id"] = clientId;
+      args["client_secret"] = clientSecret;
+      args["code"] = code;
+      return this.RetrieveTokenByCode(new FormCollection(args));
     }
 
     //https://www.rfc-editor.org/rfc/rfc7662
