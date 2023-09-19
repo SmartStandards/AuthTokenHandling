@@ -13,7 +13,6 @@ This files contains a version history including all changes relevant for semanti
  - fix: login error messages are now shown properly
 
 
-
 ## v 2.2.1
 released **2023-09-19**, including:
  - fixed wrong compiler constant for .NET 6 (Windows Authentication was disabled there)
