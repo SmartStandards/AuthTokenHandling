@@ -36,19 +36,19 @@ namespace AuthTokenHandling.TestApp {
         string rawJson = System.IO.File.ReadAllText(fileFullName, System.Text.Encoding.UTF8);
         var fields = JsonConvert.DeserializeObject<Dictionary<string, object>>(rawJson);
 
-        txtAuthorizeUrl.Text = (string) fields["authorizeUrl"];
-        txtRedirectUrl.Text = (string) fields["redirectUrl"];
+        txtAuthorizeUrl.Text = (string)fields["authorizeUrl"];
+        txtRedirectUrl.Text = (string)fields["redirectUrl"];
         txtGrantType.Text = (string)fields["grantType"];
-        txtState.Text = (string) fields["state"];
-        txtScopeToRequest.Text = (string) fields["scopeToRequest"];
-        txtClientId.Text = decryptionMethod.Invoke((string) fields["clientId"]);
-        txtClientSecret.Text = decryptionMethod.Invoke((string) fields["clientSecret"]);
-        txtLoginHint.Text = (string) fields["loginHint"];
-        txtRetrievalUrl.Text = (string) fields["retrievalUrl"];
-        txtRetrievalCode.Text = (string) fields["retrievalCode"];
-        cckUseHttpGetToRetrieve.Checked = (bool )fields["useHttpGetToRetrieve"];
+        txtState.Text = (string)fields["state"];
+        txtScopeToRequest.Text = (string)fields["scopeToRequest"];
+        txtClientId.Text = decryptionMethod.Invoke((string)fields["clientId"]);
+        txtClientSecret.Text = decryptionMethod.Invoke((string)fields["clientSecret"]);
+        txtLoginHint.Text = (string)fields["loginHint"];
+        txtRetrievalUrl.Text = (string)fields["retrievalUrl"];
+        txtRetrievalCode.Text = (string)fields["retrievalCode"];
+        cckUseHttpGetToRetrieve.Checked = (bool)fields["useHttpGetToRetrieve"];
         ///////////////////////////////////////////////////////
-        txtIntrospectionUrl.Text= (string) fields["introspectionUrl"];
+        txtIntrospectionUrl.Text = (string)fields["introspectionUrl"];
         ///////////////////////////////////////////////////////
         txtCurrentToken.Text = (string)fields["currentTokenRaw"];
         txtTokenContent.Text = (string)fields["currentTokenContent"];
@@ -77,7 +77,7 @@ namespace AuthTokenHandling.TestApp {
         fields["introspectionUrl"] = txtIntrospectionUrl.Text;
         ///////////////////////////////////////////////////////
         fields["currentTokenRaw"] = txtCurrentToken.Text;
-        fields["currentTokenContent"] = txtTokenContent.Text ;
+        fields["currentTokenContent"] = txtTokenContent.Text;
 
         string rawJson = JsonConvert.SerializeObject(fields, Formatting.Indented);
         string fileFullName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SmartStandards\\AuthTokenTestApp\\uistate.json");
@@ -110,6 +110,28 @@ namespace AuthTokenHandling.TestApp {
       }
     }
 
+    private void btlSilent_Click(object sender, EventArgs e) {
+      this.SaveFields();
+      try {
+
+        var client = new OAuthTokenRequestor(
+          txtClientId.Text, txtClientSecret.Text, txtAuthorizeUrl.Text, txtRetrievalUrl.Text
+        );
+
+        if(client.TrySilentAuthViaCodeGand(
+          txtRedirectUrl.Text, txtState.Text, txtScopeToRequest.Text, txtLoginHint.Text, out string code
+        )) {
+          txtRetrievalCode.Text = code;
+        }
+        else {
+          txtRetrievalCode.Text = string.Empty;
+        }
+      }
+      catch (Exception ex) {
+        MessageBox.Show(this, ex.Message, "EXCEPTION", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      }
+    }
+
     private void btnRetrieveToken_Click(object sender, EventArgs e) {
       this.SaveFields();
       try {
@@ -123,6 +145,7 @@ namespace AuthTokenHandling.TestApp {
         else {
           txtCurrentToken.Text = string.Empty;
         }
+        this.SaveFields();
       }
       catch (Exception ex) {
         MessageBox.Show(this, ex.Message, "EXCEPTION", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -154,7 +177,7 @@ namespace AuthTokenHandling.TestApp {
           txtTokenState.Text = "INVALID";
           txtTokenState.ForeColor = Color.Red;
         }
-
+        this.SaveFields();
       }
       catch (Exception ex) {
         MessageBox.Show(this, ex.Message, "EXCEPTION", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -176,5 +199,6 @@ namespace AuthTokenHandling.TestApp {
     private void txtIntrospectionUrl_TextChanged(object sender, EventArgs e) {
 
     }
+
   }
 }

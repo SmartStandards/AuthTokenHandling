@@ -8,6 +8,7 @@ using System.Text;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using System.Diagnostics;
+using Microsoft.Extensions.Primitives;
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
@@ -65,6 +66,29 @@ namespace Security.AccessTokenHandling.OAuthServer {
           }
           catch (Exception ex) {
             Trace.TraceWarning($"Cannot identify pass-trough windowws user identity: " + ex.Message );
+          }
+
+          //no UI / unattended
+          if(viewMode == 3 && !String.IsNullOrWhiteSpace(winUserName)) {
+            string[] selectedScopes = rawScopePreference.Split(' ');
+            bool logonSuccess = _AuthService.TryAuthenticate(
+              clientId, winUserName, null, true, state, out sessionOtp, out var step1Msg
+            );
+            string code = _AuthService.ValidateSessionOtpAndCreateRetrievalCode(
+              clientId, winUserName, sessionOtp, selectedScopes, out var step2Msg
+            );
+            if (redirectUri.Contains("?")) {
+              redirectUri = redirectUri + "&";
+            }
+            else {
+              redirectUri = redirectUri + "?";
+            }
+            redirectUri = redirectUri + "code=" + code;
+
+            if (!string.IsNullOrWhiteSpace(state)) {
+              redirectUri = redirectUri + "&state=" + state;
+            }
+            return this.Redirect(redirectUri);
           }
 #else
             Trace.TraceWarning($"Cannot identify pass-trough windowws user identity: NOT IMPLEMENTED IN THIS VERSION!");
@@ -227,7 +251,13 @@ namespace Security.AccessTokenHandling.OAuthServer {
         return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionOtp}&view_mode={viewMode}&err={step2Msg}");
       }
 
-      redirectUri = redirectUri + "?code=" + code;
+      if (redirectUri.Contains("?")) {
+        redirectUri = redirectUri + "&";
+      }
+      else {
+        redirectUri = redirectUri + "?";
+      }
+      redirectUri = redirectUri + "code=" + code;
 
       if (!string.IsNullOrWhiteSpace(state)) {
         redirectUri = redirectUri + "&state=" + state;

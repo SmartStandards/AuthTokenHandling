@@ -64,6 +64,7 @@ namespace AuthTokenHandling.TestApp {
       txtTokenContent = new System.Windows.Forms.TextBox();
       label13 = new System.Windows.Forms.Label();
       txtTokenState = new System.Windows.Forms.TextBox();
+      btlSilent = new System.Windows.Forms.Button();
       tabControl1.SuspendLayout();
       tabPage1.SuspendLayout();
       tabPage2.SuspendLayout();
@@ -84,6 +85,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       // tabPage1
       // 
+      tabPage1.Controls.Add(btlSilent);
       tabPage1.Controls.Add(cckUseHttpGetToRetrieve);
       tabPage1.Controls.Add(label8);
       tabPage1.Controls.Add(label12);
@@ -498,6 +500,17 @@ namespace AuthTokenHandling.TestApp {
       txtTokenState.TabIndex = 4;
       txtTokenState.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       // 
+      // btlSilent
+      // 
+      btlSilent.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+      btlSilent.Location = new System.Drawing.Point(686, 86);
+      btlSilent.Name = "btlSilent";
+      btlSilent.Size = new System.Drawing.Size(17, 19);
+      btlSilent.TabIndex = 7;
+      btlSilent.Text = "S";
+      btlSilent.UseVisualStyleBackColor = true;
+      btlSilent.Click += this.btlSilent_Click;
+      // 
       // FormMain
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -566,6 +579,7 @@ namespace AuthTokenHandling.TestApp {
     private System.Windows.Forms.TextBox txtTokenContent;
     private System.Windows.Forms.Label label13;
     private System.Windows.Forms.TextBox txtTokenState;
+    private System.Windows.Forms.Button btlSilent;
   }
 }
 
