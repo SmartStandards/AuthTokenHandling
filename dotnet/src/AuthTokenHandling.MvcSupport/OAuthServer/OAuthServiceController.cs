@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using System.Diagnostics;
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
@@ -52,17 +53,23 @@ namespace Security.AccessTokenHandling.OAuthServer {
       if (String.IsNullOrWhiteSpace(sessionOtp)) {
 
         string winUserName = null;
-#if NET6_0_OR_GREATER
+
         if (loginHint == "WINAUTH") {
+          loginHint = string.Empty;
+#if !NET5_0 && !NET46
           WindowsIdentity windowsUserIfIdentified = null;
           try {
             windowsUserIfIdentified = (WindowsIdentity) this.HttpContext.User.Identity!;
             winUserName = windowsUserIfIdentified.Name?.ToString();
+            Trace.TraceInformation($"Identified pass-trough windowws user identity: " + winUserName);
           }
           catch (Exception ex) {
+            Trace.TraceWarning($"Cannot identify pass-trough windowws user identity: " + ex.Message );
           }
-        }
+#else
+            Trace.TraceWarning($"Cannot identify pass-trough windowws user identity: NOT IMPLEMENTED IN THIS VERSION!");
 #endif
+        }
 
         if (!String.IsNullOrWhiteSpace(winUserName)) {
           authFormTemplate = _AuthPageBuilder.GetWinAuthForm(
@@ -151,14 +158,14 @@ namespace Security.AccessTokenHandling.OAuthServer {
       bool winAuthSuccess = false; 
       if (string.IsNullOrEmpty(password)) {
         login = "";
-#if NET6_0_OR_GREATER
+#if !NET5_0 && !NET46
         WindowsIdentity windowsUserIfIdentified = null;
         try {
           windowsUserIfIdentified = (WindowsIdentity)this.HttpContext.User.Identity!;
           login = windowsUserIfIdentified.Name?.ToString();
         }
         catch (Exception ex) {
-        }
+        }       
 #endif
         if (string.IsNullOrEmpty(login)) { 
           string errorPage = _AuthPageBuilder.GetErrorPage("PASS-TROUGH FAILED!", viewMode);

@@ -8,7 +8,7 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-*(none)*
+ - fixed wrong compiler constant for .NET 6 (Windows Authentication was disabled there) 
 
 
 
