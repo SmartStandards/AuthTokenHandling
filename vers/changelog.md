@@ -6,8 +6,15 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
+*(none)*
+
+
+
+## v 2.3.0
+released **2023-09-19**, including:
  - added unattended Authentication support for headless clients (**new Feature**)
  - added http-get support for token retrieval
+
 
 
 ## v 2.2.2

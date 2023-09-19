@@ -1,13 +1,13 @@
 {
-  "currentVersion": "2.2.2",
-  "currentVersionWithSuffix": "2.2.2",
+  "currentVersion": "2.3.0",
+  "currentVersionWithSuffix": "2.3.0",
   "releaseType": "official",
-  "previousVersion": "2.2.1",
-  "changeGrade": "patch",
+  "previousVersion": "2.2.2",
+  "changeGrade": "minor",
   "currentMajor": 2,
-  "currentMinor": 2,
-  "currentPatch": 2,
+  "currentMinor": 3,
+  "currentPatch": 0,
   "versionDateInfo": "2023-09-19",
-  "versionTimeInfo": "09:50:46",
-  "versionNotes": "- fix: login error messages are now shown properly\n- fix: readonly enabled scopes are now present in selection\n- some cleanup for the default auth page builder\n"
+  "versionTimeInfo": "12:42:43",
+  "versionNotes": "- added unattended Authentication support for headless clients (new Feature)\n- added http-get support for token retrieval\n"
 }
