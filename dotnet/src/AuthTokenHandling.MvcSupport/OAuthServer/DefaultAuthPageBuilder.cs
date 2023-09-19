@@ -54,6 +54,11 @@ namespace Security.AccessTokenHandling.OAuthServer {
       }
       sb.Replace("{{portal_url}}", _PortalUrl);
       sb.Replace("{{legal_url}}", _LegalUrl);
+
+      //HACK: schöneren weg bauenm, damit leere urls zum ausblenden der links führen!
+      sb.Replace("<p>Problems with your password?<br /><a rel=\"noopener\" target=\"_blank\" href=\"\">Click here to go to the portal</a></p><br />", "<br />");
+      sb.Replace("<p><a rel=\"noopener\" target=\"_blank\" href=\"\">Impressum</a></p>", "<br />");
+
       sb.Replace("{{bgcolor}}", _BgColor);
       sb.Replace("{{textcolor}}", _TextColor);
     }
@@ -367,7 +372,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
         <input type=""hidden"" id=""requestedScopes"" name=""requestedScopes"" value=""{{requestedScopes}}"">
         <input type=""hidden"" id=""viewMode"" name=""viewMode"" value=""{{viewMode}}"">
-        <p class=""submit""><input type=""submit"" name=""commit"" value=""Proceed as '{identifiedWinUser}'""></p>
+        <p class=""submit""><input type=""submit"" name=""commit"" value=""Proceed as '{{identifiedWinUser}}'""></p>
       </form>
     </div>
     <div class=""login-help"">
@@ -413,7 +418,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
         <input type=""hidden"" id=""requestedScopes"" name=""requestedScopes"" value=""{{requestedScopes}}"">
         <input type=""hidden"" id=""viewMode"" name=""viewMode"" value=""{{viewMode}}"">
-        <p class=""submit""><input type=""submit"" name=""commit"" value=""Proceed as '{identifiedWinUser}'""></p>
+        <p class=""submit""><input type=""submit"" name=""commit"" value=""Proceed as '{{identifiedWinUser}}'""></p>
       </form>
     </div>
   </body>");
@@ -468,10 +473,15 @@ namespace Security.AccessTokenHandling.OAuthServer {
         }
         if (availableScope.ReadOnly) {
           line = line.Replace("{{readonly}}", " disabled=\"disabled\"");
+          if (availableScope.Selected) {
+            //disabled fields will not be included when posting the form inputs, so we need to add another hidden field for them
+            line = line + Environment.NewLine + "<input type=\"hidden\" id=\"\" name=\"scope_" + availableScope.Expression + "\" value=\"on\">";
+          }
         }
         else {
           line = line.Replace("{{readonly}}", "");
         }
+
         line = line.Replace("{{label}}", availableScope.Label);
         line = line.Replace("{{expr}}", availableScope.Expression);
         scopeChecks.AppendLine(line);

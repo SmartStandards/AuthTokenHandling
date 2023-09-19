@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 //using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -143,8 +144,14 @@ namespace Security.AccessTokenHandling {
     }
 
     public bool TryRetrieveTokenViaCode(string authorizationCode, bool useHttpGet, out string retrievedToken) {
+      return this.TryRetrieveTokenViaCode(authorizationCode, useHttpGet, out retrievedToken, out var errorBufferDummy);
+    }
+
+    public bool TryRetrieveTokenViaCode(string authorizationCode, bool useHttpGet, out string retrievedToken, out string error) {
       try {
         using (WebClient wc = new WebClient()) {
+          //HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+          wc.UseDefaultCredentials = true;
 
           string formEncodedData = "client_id=" + _ClientId + "&client_secret=" + _ClientSecret + "&code=" + authorizationCode +
             "&grant_type=authorization_code&redirect_uri=" + _RedirectUrl;
@@ -165,15 +172,17 @@ namespace Security.AccessTokenHandling {
           retrievedToken = this.PickJsonValue("access_token", rawJsonResponse);
           if (string.IsNullOrWhiteSpace(retrievedToken)) {
             retrievedToken = null;
-            string error = this.PickJsonValue("error", rawJsonResponse);
+            error = this.PickJsonValue("error", rawJsonResponse);
             return false;
           }
+          error = null;
           return true;
 
         }
       }
       catch (Exception ex) {
         retrievedToken = null;
+        error = "Exception on client side: " + ex.Message;
         return false;
       }
 

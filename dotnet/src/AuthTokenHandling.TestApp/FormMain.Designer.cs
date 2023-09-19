@@ -402,6 +402,7 @@ namespace AuthTokenHandling.TestApp {
       txtIntrospectionUrl.Size = new System.Drawing.Size(543, 20);
       txtIntrospectionUrl.TabIndex = 4;
       txtIntrospectionUrl.Text = "https://localhost:44351/oauth2/introspect";
+      txtIntrospectionUrl.TextChanged += this.txtIntrospectionUrl_TextChanged;
       // 
       // tabPage3
       // 
@@ -440,6 +441,7 @@ namespace AuthTokenHandling.TestApp {
       button1.TabIndex = 2;
       button1.Text = "Export Config";
       button1.UseVisualStyleBackColor = true;
+      button1.Click += this.button1_Click;
       // 
       // button2
       // 
@@ -513,6 +515,7 @@ namespace AuthTokenHandling.TestApp {
       this.Name = "FormMain";
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
       this.Text = "AuthTest.exe (by Smart Standards)";
+      this.Load += this.FormMain_Load;
       tabControl1.ResumeLayout(false);
       tabPage1.ResumeLayout(false);
       tabPage1.PerformLayout();

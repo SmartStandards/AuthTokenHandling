@@ -49,6 +49,7 @@ namespace Security.AccessTokenHandling {
       ) {
 
       using (WebClient wc = new WebClient()) {
+        wc.UseDefaultCredentials= true; 
 
         string url = _EndpointUrlGetter.Invoke();
         string auth = _AuthorizationHeaderGetter.Invoke();

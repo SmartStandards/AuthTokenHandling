@@ -22,6 +22,20 @@ namespace Security.AccessTokenHandling {
       this.timer1.Tick += this.Timer1_Tick;
       this.Opacity = 0;
       this.BackColor = Color.White;
+
+      this.txtUrl.KeyDown += this.TxtUrl_KeyDown;
+    }
+
+    private void TxtUrl_KeyDown(object sender, KeyEventArgs e) {
+      if (e.KeyCode == Keys.Return || e.KeyCode == Keys.F5) {
+        this.chromiumWebBrowser1.Load(this.chromiumWebBrowser1.GetMainFrame().Url);
+      }
+      if (e.KeyCode == Keys.Back) {
+        this.chromiumWebBrowser1.Load(_EntryUrl);
+      }
+      if (e.KeyCode == Keys.F12) {
+        this.chromiumWebBrowser1.ShowDevTools();
+      }
     }
 
     private ChromiumWebBrowser _CefBrowser;
@@ -44,11 +58,13 @@ namespace Security.AccessTokenHandling {
       this.ResumeLayout();
     }
 
+    private string _EntryUrl = "";
     public String Url {
       get {
         return this.txtUrl.Text;
       }
       set {
+        _EntryUrl = value;
         this.txtUrl.Text = value;
       }
     }

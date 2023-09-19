@@ -49,7 +49,7 @@ namespace Security.AccessTokenHandling {
       // 
       txtUrl.BackColor = System.Drawing.SystemColors.Window;
       txtUrl.Dock = System.Windows.Forms.DockStyle.Top;
-      txtUrl.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtUrl.Font = new System.Drawing.Font("Consolas", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
       txtUrl.Location = new System.Drawing.Point(0, 0);
       txtUrl.Name = "txtUrl";
       txtUrl.ReadOnly = true;

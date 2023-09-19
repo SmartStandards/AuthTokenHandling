@@ -36,7 +36,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       [FromQuery(Name = "state")] string state,
       [FromQuery(Name = "scope")] string rawScopePreference,
       [FromQuery(Name = "login_hint")] string loginHint,
-      [FromQuery(Name = "err")] string errorMessage,
+      [FromQuery(Name = "err")] string errorMessageViaRoundtrip,
       [FromQuery(Name = "otp")] string sessionOtp,
       [FromQuery(Name = "view_mode")] int viewMode
     ) {
@@ -71,16 +71,23 @@ namespace Security.AccessTokenHandling.OAuthServer {
 #endif
         }
 
+        if (!string.IsNullOrWhiteSpace(errorMessageViaRoundtrip)) {
+          errorMessageViaRoundtrip = $"<p><span style=\"color: red\">{errorMessageViaRoundtrip}</span><p>";
+        }
+        else {
+          errorMessageViaRoundtrip = "";
+        }
+
         if (!String.IsNullOrWhiteSpace(winUserName)) {
           authFormTemplate = _AuthPageBuilder.GetWinAuthForm(
             "Please confirm pass-trough credentials:",
-            winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, ""
+            winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
           );
         }
         else {
           authFormTemplate = _AuthPageBuilder.GetAuthForm(
             "Please enter your credentials:",
-            loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, ""
+            loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
           );
         }
 
@@ -100,15 +107,15 @@ namespace Security.AccessTokenHandling.OAuthServer {
           return this.Content(errorPage, "text/html");
         }
         else {
-          if (!string.IsNullOrWhiteSpace(errorMessage)) {
-            errorMessage = $"<p><span style=\"color: red\">{errorMessage}</span><p>";
+          if (!string.IsNullOrWhiteSpace(errorMessageViaRoundtrip)) {
+            errorMessageViaRoundtrip = $"<p><span style=\"color: red\">{errorMessageViaRoundtrip}</span><p>";
           }
           else {
-            errorMessage = "";
+            errorMessageViaRoundtrip = "";
           }
           authFormTemplate = _AuthPageBuilder.GetScopeConfirmationForm(
-            "Please select the permissions to be granted:",
-            sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessage
+            "Please select the access scopes to be granted:",
+            sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessageViaRoundtrip
           );
         }
       }
