@@ -8,9 +8,16 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
- - some cleanup for the default auth page builder
- - fix: readonly enabled scopes are now present in selection
+*(none)*
+
+
+
+## v 2.2.2
+released **2023-09-19**, including:
  - fix: login error messages are now shown properly
+ - fix: readonly enabled scopes are now present in selection
+ - some cleanup for the default auth page builder
+
 
 
 ## v 2.2.1
