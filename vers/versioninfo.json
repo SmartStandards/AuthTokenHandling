@@ -1,13 +1,13 @@
 {
-  "currentVersion": "2.3.0",
-  "currentVersionWithSuffix": "2.3.0",
+  "currentVersion": "2.4.0",
+  "currentVersionWithSuffix": "2.4.0",
   "releaseType": "official",
-  "previousVersion": "2.2.2",
+  "previousVersion": "2.3.0",
   "changeGrade": "minor",
   "currentMajor": 2,
-  "currentMinor": 3,
+  "currentMinor": 4,
   "currentPatch": 0,
-  "versionDateInfo": "2023-09-19",
-  "versionTimeInfo": "12:42:43",
-  "versionNotes": "- added unattended Authentication support for headless clients (new Feature)\n- added http-get support for token retrieval\n"
+  "versionDateInfo": "2024-02-16",
+  "versionTimeInfo": "15:48:59",
+  "versionNotes": "- new Feature: added fluent-style configuration & rawToken exposal hook\n"
 }

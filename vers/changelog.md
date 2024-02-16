@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-**new Feature**: added fluent-style configuration & rawToken exposal hook
+*(none)*
+
+
+
+## v 2.4.0
+released **2024-02-16**, including:
+ - **new Feature**: added fluent-style configuration & rawToken exposal hook
 
 
 
