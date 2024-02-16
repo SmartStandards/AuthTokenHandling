@@ -17,10 +17,11 @@ namespace Security {
 
 #if NET5_0_OR_GREATER
 
-    private const string _SignKey = "2A0C4D2F8A8A8B4C7F0F4D4C1A6B9F4C7A0C6B";
+    private const string _SignKey = "2A0C4D2F8A8A8B4C7F0F4D4C1A6B9F4C7A0C6B"; 
 
     [TestMethod]
     public void TestTokenIntrospection2() {
+      MethodInfo myMethod = this.GetType().GetMethod(nameof(TestTokenIntrospection2));
 
       IAccessTokenIntrospector introspector = new LocalJwtIntrospector((T)=> true);
       var validator = new TokenValidationRulesetBasedValidator();
@@ -58,23 +59,26 @@ namespace Security {
       );
 
       //setup the token validation environment
-      AccessTokenValidator.ConfigureTokenIntrospection(
+      AccessTokenValidator.ConfigureTokenValidation(
         introspector,
-        scopeEnumerationHook: (string subject, List<string> permittedScopes) => { permittedScopes.Add("FromHook"); },
-        anonymousSubjectName: "(anonymous)",
-        introspectionResultCachingMinutes: 0,
-        auditingHook: auditingHook
+        (opt) => {
+          opt.UseScopeVisitor((string subject, List<string> permittedScopes) => {
+            permittedScopes.Add("FromHook");
+          });
+          opt.EnableAnonymousSubject("(anonymous)");
+          opt.ChangeCachingLifetime(0);
+          opt.UseAuditingHook(auditingHook);
+        }
       );
-
 
       string tokenA = this.GenerateTestToken("UnitTest", "Max4711", "API:Foo API:Bar Baz Tenant:123");
 
       ValidationOutcome result1 = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-       tokenA, "TestMethod", "localhost", "Bar", "Baz"
+       tokenA, myMethod, "localhost", "Bar", "Baz"
       );
 
       ValidationOutcome result2 = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-       tokenA, "TestMethod", "localhost", "Bar"
+       tokenA, myMethod, "localhost", "Bar"
       );
 
       string expiredToken = this.GenerateTestToken(
@@ -82,7 +86,7 @@ namespace Security {
       );
 
       ValidationOutcome result3 = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-       expiredToken, "TestMethod", "localhost", "Bar"
+       expiredToken, myMethod, "localhost", "Bar"
       );
 
       //setup the token validation environment to use the config-based way

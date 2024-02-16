@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
-
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Security.AccessTokenHandling {
@@ -38,11 +39,10 @@ namespace Security.AccessTokenHandling {
         }
 
         HostString apiCaller = context.HttpContext.Request.Host;
-        //string calledMethod = context.RouteData.ToString();
-        string calledMethod = context.ActionDescriptor.DisplayName;
+        MethodInfo calledContractMethod = GetMethodInfoFromContext(context);
 
         var outcome = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-          rawToken, apiCaller.Host, calledMethod, _RequiredApiPermissions
+          rawToken, calledContractMethod, apiCaller.Host, _RequiredApiPermissions
         );
 
         if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
@@ -81,6 +81,48 @@ namespace Security.AccessTokenHandling {
       }
 
     }//OnActionExecutionAsync()
+
+    /// <summary>
+    /// Convenience to be used for example when initializing 'DynamicUjmwControllerOptions',
+    /// which is requiring ctor-params for dynamically generated attributes...
+    /// </summary>
+    public static object[] BuildConstructorParams(params string[] requiredApiPermissions) {
+      return new object[] { requiredApiPermissions };
+    }
+
+    private static Dictionary<string, MethodInfo> _MethodBuffer = new Dictionary<string, MethodInfo>();
+
+    private static MethodInfo GetMethodInfoFromContext(ActionExecutingContext context) {
+      string actionName = null;
+      string controllerName = null;
+      if (context.RouteData.Values.TryGetValue("action", out object actionUntyped)) {
+        actionName = (string)actionUntyped;
+      }
+      if (context.RouteData.Values.TryGetValue("controller", out object controllerUntyped)) {
+        controllerName = (string)controllerUntyped;
+      }
+      if (actionName == null) {
+        return null;
+      }
+      string key = controllerName + "." + actionName;
+      lock (_MethodBuffer) {
+        if (_MethodBuffer.TryGetValue(key, out MethodInfo mth)) {
+          return mth;
+        }
+        Type coType = context.Controller.GetType();
+
+        //special convention, to allow referring to an explicit contractType
+        PropertyInfo contractProp = coType.GetProperty("ContractType");
+        if (contractProp != null) {
+          coType = (Type)contractProp.GetValue(context.Controller);
+        }
+
+        mth = coType.GetMethod(actionName);
+        _MethodBuffer.Add(key, mth);
+        return mth;
+      }
+
+    }
 
   }//EvaluateBearerTokenAttribute
 

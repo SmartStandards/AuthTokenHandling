@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Security.AccessTokenHandling {
 
@@ -37,7 +38,7 @@ namespace Security.AccessTokenHandling {
     /// Make sure, that this method is called also if there was no Token, to support anonymous access (if configured)
     /// </param>
     /// <param name="callingMachine">the client machine (name or IP-address), which has initiated the service-request</param>
-    /// <param name="calledMethod">the api method, which the client is trying to invoke</param>
+    /// <param name="targetContractMethod">the api method, which the client is trying to invoke</param>
     /// <param name="requiredApiPermissions">
     /// OPTIONAL: all expressions, passed to this array,
     /// are required to be present within the permittedScopes that are evaluated when introspecting the token.
@@ -49,14 +50,14 @@ namespace Security.AccessTokenHandling {
     /// <exception cref="Exception"></exception>
     public static ValidationOutcome TryValidateTokenAndEvaluateScopes(
       string rawToken,
-      string calledMethod,
+      MethodInfo targetContractMethod,
       string callingMachine,
       params string[] requiredApiPermissions
     ) {
 
       if (_IntrospectorSelector == null) {
         throw new Exception(
-          $"The {nameof(AccessTokenValidator)} can be used only when {nameof(AccessTokenValidator)}.{nameof(ConfigureTokenIntrospection)}(...) has been called before!"       
+          $"The {nameof(AccessTokenValidator)} can be used only when {nameof(AccessTokenValidator)}.{nameof(ConfigureTokenValidation)}(...) has been called before!"       
         );
       }
 
@@ -74,9 +75,9 @@ namespace Security.AccessTokenHandling {
           //anonymous support
           outcome = ValidationOutcome.AccessGranted;
           subject = _AnonymousSubjectName;
-          if (_ScopeEnumerationHook != null) {
+          if (_PermittedScopesVisitorMethod != null) {
             var scopes = new List<string>();
-            _ScopeEnumerationHook.Invoke(_AnonymousSubjectName, scopes);
+            _PermittedScopesVisitorMethod.Invoke(_AnonymousSubjectName, scopes);
             permittedScopes = scopes.ToArray();
           }
 
@@ -90,7 +91,7 @@ namespace Security.AccessTokenHandling {
         //analyze token
         GetCachedIntrospectionResult(
           rawToken,
-          calledMethod,
+          targetContractMethod,
           callingMachine,
           out bool isActive,
           out permittedScopes,
@@ -121,10 +122,14 @@ namespace Security.AccessTokenHandling {
         }      
       }
 
+      if(_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
+        _RawTokenExposalMethod.Invoke(rawToken, targetContractMethod);
+      }
+
       //do auditing, if configured...
       if (_AuditingHook != null) {
         _AuditingHook.Invoke(
-          calledMethod,
+          targetContractMethod,
           callingMachine,
           outcome,
           subject,
@@ -139,7 +144,7 @@ namespace Security.AccessTokenHandling {
 
     private static void GetCachedIntrospectionResult(
       string rawToken,
-      string calledMethod,
+      MethodInfo targetContractMethod,
       string callingMachine,
       out bool isActive,
       out string[] permittedScopes,
@@ -177,7 +182,7 @@ namespace Security.AccessTokenHandling {
         fromCache = false;
 
         IAccessTokenIntrospector introspector = _IntrospectorSelector.Invoke(
-          calledMethod, callingMachine,
+          targetContractMethod, callingMachine,
           () => {
             // an explicitely requested pre-visit of tokens, which are assumed to be a JWT...
             if (string.IsNullOrWhiteSpace(rawToken)) {
@@ -221,8 +226,8 @@ namespace Security.AccessTokenHandling {
                 scopes = scopeClaim.ToString().Split(' ').Where((s) => !string.IsNullOrWhiteSpace(s)).ToList();
               }
             }
-            if (_ScopeEnumerationHook != null) {
-              _ScopeEnumerationHook.Invoke(subject, scopes);
+            if (_PermittedScopesVisitorMethod != null) {
+              _PermittedScopesVisitorMethod.Invoke(subject, scopes);
             }
             permittedScopes = scopes.ToArray();
           }
