@@ -1,13 +1,13 @@
 {
-  "currentVersion": "2.4.0",
-  "currentVersionWithSuffix": "2.4.0",
+  "currentVersion": "2.5.0",
+  "currentVersionWithSuffix": "2.5.0",
   "releaseType": "official",
-  "previousVersion": "2.3.0",
+  "previousVersion": "2.4.0",
   "changeGrade": "minor",
   "currentMajor": 2,
-  "currentMinor": 4,
+  "currentMinor": 5,
   "currentPatch": 0,
-  "versionDateInfo": "2024-02-16",
-  "versionTimeInfo": "15:48:59",
-  "versionNotes": "- new Feature: added fluent-style configuration & rawToken exposal hook\n"
+  "versionDateInfo": "2024-04-29",
+  "versionTimeInfo": "20:00:34",
+  "versionNotes": "- new Feature: added ClaimCustomizer-Hook for LocalJwtIntrospector\n- Fix: AssemblyInfo for .NET-Fx 4 Projects are now without wildcard, to ensure propper versions instead of 999.x\n"
 }
