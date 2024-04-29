@@ -30,11 +30,8 @@ namespace Security.AccessTokenHandling {
           if (String.IsNullOrWhiteSpace(rawToken)) {
             rawToken = null;
           }
-          else {
-            rawToken = extractedAuthHeader.ToString();
-            if (rawToken.StartsWith("bearer ")) {
-              rawToken = rawToken.Substring(7);
-            }
+          else if (rawToken.StartsWith("Bearer ",StringComparison.CurrentCultureIgnoreCase)) {
+            rawToken = rawToken.Substring(7);
           }
         }
 

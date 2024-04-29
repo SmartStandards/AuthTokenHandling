@@ -30,10 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="cef.redist.x64" Version="114.2.12" />
-    <PackageReference Include="cef.redist.x86" Version="114.2.12" />
-    <PackageReference Include="CefSharp.Common.NETCore" Version="114.2.120" />
-    <PackageReference Include="CefSharp.WinForms.NETCore" Version="114.2.120" />
+    <PackageReference Include="CefSharp.WinForms.NETCore" Version="123.0.60" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

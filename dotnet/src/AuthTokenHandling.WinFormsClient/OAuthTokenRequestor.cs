@@ -1,12 +1,11 @@
-using CefSharp.DevTools.Database;
-using CefSharp.DevTools.DOM;
+//using CefSharp.DevTools.Database;
+//using CefSharp.DevTools.DOM;
 //using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-//using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -41,87 +40,87 @@ namespace Security.AccessTokenHandling {
         _AuthorizeUrl = _AuthorizeUrl + "?";
       }
 
-  }
+    }
 
-      public bool TrySilentAuthViaCodeGand(
-        string returnUrl, string state, string scopeToRequest,
-        string loginHint, out string retrievedCode
-      ) { 
+    public bool TrySilentAuthViaCodeGand(
+      string returnUrl, string state, string scopeToRequest,
+      string loginHint, out string retrievedCode
+    ) { 
       try {
-          string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}";
-          string result = this.GetFinalRedirect(url, returnUrl);
+        string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}";
+        string result = this.GetFinalRedirect(url, returnUrl);
 
-          retrievedCode = this.PickFromUrl(result, "code");
+        retrievedCode = this.PickFromUrl(result, "code");
 
-          if (!string.IsNullOrWhiteSpace(retrievedCode)) {
-            return true;
-          }
-
+        if (!string.IsNullOrWhiteSpace(retrievedCode)) {
+          return true;
         }
-        catch (Exception ex) {
-        }
-        retrievedCode = null;
-        return false;
+
+      }
+      catch (Exception ex) {
+      }
+      retrievedCode = null;
+      return false;
     }
 
     private string GetFinalRedirect(string url,string endUrl) {
       if (string.IsNullOrWhiteSpace(url))
         return url;
 
-        int maxRedirCount = 8;  // prevent infinite loops
-        string newUrl = url;
-        do {
-          HttpWebRequest req = null;
-          HttpWebResponse resp = null;
-          try {
-            if (url.StartsWith(endUrl) & url.Contains("?code=")) {
-              return url;
-            }
-            req = (HttpWebRequest)HttpWebRequest.Create(url);
-            req.Method = "GET";
-            req.AllowAutoRedirect = false;
-            req.UseDefaultCredentials = true;
-            resp = (HttpWebResponse)req.GetResponse();
-            switch (resp.StatusCode) {
-              case HttpStatusCode.OK:
-                return newUrl;
-              case HttpStatusCode.Redirect:
-              case HttpStatusCode.MovedPermanently:
-              case HttpStatusCode.RedirectKeepVerb:
-              case HttpStatusCode.RedirectMethod:
-                newUrl = resp.Headers["Location"];
-                if (newUrl == null)
-                  return url;
+      int maxRedirCount = 8;  // prevent infinite loops
+      string newUrl = url;
+      do {
+        HttpWebRequest req = null;
+        HttpWebResponse resp = null;
+        try {
+          if (url.StartsWith(endUrl) & url.Contains("?code=")) {
+            return url;
+          }
+          req = (HttpWebRequest)HttpWebRequest.Create(url);
+          req.Method = "GET";
+          req.AllowAutoRedirect = false;
+          req.UseDefaultCredentials = true;
+          resp = (HttpWebResponse)req.GetResponse();
+          switch (resp.StatusCode) {
+            case HttpStatusCode.OK:
+              return newUrl;
+            case HttpStatusCode.Redirect:
+            case HttpStatusCode.MovedPermanently:
+            case HttpStatusCode.RedirectKeepVerb:
+            case HttpStatusCode.RedirectMethod:
+              newUrl = resp.Headers["Location"];
+              if (newUrl == null)
+                return url;
 
-                if (newUrl.IndexOf("://", System.StringComparison.Ordinal) == -1) {
-                  // Doesn't have a URL Schema, meaning it's a relative or absolute URL
-                  Uri u = new Uri(new Uri(url), newUrl);
-                  newUrl = u.ToString();
-                }
-                break;
-              default:
-                return newUrl;
-            }
-            url = newUrl;
+              if (newUrl.IndexOf("://", System.StringComparison.Ordinal) == -1) {
+                // Doesn't have a URL Schema, meaning it's a relative or absolute URL
+                Uri u = new Uri(new Uri(url), newUrl);
+                newUrl = u.ToString();
+              }
+              break;
+            default:
+              return newUrl;
           }
-          catch (WebException ex) {
-            // Return the last known good URL
-            return newUrl;
-          }
-          catch (Exception ex) {
-            return null;
-          }
-          finally {
-            if (resp != null)
-              resp.Close();
-          }
-        } while (maxRedirCount-- > 0);
+          url = newUrl;
+        }
+        catch (WebException ex) {
+          // Return the last known good URL
+          return newUrl;
+        }
+        catch (Exception ex) {
+          return null;
+        }
+        finally {
+          if (resp != null)
+            resp.Close();
+        }
+      } while (maxRedirCount-- > 0);
 
     return newUrl;
   }
 
-//https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type
-public bool TryBrowserAuthViaCodeGrand(IWin32Window windowOwner,
+  //https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type
+  public bool TryBrowserAuthViaCodeGrand(IWin32Window windowOwner,
       string returnUrl, string state, string scopeToRequest, string loginHint, out string retrievedCode, 
       int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login"
       ) {

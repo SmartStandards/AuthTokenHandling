@@ -16,17 +16,26 @@ namespace Security.AccessTokenHandling {
     public delegate bool JwtSignatureValidationDelegate(string rawJwt);
 
     private JwtSignatureValidationDelegate _JwtSignatureValidationMethod;
+    private Action<Dictionary<string, object>> _ClaimCustomizer = null;
 
-    public LocalJwtIntrospector(string signKey) {
-      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken,new Jwk(Encoding.ASCII.GetBytes(signKey)));
+    public LocalJwtIntrospector(string signKey, Action<Dictionary<string, object>> claimCustomizer = null) {
+      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, new Jwk(Encoding.ASCII.GetBytes(signKey)));
+      _ClaimCustomizer = claimCustomizer;
     }
 
-    public LocalJwtIntrospector(byte[] signKey) {
+    public LocalJwtIntrospector(byte[] signKey, Action<Dictionary<string, object>> claimCustomizer = null) {
       _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, new Jwk(signKey));
+      _ClaimCustomizer = claimCustomizer;
     }
 
-    public LocalJwtIntrospector(Jwk jsonWebKey) {
+    public LocalJwtIntrospector(Jwk jsonWebKey, Action<Dictionary<string, object>> claimCustomizer = null) {
       _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, jsonWebKey);
+      _ClaimCustomizer = claimCustomizer;
+    }
+
+    public LocalJwtIntrospector(JwtSignatureValidationDelegate jwtSignatureValidationMethod, Action<Dictionary<string, object>> claimCustomizer = null) {
+      _JwtSignatureValidationMethod = jwtSignatureValidationMethod;
+      _ClaimCustomizer = claimCustomizer;
     }
 
     private static bool VerifySignature(string rawJwt, Jwk jsonWebKey) {
@@ -41,10 +50,6 @@ namespace Security.AccessTokenHandling {
         Debug.WriteLine($"JWT signature verification failed (Decode-Error): {ex.Message}");
       }
       return false;
-    }
-
-    public LocalJwtIntrospector(JwtSignatureValidationDelegate jwtSignatureValidationMethod) {
-      _JwtSignatureValidationMethod = jwtSignatureValidationMethod;
     }
 
     public void IntrospectAccessToken(
@@ -66,6 +71,10 @@ namespace Security.AccessTokenHandling {
         isActive = false;
         claims = null;
         return;
+      }
+
+      if(_ClaimCustomizer != null) {
+        _ClaimCustomizer.Invoke(jwtContent);
       }
 
       isActive = true;

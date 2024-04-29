@@ -7,8 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using CefSharp.WinForms;
-using CefSharp;
 
 namespace Security.AccessTokenHandling {
 
@@ -28,17 +26,17 @@ namespace Security.AccessTokenHandling {
 
     private void TxtUrl_KeyDown(object sender, KeyEventArgs e) {
       if (e.KeyCode == Keys.Return || e.KeyCode == Keys.F5) {
-        this.chromiumWebBrowser1.Load(this.chromiumWebBrowser1.GetMainFrame().Url);
+        this.chromiumWebBrowser1.LoadUrl(this.chromiumWebBrowser1.CurrentUrl);
       }
       if (e.KeyCode == Keys.Back) {
-        this.chromiumWebBrowser1.Load(_EntryUrl);
+        this.chromiumWebBrowser1.LoadUrl(_EntryUrl);
       }
       if (e.KeyCode == Keys.F12) {
         this.chromiumWebBrowser1.ShowDevTools();
       }
     }
 
-    private ChromiumWebBrowser _CefBrowser;
+    private CefControl _CefBrowser;
 
     private bool subscribed = false;
 
@@ -79,21 +77,26 @@ namespace Security.AccessTokenHandling {
     }
 
     private void Timer1_Tick(object sender, EventArgs e) {
-      if (this.chromiumWebBrowser1.IsBrowserInitialized) {
+      try {
 
-        if (this.Opacity == 0) {
-          this.Opacity = 1;
-        }
+        //if (this.chromiumWebBrowser1.IsBrowserInitialized) {
 
-        txtUrl.Text = this.chromiumWebBrowser1.GetBrowser().MainFrame.Url;
+          if (this.Opacity == 0) {
+            this.Opacity = 1;
+          }
 
-        if (txtUrl.Text.StartsWith(
-          this.ReturnOn, StringComparison.InvariantCultureIgnoreCase) &&
-          txtUrl.Text.ToLower().Contains("code=")
-        ) {
-          this.Close();
-        }
+          txtUrl.Text = this.chromiumWebBrowser1.CurrentUrl;
 
+          if (txtUrl.Text.StartsWith(
+            this.ReturnOn, StringComparison.InvariantCultureIgnoreCase) &&
+            txtUrl.Text.ToLower().Contains("code=")
+          ) {
+            this.Close();
+          }
+
+        //}
+      }
+      catch {
       }
     }
 
@@ -103,6 +106,7 @@ namespace Security.AccessTokenHandling {
     private void BrowserForm_Load(object sender, EventArgs e) {
 
     }
+
   }
 
 }

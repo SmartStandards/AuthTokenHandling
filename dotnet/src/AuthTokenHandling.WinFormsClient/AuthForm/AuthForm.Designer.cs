@@ -1,4 +1,5 @@
-﻿
+﻿using System.Windows.Forms;
+
 namespace Security.AccessTokenHandling {
 
   partial class AuthForm {
@@ -27,14 +28,13 @@ namespace Security.AccessTokenHandling {
     private void InitializeComponent() {
       components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AuthForm));
-      chromiumWebBrowser1 = new CefSharp.WinForms.ChromiumWebBrowser();
+      chromiumWebBrowser1 = new CefControl();
       timer1 = new System.Windows.Forms.Timer(components);
       txtUrl = new System.Windows.Forms.TextBox();
       this.SuspendLayout();
       // 
       // chromiumWebBrowser1
       // 
-      chromiumWebBrowser1.ActivateBrowserOnCreation = false;
       chromiumWebBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
       chromiumWebBrowser1.Location = new System.Drawing.Point(0, 20);
       chromiumWebBrowser1.Name = "chromiumWebBrowser1";
@@ -76,7 +76,7 @@ namespace Security.AccessTokenHandling {
 
     #endregion
 
-    private CefSharp.WinForms.ChromiumWebBrowser chromiumWebBrowser1;
+    private CefControl chromiumWebBrowser1;
     private System.Windows.Forms.Timer timer1;
     private System.Windows.Forms.TextBox txtUrl;
   }

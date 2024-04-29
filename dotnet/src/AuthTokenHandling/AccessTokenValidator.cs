@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace Security.AccessTokenHandling {
 
@@ -21,6 +22,85 @@ namespace Security.AccessTokenHandling {
       public string Subject { get; set; }
       public string ValidationOutcomeMessage { get; set; }
       public DateTime CachableUntil { get; set; }
+    }
+
+    /// <summary>
+    /// A convenience method which has a compatible signature to be wired-up as 'UjmwHostConfiguration.AuthHeaderEvaluatorMethod'.
+    /// It automatically strips a "Bearer"-Prefix (if existing) and maps the validation-outcomt to an http-return code...
+    /// </summary>
+    /// <param name="rawAuthHeader"></param>
+    /// <param name="calledContractMethod"></param>
+    /// <param name="callingMachine"></param>
+    /// <param name="httpReturnCode"></param>
+    /// <returns></returns>
+    public static bool TryValidateHttpAuthHeader (
+      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode
+    ) {
+      var noExplicitelyRequiredApiPermissions = new string[] { };
+      return TryValidateHttpAuthHeader(rawAuthHeader, calledContractMethod, callingMachine, ref httpReturnCode, noExplicitelyRequiredApiPermissions);
+    }
+
+    /// <summary>
+    /// A convenience method which has a compatible signature to be wired-up as 'UjmwHostConfiguration.AuthHeaderEvaluatorMethod'.
+    /// It automatically strips a "Bearer"-Prefix (if existing) and maps the validation-outcomt to an http-return code...
+    /// </summary>
+    /// <param name="rawAuthHeader"></param>
+    /// <param name="calledContractMethod"></param>
+    /// <param name="callingMachine"></param>
+    /// <param name="httpReturnCode"></param>
+    /// <param name="requiredApiPermissions"></param>
+    /// <returns></returns>
+    public static bool TryValidateHttpAuthHeader(
+      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, params string[] requiredApiPermissions
+    ) {
+
+      string rawToken = rawAuthHeader;
+      if (rawToken != null && rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
+        rawToken = rawToken.Substring(7);
+      }
+
+      ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(rawToken, calledContractMethod, callingMachine, requiredApiPermissions);
+      if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
+        return true;
+      }
+      else {
+        httpReturnCode = 401;
+        return false;
+      }
+    }
+
+    /// <summary>
+    /// A convenience method which has a compatible signature to be wired-up as 'UjmwHostConfiguration.AuthHeaderEvaluatorMethod'.
+    /// It automatically strips a "Bearer"-Prefix (if existing) and maps the validation-outcomt to an http-return code.
+    /// As additional requirement the given tokens will need to have the EndpointName (name of the contract interface without a leading "I")
+    /// inside of its "scope" claim (for example "API:FooRepository").
+    /// </summary>
+    /// <param name="rawAuthHeader"></param>
+    /// <param name="calledContractMethod"></param>
+    /// <param name="callingMachine"></param>
+    /// <param name="httpReturnCode"></param>
+    /// <returns></returns>
+    public static bool TryValidateHttpAuthHeaderAndEndpointScope(
+      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode) {
+
+      string rawToken = rawAuthHeader;
+      if (rawToken != null && rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
+        rawToken = rawToken.Substring(7);
+      }
+
+      string endpointName = calledContractMethod.DeclaringType.Name;
+      if (endpointName.StartsWith("I") && char.IsUpper(endpointName[1])) {
+        endpointName = endpointName.Substring(1);
+      }
+
+      ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(rawToken, calledContractMethod, callingMachine, _ApiPermissionPrefix + endpointName);
+      if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
+        return true;
+      }
+      else {
+        httpReturnCode = 401;
+        return false;
+      }
     }
 
     /// <summary>

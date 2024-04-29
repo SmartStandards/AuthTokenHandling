@@ -73,9 +73,7 @@
   <Import Project="..\AuthTokenHandling.WinFormsClient\AuthTokenHandling.WinFormsClient.projitems" Label="Shared" />
 
   <ItemGroup>
-    <PackageReference Include="cef.redist.x86" Version="114.2.12" />
-    <PackageReference Include="CefSharp.Common.NETCore" Version="114.2.120" />
-    <PackageReference Include="CefSharp.WinForms.NETCore" Version="114.2.120" />
+    <PackageReference Include="CefSharp.Wrapped" Version="0.1.2" />
     <PackageReference Include="jose-jwt" Version="4.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>

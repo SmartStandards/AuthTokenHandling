@@ -6,9 +6,8 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-*(none)*
-
-
+* **new Feature**: added ClaimCustomizer-Hook for LocalJwtIntrospector
+* Fix: AssemblyInfo for .NET-Fx 4 Projects are now without wildcard, to ensure propper versions instead of 999.x
 
 ## v 2.4.0
 released **2024-02-16**, including:
