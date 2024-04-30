@@ -6,8 +6,16 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* **new Feature**: RawTokenExposalMethod now offers 'subject' and 'permittedScopes'
-* **new Feature**: 'RequiredApiPermissionAttribute' was added.
+*(none)*
+
+
+
+## v 2.6.0
+released **2024-04-30**, including:
+ - **new Feature**: 'RequiredApiPermissionAttribute' was added.
+ - **new Feature**: RawTokenExposalMethod now offers 'subject' and 'permittedScopes'
+
+
 
 ## v 2.5.0
 released **2024-04-29**, including:

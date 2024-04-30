@@ -1,13 +1,13 @@
 {
-  "currentVersion": "2.5.0",
-  "currentVersionWithSuffix": "2.5.0",
+  "currentVersion": "2.6.0",
+  "currentVersionWithSuffix": "2.6.0",
   "releaseType": "official",
-  "previousVersion": "2.4.0",
+  "previousVersion": "2.5.0",
   "changeGrade": "minor",
   "currentMajor": 2,
-  "currentMinor": 5,
+  "currentMinor": 6,
   "currentPatch": 0,
-  "versionDateInfo": "2024-04-29",
-  "versionTimeInfo": "20:00:34",
-  "versionNotes": "- new Feature: added ClaimCustomizer-Hook for LocalJwtIntrospector\n- Fix: AssemblyInfo for .NET-Fx 4 Projects are now without wildcard, to ensure propper versions instead of 999.x\n"
+  "versionDateInfo": "2024-04-30",
+  "versionTimeInfo": "11:36:14",
+  "versionNotes": "- new Feature: 'RequiredApiPermissionAttribute' was added.\n- new Feature: RawTokenExposalMethod now offers 'subject' and 'permittedScopes'\n"
 }
