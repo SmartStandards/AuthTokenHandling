@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Fix: fixed AuthForm (was broken after migration to CefSharp.Wrapped Lib)
+*(none)*
+
+
+
+## v 2.6.1
+released **2024-04-30**, including:
+ - Fix: fixed AuthForm (was broken after migration to CefSharp.Wrapped Lib)
 
 
 
