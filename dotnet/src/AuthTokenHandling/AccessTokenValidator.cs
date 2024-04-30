@@ -203,7 +203,7 @@ namespace Security.AccessTokenHandling {
       }
 
       if(_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
-        _RawTokenExposalMethod.Invoke(rawToken, targetContractMethod);
+        _RawTokenExposalMethod.Invoke(rawToken, targetContractMethod, subject, permittedScopes);
       }
 
       //do auditing, if configured...

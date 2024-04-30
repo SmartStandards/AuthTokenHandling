@@ -35,7 +35,7 @@ namespace Security.AccessTokenHandling {
     /// <param name="permittedScopes">scopes to extend/modify/clear</param>
     public delegate void PermittedScopesVisitorMethod(string subject, List<string> permittedScopes);
 
-    public delegate void RawTokenExposalMethod(string token, MethodInfo targetContractMethod);
+    public delegate void RawTokenExposalMethod(string token, MethodInfo targetContractMethod, string subject, string[] permittedScopes);
 
     public delegate void AuditingHook(
       MethodInfo targetContractMethod,
