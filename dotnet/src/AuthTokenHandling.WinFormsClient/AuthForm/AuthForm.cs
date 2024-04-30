@@ -45,7 +45,9 @@ namespace Security.AccessTokenHandling {
       this.chromiumWebBrowser1.Dock = DockStyle.Fill;
       this.chromiumWebBrowser1.Visible = true;
       this.chromiumWebBrowser1.Show();
-      this.chromiumWebBrowser1.LoadUrl(txtUrl.Text);
+
+      this.chromiumWebBrowser1.InitializeBrowser(txtUrl.Text);
+      //this.chromiumWebBrowser1.LoadUrl(txtUrl.Text);
 
       if (!subscribed) {
         //this.chromiumWebBrowser1.LocationChanged += this.ChromiumWebBrowser1_LocationChanged;
