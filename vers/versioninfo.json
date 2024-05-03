@@ -1,13 +1,13 @@
 {
-  "currentVersion": "2.6.1",
-  "currentVersionWithSuffix": "2.6.1",
+  "currentVersion": "2.6.2",
+  "currentVersionWithSuffix": "2.6.2",
   "releaseType": "official",
-  "previousVersion": "2.6.0",
+  "previousVersion": "2.6.1",
   "changeGrade": "patch",
   "currentMajor": 2,
   "currentMinor": 6,
-  "currentPatch": 1,
-  "versionDateInfo": "2024-04-30",
-  "versionTimeInfo": "12:40:25",
-  "versionNotes": "- Fix: fixed AuthForm (was broken after migration to CefSharp.Wrapped Lib)\n"
+  "currentPatch": 2,
+  "versionDateInfo": "2024-05-03",
+  "versionTimeInfo": "08:48:12",
+  "versionNotes": "- Fixed net-fx version 4.6.2 to 4.6.1 for WinFormsClient (was wrong before)\n"
 }

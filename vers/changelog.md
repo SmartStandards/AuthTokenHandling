@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Fixed net-fx version 4.6.2 to 4.6.1 for WinFormsClient (was wrong before)
+*(none)*
+
+
+
+## v 2.6.2
+released **2024-05-03**, including:
+ - Fixed net-fx version 4.6.2 to 4.6.1 for WinFormsClient (was wrong before)
 
 
 
