@@ -264,6 +264,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <summary>
     /// Generates the HTML LOGON Form
     /// </summary>
+    /// <param name="responseType"></param>
     /// <param name="prompt"></param>
     /// <param name="login_hint"></param>
     /// <param name="state"></param>
@@ -274,7 +275,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     public string GetAuthForm(
-      string prompt, string login_hint, string state, string clientId, string redirectUri, string requestedScopes, int viewMode, string error
+      string responseType, string prompt, string login_hint, string state, string clientId, string redirectUri, string requestedScopes, int viewMode, string error
     ) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
@@ -285,6 +286,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         sb.Replace("<body />", _AuthFormTemplate);
       }
       this.ReplaceCommonPlaceholders(sb);
+      sb.Replace("{{responseType}}", responseType);
       sb.Replace("{{prompt}}", prompt);
       sb.Replace("{{login_hint}}", login_hint);
       sb.Replace("{{state}}", state);
@@ -299,6 +301,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <summary>
     /// Generates the HTML LOGON Form
     /// </summary>
+    /// <param name="responseType"></param>
     /// <param name="prompt"></param>
     /// <param name="identifiedWinUser"></param>
     /// <param name="state"></param>
@@ -309,7 +312,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     public string GetWinAuthForm(
-      string prompt, string identifiedWinUser, string state, string clientId, string redirectUri, string requestedScopes, int viewMode, string error
+      string responseType, string prompt, string identifiedWinUser, string state, string clientId, string redirectUri, string requestedScopes, int viewMode, string error
     ) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
@@ -320,6 +323,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         sb.Replace("<body />", _AuthFormTemplateWinAuth);
       }
       this.ReplaceCommonPlaceholders(sb);
+      sb.Replace("{{responseType}}", responseType);
       sb.Replace("{{prompt}}", prompt);
       sb.Replace("{{identifiedWinUser}}", identifiedWinUser);
       sb.Replace("{{state}}", state);
@@ -341,6 +345,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <p><input type=""text"" name=""login"" value=""{{login_hint}}"" placeholder=""Login""></p>
         <p><input type=""password"" name=""password"" value="""" placeholder=""Password""></p>
         {{error}}
+        <input type=""hidden"" id=""responseType"" name=""responseType"" value=""{{responseType}}"">
         <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
         <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">
         <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
@@ -367,6 +372,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <input type=""hidden"" id=""login"" name=""login"" value=""{{identifiedWinUser}}"">
         <input type=""hidden"" id=""password"" name=""password"" value="""">
         {{error}}
+        <input type=""hidden"" id=""responseType"" name=""responseType"" value=""{{responseType}}"">
         <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
         <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">
         <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
@@ -393,6 +399,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <p><input type=""text"" name=""login"" value=""{{login_hint}}"" placeholder=""Login""></p>
         <p><input type=""password"" name=""password"" value="""" placeholder=""Password""></p>
         {{error}}
+        <input type=""hidden"" id=""responseType"" name=""responseType"" value=""{{responseType}}"">
         <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
         <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">
         <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
@@ -413,6 +420,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <input type=""hidden"" id=""login"" name=""login"" value=""{{identifiedWinUser}}"">
         <input type=""hidden"" id=""password"" name=""password"" value="""">
         {{error}}
+        <input type=""hidden"" id=""responseType"" name=""responseType"" value=""{{responseType}}"">
         <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
         <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">
         <input type=""hidden"" id=""redirectUri"" name=""redirectUri"" value=""{{redirectUri}}"">
@@ -430,6 +438,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <summary>
     /// Generates the HTML SCOPE SELECTION Form (Step 2)
     /// </summary>
+    /// <param name="responseType"></param>
     /// <param name="prompt"></param>
     /// <param name="otp"></param>
     /// <param name="state"></param>
@@ -441,8 +450,16 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     public string GetScopeConfirmationForm(
-      string prompt, string otp, string state, string clientId, string redirectUri, 
-      string requestedScopes, ScopeDescriptor[] availableScopes, int viewMode, string error
+      string responseType,
+      string prompt,
+      string otp,
+      string state,
+      string clientId,
+      string redirectUri, 
+      string requestedScopes,
+      ScopeDescriptor[] availableScopes,
+      int viewMode,
+      string error
     ) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
@@ -453,6 +470,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         sb.Replace("<body />", _ScopeConfirmationTemplate);
       }
       this.ReplaceCommonPlaceholders(sb);
+      sb.Replace("{{responseType}}", responseType);
       sb.Replace("{{prompt}}", prompt);
       sb.Replace("{{otp}}", otp);
       sb.Replace("{{state}}", state);
@@ -501,6 +519,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         {{logo}}
         <p>{{prompt}}</p>
         {{error}}
+        <input type=""hidden"" id=""responseType"" name=""responseType"" value=""{{responseType}}"">
         <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
         <input type=""hidden"" id=""otp"" name=""otp"" value=""{{otp}}"">
         <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">
@@ -528,6 +547,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         {{logo}}
         <p>{{prompt}}</p>
         {{error}}
+        <input type=""hidden"" id=""responseType"" name=""responseType"" value=""{{responseType}}"">
         <input type=""hidden"" id=""state"" name=""state"" value=""{{state}}"">
         <input type=""hidden"" id=""otp"" name=""otp"" value=""{{otp}}"">
         <input type=""hidden"" id=""clientId"" name=""clientId"" value=""{{clientId}}"">

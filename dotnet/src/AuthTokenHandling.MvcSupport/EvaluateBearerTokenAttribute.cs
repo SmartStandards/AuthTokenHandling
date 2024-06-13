@@ -23,8 +23,8 @@ namespace Security.AccessTokenHandling {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
       
       try {
-        string rawToken = null;
 
+        string rawToken = null;
         if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var extractedAuthHeader)) {  
           rawToken = extractedAuthHeader.ToString();
           if (String.IsNullOrWhiteSpace(rawToken)) {
@@ -114,6 +114,7 @@ namespace Security.AccessTokenHandling {
           coType = (Type)contractProp.GetValue(context.Controller);
         }
 
+        //TODO: muss rekursiv werden, da sonst methoden von vererbten contracts null sind!!!
         mth = coType.GetMethod(actionName);
         _MethodBuffer.Add(key, mth);
         return mth;

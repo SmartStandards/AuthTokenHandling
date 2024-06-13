@@ -32,12 +32,15 @@ namespace Security.AccessTokenHandling {
     /// <param name="calledContractMethod"></param>
     /// <param name="callingMachine"></param>
     /// <param name="httpReturnCode"></param>
+    /// <param name="failedReason"></param>
     /// <returns></returns>
     public static bool TryValidateHttpAuthHeader (
-      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode
+      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, ref string failedReason
     ) {
       var noExplicitelyRequiredApiPermissions = new string[] { };
-      return TryValidateHttpAuthHeader(rawAuthHeader, calledContractMethod, callingMachine, ref httpReturnCode, noExplicitelyRequiredApiPermissions);
+      return TryValidateHttpAuthHeader(
+        rawAuthHeader, calledContractMethod, callingMachine, ref httpReturnCode, ref failedReason, noExplicitelyRequiredApiPermissions
+      );
     }
 
     /// <summary>
@@ -49,9 +52,11 @@ namespace Security.AccessTokenHandling {
     /// <param name="callingMachine"></param>
     /// <param name="httpReturnCode"></param>
     /// <param name="requiredApiPermissions"></param>
+    /// <param name="failedReason"></param>
     /// <returns></returns>
     public static bool TryValidateHttpAuthHeader(
-      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, params string[] requiredApiPermissions
+      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine,
+      ref int httpReturnCode, ref string failedReason, params string[] requiredApiPermissions
     ) {
 
       string rawToken = rawAuthHeader;
@@ -64,7 +69,8 @@ namespace Security.AccessTokenHandling {
         return true;
       }
       else {
-        httpReturnCode = 401;
+        httpReturnCode = 403;
+        failedReason = Enum.GetName(typeof(AccessTokenValidator.ValidationOutcome), outcome);
         return false;
       }
     }
@@ -79,9 +85,12 @@ namespace Security.AccessTokenHandling {
     /// <param name="calledContractMethod"></param>
     /// <param name="callingMachine"></param>
     /// <param name="httpReturnCode"></param>
+    /// <param name="failedReason"></param>
     /// <returns></returns>
     public static bool TryValidateHttpAuthHeaderAndEndpointScope(
-      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode) {
+      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine,
+      ref int httpReturnCode, ref string failedReason
+    ) {
 
       string rawToken = rawAuthHeader;
       if (rawToken != null && rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
@@ -98,7 +107,8 @@ namespace Security.AccessTokenHandling {
         return true;
       }
       else {
-        httpReturnCode = 401;
+        httpReturnCode = 403;
+        failedReason = Enum.GetName(typeof(AccessTokenValidator.ValidationOutcome), outcome);
         return false;
       }
     }
@@ -167,6 +177,10 @@ namespace Security.AccessTokenHandling {
         }
       }
       else {
+
+        if (rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
+          rawToken = rawToken.Substring(7);
+        }
 
         //analyze token
         GetCachedIntrospectionResult(

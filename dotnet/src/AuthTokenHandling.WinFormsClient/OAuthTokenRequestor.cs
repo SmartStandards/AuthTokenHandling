@@ -42,7 +42,7 @@ namespace Security.AccessTokenHandling {
 
     }
 
-    public bool TrySilentAuthViaCodeGand(
+    public bool TrySilentAuthViaCodeGrand(
       string returnUrl, string state, string scopeToRequest,
       string loginHint, out string retrievedCode
     ) { 
@@ -63,7 +63,7 @@ namespace Security.AccessTokenHandling {
       return false;
     }
 
-    private string GetFinalRedirect(string url,string endUrl) {
+    private string GetFinalRedirect(string url, string endUrl) {
       if (string.IsNullOrWhiteSpace(url))
         return url;
 
@@ -197,7 +197,11 @@ namespace Security.AccessTokenHandling {
 
           string token = null;
           if (dlg.Url.StartsWith(returnUrl, StringComparison.InvariantCultureIgnoreCase)) {
-            token = this.PickFromUrl(dlg.Url, "token");
+            token = this.PickFromUrl(dlg.Url, "access_token");
+            //? = this.PickFromUrl(dlg.Url, "token_type");
+            //? = this.PickFromUrl(dlg.Url, "expires_in");
+            //? = this.PickFromUrl(dlg.Url, "id_token");
+            //? = this.PickFromUrl(dlg.Url, "refresh_token");
           }
           if (string.IsNullOrWhiteSpace(token)) {
             retrievedToken = string.Empty;

@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
@@ -31,9 +33,23 @@ namespace Security.AccessTokenHandling.OAuthServer {
       _AuthPageBuilder = authPageBuilder;
     }
 
+    /// <summary>
+    ///   Landing-Page nach Browser-Redirect (HTTP-GET)
+    /// </summary>
+    /// <param name="responseType">'code' oder 'token'</param>
+    /// <param name="clientId"></param>
+    /// <param name="redirectUri"></param>
+    /// <param name="state"></param>
+    /// <param name="rawScopePreference"></param>
+    /// <param name="loginHint"></param>
+    /// <param name="errorMessageViaRoundtrip"></param>
+    /// <param name="sessionOtp"></param>
+    /// <param name="viewMode"></param>
+    /// <returns></returns>
     [Route("authorize")] //Step 1 - GET
     [HttpGet(), Produces("text/html")]
     public ActionResult GetLogonPage(
+      [FromQuery(Name = "response_type")] string responseType,
       [FromQuery(Name = "client_id")] string clientId,
       [FromQuery(Name = "redirect_uri")] string redirectUri,
       [FromQuery(Name = "state")] string state,
@@ -44,6 +60,11 @@ namespace Security.AccessTokenHandling.OAuthServer {
       [FromQuery(Name = "view_mode")] int viewMode
     ) {
 
+      if (string.IsNullOrWhiteSpace(responseType)) {
+        string errorPage = _AuthPageBuilder.GetErrorPage("Url-param 'response_type' is missing! Please provide one ('code'/'token'/...)", viewMode);
+        return this.Content(errorPage, "text/html");
+      }
+      
       //validate clientId
       HostString apiCallerHost = this.HttpContext.Request.Host;
       if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
@@ -108,13 +129,13 @@ namespace Security.AccessTokenHandling.OAuthServer {
         if (!String.IsNullOrWhiteSpace(winUserName)) {
           authFormTemplate = _AuthPageBuilder.GetWinAuthForm(
             "Please confirm pass-trough credentials:",
-            winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
+            responseType, winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
           );
         }
         else {
           authFormTemplate = _AuthPageBuilder.GetAuthForm(
             "Please enter your credentials:",
-            loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
+            responseType, loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
           );
         }
 
@@ -143,7 +164,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
           }
           authFormTemplate = _AuthPageBuilder.GetScopeConfirmationForm(
             "Please select the access scopes to be granted:",
-            sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessageViaRoundtrip
+            responseType, sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessageViaRoundtrip
           );
         }
       }
@@ -164,6 +185,11 @@ namespace Security.AccessTokenHandling.OAuthServer {
       string state = null;
       string prefferredScope = "";
       int viewMode = 1;
+
+      string responseType = null;
+      if (value.TryGetValue("responseType", out var responseTypeValue)) {
+        responseType = responseTypeValue.ToString();
+      }
 
       if (value.TryGetValue("requestedScopes", out var prefferredScopeValue)) {
         prefferredScope = prefferredScopeValue.ToString();
@@ -234,11 +260,11 @@ namespace Security.AccessTokenHandling.OAuthServer {
         //und zurück zur seite leiten
         if (logonSuccess) {
           //inkl. übergabe des OTP
-          return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionOtp}");
+          return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionOtp}");
         }
         else {
           //inkl. übergabe der fehlermeldung
-          return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&err={step1Msg}");
+          return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&err={step1Msg}");
         }
 
       }
@@ -252,7 +278,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       );
 
       if (string.IsNullOrWhiteSpace(code)) {
-        return this.Redirect($"./authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionOtp}&view_mode={viewMode}&err={step2Msg}");
+        return this.Redirect($"./response_type={responseType}&authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionOtp}&view_mode={viewMode}&err={step2Msg}");
       }
 
       if (redirectUri.Contains("?")) {
@@ -261,12 +287,30 @@ namespace Security.AccessTokenHandling.OAuthServer {
       else {
         redirectUri = redirectUri + "?";
       }
-      redirectUri = redirectUri + "code=" + code;
+
+      if (responseType.Equals("code", StringComparison.InvariantCultureIgnoreCase)) {
+        redirectUri = redirectUri + "code=" + code;
+      }
+      else if (responseType.Equals("token", StringComparison.InvariantCultureIgnoreCase)) {
+        if(_AuthService.TryResolveCodeToClientIdAndSecret(code, out clientId, out string clientSecret)) {
+          OAuthTokenResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
+          redirectUri = redirectUri + "access_token=" + result.access_token;
+          redirectUri = redirectUri + "token_type=" + result.token_type;
+          //redirectUri = redirectUri + "expires_in=" + result.access_token;
+          //redirectUri = redirectUri + "id_token=" + result.access_token;
+          //redirectUri = redirectUri + "refresh_token=" + result.access_token;
+        }
+        else {
+          redirectUri = redirectUri + "error=no-token";
+        }
+      }
+      else {
+        redirectUri = redirectUri + "error=unknown-response-type";
+      }
 
       if (!string.IsNullOrWhiteSpace(state)) {
         redirectUri = redirectUri + "&state=" + state;
       }
-
       return this.Redirect(redirectUri);
     }
 

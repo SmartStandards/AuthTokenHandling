@@ -118,7 +118,7 @@ namespace AuthTokenHandling.TestApp {
           txtClientId.Text, txtClientSecret.Text, txtAuthorizeUrl.Text, txtRetrievalUrl.Text
         );
 
-        if(client.TrySilentAuthViaCodeGand(
+        if(client.TrySilentAuthViaCodeGrand(
           txtRedirectUrl.Text, txtState.Text, txtScopeToRequest.Text, txtLoginHint.Text, out string code
         )) {
           txtRetrievalCode.Text = code;

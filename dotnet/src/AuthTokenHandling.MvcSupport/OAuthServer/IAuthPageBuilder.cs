@@ -11,6 +11,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <summary>
     /// Generates the HTML LOGON Form
     /// </summary>
+    /// <param name="responseType"></param>
     /// <param name="prompt"></param>
     /// <param name="login_hint"></param>
     /// <param name="state"></param>
@@ -21,6 +22,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     string GetAuthForm(
+      string responseType,
       string prompt,
       string login_hint,
       string state,
@@ -34,6 +36,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <summary>
     /// Generates the HTML LOGON Form
     /// </summary>
+    /// <param name="responseType"></param>
     /// <param name="prompt"></param>
     /// <param name="identifiedWinUser"></param>
     /// <param name="state"></param>
@@ -44,6 +47,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     string GetWinAuthForm(
+      string responseType,
       string prompt,
       string identifiedWinUser,
       string state,
@@ -57,6 +61,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <summary>
     /// Generates the HTML SCOPE SELECTION Form (Step 2)
     /// </summary>
+    /// <param name="responseType"></param>
     /// <param name="prompt"></param>
     /// <param name="otp"></param>
     /// <param name="state"></param>
@@ -68,6 +73,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     string GetScopeConfirmationForm(
+      string responseType,
       string prompt,
       string otp,
       string state,
