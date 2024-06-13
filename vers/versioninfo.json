@@ -1,13 +1,13 @@
 {
-  "currentVersion": "2.6.2",
-  "currentVersionWithSuffix": "2.6.2",
+  "currentVersion": "2.7.0",
+  "currentVersionWithSuffix": "2.7.0",
   "releaseType": "official",
-  "previousVersion": "2.6.1",
-  "changeGrade": "patch",
+  "previousVersion": "2.6.2",
+  "changeGrade": "minor",
   "currentMajor": 2,
-  "currentMinor": 6,
-  "currentPatch": 2,
-  "versionDateInfo": "2024-05-03",
-  "versionTimeInfo": "08:48:12",
-  "versionNotes": "- Fixed net-fx version 4.6.2 to 4.6.1 for WinFormsClient (was wrong before)\n"
+  "currentMinor": 7,
+  "currentPatch": 0,
+  "versionDateInfo": "2024-06-13",
+  "versionTimeInfo": "12:00:55",
+  "versionNotes": "- new Feature: addded Support for OAuth implicit flow\n"
 }

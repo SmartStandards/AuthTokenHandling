@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* **new Feature**: addded Support for OAuth implicit flow
+*(none)*
+
+
+
+## v 2.7.0
+released **2024-06-13**, including:
+ - **new Feature**: addded Support for OAuth implicit flow
 
 
 
