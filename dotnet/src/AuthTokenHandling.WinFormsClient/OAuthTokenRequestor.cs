@@ -44,10 +44,13 @@ namespace Security.AccessTokenHandling {
 
     public bool TrySilentAuthViaCodeGrand(
       string returnUrl, string state, string scopeToRequest,
-      string loginHint, out string retrievedCode
+      string loginHint, out string retrievedCode,
+      Dictionary<string, string> customQueryParameters = null
     ) { 
       try {
-        string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}";
+        string additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
+
+        string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}&{additionalQueryParameters}";
         string result = this.GetFinalRedirect(url, returnUrl);
 
         retrievedCode = this.PickFromUrl(result, "code");
@@ -122,7 +125,8 @@ namespace Security.AccessTokenHandling {
   //https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type
   public bool TryBrowserAuthViaCodeGrand(IWin32Window windowOwner,
       string returnUrl, string state, string scopeToRequest, string loginHint, out string retrievedCode, 
-      int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login"
+      int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login",
+      Dictionary<string, string> customQueryParameters = null
       ) {
       using (var dlg = new AuthForm()) {
         dlg.Url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}";
@@ -167,7 +171,8 @@ namespace Security.AccessTokenHandling {
     //https://developer.okta.com/blog/2019/05/01/is-the-oauth-implicit-flow-dead
     public bool TryBrowserAuthViaImplicitGrand(IWin32Window windowOwner,
       string returnUrl, string state, string scopeToRequest, string loginHint, out string retrievedToken,
-      int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login"
+      int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login",
+      Dictionary<string, string> customQueryParameters = null
       ) {
       using (var dlg = new AuthForm()) {
         dlg.Url = $"{_AuthorizeUrl}response_type=token&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}";
@@ -213,6 +218,21 @@ namespace Security.AccessTokenHandling {
           }
         }
       }
+
+    private static string ParseCustomQueryParameters(Dictionary<string, string> customQueryParameters)
+    {
+      string parsedCustomQueryParameters = string.Empty;
+
+      if (customQueryParameters == null)
+        return parsedCustomQueryParameters;
+
+      foreach (var customQueryParameter in customQueryParameters)
+      {
+        parsedCustomQueryParameters.Concat($"&{customQueryParameter.Key}={customQueryParameter.Value}");
+      }
+
+      return parsedCustomQueryParameters.TrimStart('&');
+    }
 
     private string PickFromUrl(string url, string key) {
       return (
