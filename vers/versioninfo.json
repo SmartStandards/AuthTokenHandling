@@ -1,13 +1,13 @@
 {
-  "currentVersion": "2.7.0",
-  "currentVersionWithSuffix": "2.7.0",
+  "currentVersion": "2.8.1",
+  "currentVersionWithSuffix": "2.8.1",
   "releaseType": "official",
-  "previousVersion": "2.6.2",
-  "changeGrade": "minor",
+  "previousVersion": "2.8.0",
+  "changeGrade": "patch",
   "currentMajor": 2,
-  "currentMinor": 7,
-  "currentPatch": 0,
-  "versionDateInfo": "2024-06-13",
-  "versionTimeInfo": "12:00:55",
-  "versionNotes": "- new Feature: addded Support for OAuth implicit flow\n"
+  "currentMinor": 8,
+  "currentPatch": 1,
+  "versionDateInfo": "2024-06-21",
+  "versionTimeInfo": "12:16:46",
+  "versionNotes": "- new revision without significant changes\n"
 }
