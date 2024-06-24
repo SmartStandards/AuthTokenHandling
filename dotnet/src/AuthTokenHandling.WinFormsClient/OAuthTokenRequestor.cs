@@ -48,9 +48,9 @@ namespace Security.AccessTokenHandling {
       Dictionary<string, string> customQueryParameters = null
     ) { 
       try {
-        string additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
+        var additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
 
-        string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}&{additionalQueryParameters}";
+        string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
         string result = this.GetFinalRedirect(url, returnUrl);
 
         retrievedCode = this.PickFromUrl(result, "code");
@@ -128,8 +128,10 @@ namespace Security.AccessTokenHandling {
       int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login",
       Dictionary<string, string> customQueryParameters = null
       ) {
+      var additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
+
       using (var dlg = new AuthForm()) {
-        dlg.Url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}";
+        dlg.Url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
         dlg.ReturnOn = returnUrl;
 
         dlg.Text = windowTitle;
@@ -174,8 +176,10 @@ namespace Security.AccessTokenHandling {
       int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login",
       Dictionary<string, string> customQueryParameters = null
       ) {
+      var additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
+
       using (var dlg = new AuthForm()) {
-        dlg.Url = $"{_AuthorizeUrl}response_type=token&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}";
+        dlg.Url = $"{_AuthorizeUrl}response_type=token&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
         dlg.ReturnOn = returnUrl;
 
         dlg.Text = windowTitle;
@@ -219,9 +223,11 @@ namespace Security.AccessTokenHandling {
         }
       }
 
+    // Returns custom query parameters as string of param name - value pairs WITH & IN FRONT!!!
+    // Example: &view_mode=3&login_hith=WINAUTH
     private static string ParseCustomQueryParameters(Dictionary<string, string> customQueryParameters)
     {
-      string parsedCustomQueryParameters = string.Empty;
+      var parsedCustomQueryParameters = string.Empty;
 
       if (customQueryParameters == null)
         return parsedCustomQueryParameters;
@@ -231,7 +237,7 @@ namespace Security.AccessTokenHandling {
         parsedCustomQueryParameters.Concat($"&{customQueryParameter.Key}={customQueryParameter.Value}");
       }
 
-      return parsedCustomQueryParameters.TrimStart('&');
+      return parsedCustomQueryParameters;
     }
 
     private string PickFromUrl(string url, string key) {

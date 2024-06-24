@@ -10,6 +10,12 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 2.8.2
+released **2024-06-24**, including:
+ - Fix: OAuthTokenRequestor -> improved customQueryParameters parsing
+
+
+
 ## v 2.8.1
 released **2024-06-21**, including:
  - new revision without significant changes
