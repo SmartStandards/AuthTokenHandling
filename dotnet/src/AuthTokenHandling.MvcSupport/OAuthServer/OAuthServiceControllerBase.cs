@@ -128,14 +128,14 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
         if (!String.IsNullOrWhiteSpace(winUserName)) {
           authFormTemplate = _AuthPageBuilder.GetWinAuthForm(
-            "Please confirm pass-trough credentials:",
-            responseType, winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
+            responseType, "Please confirm pass-trough credentials:",
+            winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
           );
         }
         else {
           authFormTemplate = _AuthPageBuilder.GetAuthForm(
-            "Please enter your credentials:",
-            responseType, loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
+            responseType, "Please enter your credentials:",
+            loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
           );
         }
 
@@ -163,8 +163,8 @@ namespace Security.AccessTokenHandling.OAuthServer {
             errorMessageViaRoundtrip = "";
           }
           authFormTemplate = _AuthPageBuilder.GetScopeConfirmationForm(
-            "Please select the access scopes to be granted:",
-            responseType, sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessageViaRoundtrip
+            responseType, "Please select the access scopes to be granted:",
+            sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessageViaRoundtrip
           );
         }
       }
