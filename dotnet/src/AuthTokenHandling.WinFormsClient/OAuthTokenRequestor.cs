@@ -76,7 +76,7 @@ namespace Security.AccessTokenHandling {
         HttpWebRequest req = null;
         HttpWebResponse resp = null;
         try {
-          if (url.StartsWith(endUrl) & url.Contains("?code=")) {
+          if (url.StartsWith(endUrl) & (url.Contains("?code=") || url.Contains("?token="))) {
             return url;
           }
           req = (HttpWebRequest)HttpWebRequest.Create(url);
@@ -111,7 +111,7 @@ namespace Security.AccessTokenHandling {
           return newUrl;
         }
         catch (Exception ex) {
-          return null;
+          return newUrl;
         }
         finally {
           if (resp != null)
@@ -234,7 +234,7 @@ namespace Security.AccessTokenHandling {
 
       foreach (var customQueryParameter in customQueryParameters)
       {
-        parsedCustomQueryParameters.Concat($"&{customQueryParameter.Key}={customQueryParameter.Value}");
+        parsedCustomQueryParameters += $"&{customQueryParameter.Key}={customQueryParameter.Value}";
       }
 
       return parsedCustomQueryParameters;
