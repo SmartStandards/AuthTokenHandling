@@ -17,17 +17,17 @@
     <dependencies>
       <group targetFramework=".NETFramework4.6">
         <dependency id="SmartStandards.AuthTokenHandling" version="999.0.2-localbuild" />
-        <dependency id="System.Text.Encodings.Web" version="[6.0.0,6.9999]" />
+        <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>
       <group targetFramework="net5.0">
         <dependency id="SmartStandards.AuthTokenHandling" version="999.0.2-localbuild" />
-        <dependency id="System.Text.Encodings.Web" version="[6.0.0,6.9999]" />
+        <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>
       <group targetFramework="net6.0">
         <dependency id="SmartStandards.AuthTokenHandling" version="999.0.2-localbuild" />
-        <dependency id="System.Text.Encodings.Web" version="[6.0.0,6.9999]" />
+        <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>
     </dependencies>
