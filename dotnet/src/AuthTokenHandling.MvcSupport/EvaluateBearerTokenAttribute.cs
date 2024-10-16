@@ -36,10 +36,10 @@ namespace Security.AccessTokenHandling {
         }
 
         HostString apiCaller = context.HttpContext.Request.Host;
-        MethodInfo calledContractMethod = GetMethodInfoFromContext(context);
+        MethodInfo calledContractMethod = GetMethodInfoFromContext(context, out Type contractType);
 
         var outcome = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-          rawToken, calledContractMethod, apiCaller.Host, _RequiredApiPermissions
+          rawToken, contractType, calledContractMethod, apiCaller.Host, _RequiredApiPermissions
         );
 
         if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
@@ -88,8 +88,8 @@ namespace Security.AccessTokenHandling {
     }
 
     private static Dictionary<string, MethodInfo> _MethodBuffer = new Dictionary<string, MethodInfo>();
-
-    private static MethodInfo GetMethodInfoFromContext(ActionExecutingContext context) {
+    private static Dictionary<string, Type> _ContractBuffer = new Dictionary<string, Type>();
+    private static MethodInfo GetMethodInfoFromContext(ActionExecutingContext context, out Type contractType) {
       string actionName = null;
       string controllerName = null;
       if (context.RouteData.Values.TryGetValue("action", out object actionUntyped)) {
@@ -99,25 +99,31 @@ namespace Security.AccessTokenHandling {
         controllerName = (string)controllerUntyped;
       }
       if (actionName == null) {
+        contractType = null;
         return null;
       }
       string key = controllerName + "." + actionName;
       lock (_MethodBuffer) {
-        if (_MethodBuffer.TryGetValue(key, out MethodInfo mth)) {
+        lock (_ContractBuffer) {
+          if (_MethodBuffer.TryGetValue(key, out MethodInfo mth)) {
+            _ContractBuffer.TryGetValue(key, out contractType);
+            return mth;
+          }
+          contractType = context.Controller.GetType();
+
+          //special convention, to allow referring to an explicit contractType
+          PropertyInfo contractProp = contractType.GetProperty("ContractType");
+          if (contractProp != null) {
+            contractType = (Type)contractProp.GetValue(context.Controller);
+          }
+
+          //TODO: muss rekursiv werden, da sonst methoden von vererbten contracts null sind!!!
+          mth = contractType.GetMethod(actionName);
+
+          _MethodBuffer.Add(key, mth);
+          _ContractBuffer.Add(key, contractType);
           return mth;
         }
-        Type coType = context.Controller.GetType();
-
-        //special convention, to allow referring to an explicit contractType
-        PropertyInfo contractProp = coType.GetProperty("ContractType");
-        if (contractProp != null) {
-          coType = (Type)contractProp.GetValue(context.Controller);
-        }
-
-        //TODO: muss rekursiv werden, da sonst methoden von vererbten contracts null sind!!!
-        mth = coType.GetMethod(actionName);
-        _MethodBuffer.Add(key, mth);
-        return mth;
       }
 
     }

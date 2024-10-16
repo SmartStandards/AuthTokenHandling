@@ -1,6 +1,7 @@
 ﻿using Jose;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -24,22 +25,25 @@ namespace Security.AccessTokenHandling {
       public DateTime CachableUntil { get; set; }
     }
 
+    #region " Convenience overloads for UJMW AuthHeaderEvaluator "
+
     /// <summary>
     /// A convenience method which has a compatible signature to be wired-up as 'UjmwHostConfiguration.AuthHeaderEvaluatorMethod'.
     /// It automatically strips a "Bearer"-Prefix (if existing) and maps the validation-outcomt to an http-return code...
     /// </summary>
     /// <param name="rawAuthHeader"></param>
+    /// <param name="contractType"></param>
     /// <param name="calledContractMethod"></param>
     /// <param name="callingMachine"></param>
     /// <param name="httpReturnCode"></param>
     /// <param name="failedReason"></param>
     /// <returns></returns>
     public static bool TryValidateHttpAuthHeader (
-      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, ref string failedReason
+      string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, ref string failedReason
     ) {
       var noExplicitelyRequiredApiPermissions = new string[] { };
       return TryValidateHttpAuthHeader(
-        rawAuthHeader, calledContractMethod, callingMachine, ref httpReturnCode, ref failedReason, noExplicitelyRequiredApiPermissions
+        rawAuthHeader, contractType, calledContractMethod, callingMachine, ref httpReturnCode, ref failedReason, noExplicitelyRequiredApiPermissions
       );
     }
 
@@ -48,6 +52,7 @@ namespace Security.AccessTokenHandling {
     /// It automatically strips a "Bearer"-Prefix (if existing) and maps the validation-outcomt to an http-return code...
     /// </summary>
     /// <param name="rawAuthHeader"></param>
+    /// <param name="contractType"></param>
     /// <param name="calledContractMethod"></param>
     /// <param name="callingMachine"></param>
     /// <param name="httpReturnCode"></param>
@@ -55,7 +60,7 @@ namespace Security.AccessTokenHandling {
     /// <param name="failedReason"></param>
     /// <returns></returns>
     public static bool TryValidateHttpAuthHeader(
-      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine,
+      string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine,
       ref int httpReturnCode, ref string failedReason, params string[] requiredApiPermissions
     ) {
 
@@ -64,54 +69,25 @@ namespace Security.AccessTokenHandling {
         rawToken = rawToken.Substring(7);
       }
 
-      ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(rawToken, calledContractMethod, callingMachine, requiredApiPermissions);
+      ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(
+        rawToken, contractType, calledContractMethod, callingMachine, requiredApiPermissions
+      );
+
       if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
         return true;
       }
-      else {
-        httpReturnCode = 403;
-        failedReason = Enum.GetName(typeof(AccessTokenValidator.ValidationOutcome), outcome);
-        return false;
-      }
-    }
-
-    /// <summary>
-    /// A convenience method which has a compatible signature to be wired-up as 'UjmwHostConfiguration.AuthHeaderEvaluatorMethod'.
-    /// It automatically strips a "Bearer"-Prefix (if existing) and maps the validation-outcomt to an http-return code.
-    /// As additional requirement the given tokens will need to have the EndpointName (name of the contract interface without a leading "I")
-    /// inside of its "scope" claim (for example "API:FooRepository").
-    /// </summary>
-    /// <param name="rawAuthHeader"></param>
-    /// <param name="calledContractMethod"></param>
-    /// <param name="callingMachine"></param>
-    /// <param name="httpReturnCode"></param>
-    /// <param name="failedReason"></param>
-    /// <returns></returns>
-    public static bool TryValidateHttpAuthHeaderAndEndpointScope(
-      string rawAuthHeader, MethodInfo calledContractMethod, string callingMachine,
-      ref int httpReturnCode, ref string failedReason
-    ) {
-
-      string rawToken = rawAuthHeader;
-      if (rawToken != null && rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
-        rawToken = rawToken.Substring(7);
-      }
-
-      string endpointName = calledContractMethod.DeclaringType.Name;
-      if (endpointName.StartsWith("I") && char.IsUpper(endpointName[1])) {
-        endpointName = endpointName.Substring(1);
-      }
-
-      ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(rawToken, calledContractMethod, callingMachine, _ApiPermissionPrefix + endpointName);
-      if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
-        return true;
+      else if (outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenRequired) {
+        httpReturnCode = 401;
       }
       else {
         httpReturnCode = 403;
-        failedReason = Enum.GetName(typeof(AccessTokenValidator.ValidationOutcome), outcome);
-        return false;
       }
+      failedReason = Enum.GetName(typeof(AccessTokenValidator.ValidationOutcome), outcome);
+      return false;
+
     }
+
+    #endregion 
 
     /// <summary>
     /// This method will:
@@ -127,6 +103,7 @@ namespace Security.AccessTokenHandling {
     /// The recived token (or null, if no token was provided).
     /// Make sure, that this method is called also if there was no Token, to support anonymous access (if configured)
     /// </param>
+    /// <param name="contractType"></param>
     /// <param name="callingMachine">the client machine (name or IP-address), which has initiated the service-request</param>
     /// <param name="targetContractMethod">the api method, which the client is trying to invoke</param>
     /// <param name="requiredApiPermissions">
@@ -140,6 +117,7 @@ namespace Security.AccessTokenHandling {
     /// <exception cref="Exception"></exception>
     public static ValidationOutcome TryValidateTokenAndEvaluateScopes(
       string rawToken,
+      Type contractType,
       MethodInfo targetContractMethod,
       string callingMachine,
       params string[] requiredApiPermissions
@@ -150,20 +128,25 @@ namespace Security.AccessTokenHandling {
           $"The {nameof(AccessTokenValidator)} can be used only when {nameof(AccessTokenValidator)}.{nameof(ConfigureTokenValidation)}(...) has been called before!"       
         );
       }
-
+    
       ValidationOutcome outcome;
+
+      bool tokenRequired = _RequirementsProvider.IsAuthtokenRequired(
+        contractType, targetContractMethod, 
+        out string authTokenSourceIdentifier, out string[] requiredApiPermissionsFromProvider
+      );
+
       string subject = null;
       bool fromCache = false;
       string[] permittedScopes = new string[] { };
-      string[] requiredScopes = requiredApiPermissions.Select(
-        (p) => (p.StartsWith(_ApiPermissionPrefix) ? p : _ApiPermissionPrefix + p)
-      ).ToArray();
 
       if (string.IsNullOrWhiteSpace(rawToken)) {
-        if (_AnonymousSubjectName != null) {
+
+        if (tokenRequired == false || _AnonymousSubjectName != null) {
 
           //anonymous support
           outcome = ValidationOutcome.AccessGranted;
+
           subject = _AnonymousSubjectName;
           if (_PermittedScopesVisitorMethod != null) {
             var scopes = new List<string>();
@@ -185,8 +168,10 @@ namespace Security.AccessTokenHandling {
         //analyze token
         GetCachedIntrospectionResult(
           rawToken,
+          contractType,
           targetContractMethod,
           callingMachine,
+          authTokenSourceIdentifier,
           out bool isActive,
           out permittedScopes,
           out subject,
@@ -206,14 +191,26 @@ namespace Security.AccessTokenHandling {
 
       }
 
+      var requiredScopes = new List<string>();
+      if (requiredApiPermissions != null) {
+        foreach (string p in requiredApiPermissions) {
+          requiredScopes.Add(p.StartsWith(_ApiPermissionPrefix) ? p : _ApiPermissionPrefix + p);
+        }
+      }
+      if (requiredApiPermissionsFromProvider != null) {
+        foreach (string p in requiredApiPermissionsFromProvider) {
+          requiredScopes.Add(p.StartsWith(_ApiPermissionPrefix) ? p : _ApiPermissionPrefix + p);
+        }
+      }
+
       //evaluate scope based api permissions
-      if (outcome == ValidationOutcome.AccessGranted) {
+      if (outcome == ValidationOutcome.AccessGranted) { 
         foreach (string requiredScope in requiredScopes) {
           if (!permittedScopes.Where((s) => s.Equals(requiredScope, StringComparison.CurrentCultureIgnoreCase)).Any()) {
             outcome = ValidationOutcome.AccessDeniedMissingPrivileges;
             break;
           }
-        }      
+        }    
       }
 
       if(_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
@@ -228,7 +225,7 @@ namespace Security.AccessTokenHandling {
           outcome,
           subject,
           permittedScopes,
-          requiredScopes,
+          requiredScopes.ToArray(),
           fromCache
         );
       }
@@ -238,8 +235,10 @@ namespace Security.AccessTokenHandling {
 
     private static void GetCachedIntrospectionResult(
       string rawToken,
+      Type targetContract,
       MethodInfo targetContractMethod,
       string callingMachine,
+      string authTokenSourceIdentifier, //can be NULL
       out bool isActive,
       out string[] permittedScopes,
       out string subject,
@@ -276,7 +275,7 @@ namespace Security.AccessTokenHandling {
         fromCache = false;
 
         IAccessTokenIntrospector introspector = _IntrospectorSelector.Invoke(
-          targetContractMethod, callingMachine,
+          authTokenSourceIdentifier, targetContract, targetContractMethod, callingMachine,
           () => {
             // an explicitely requested pre-visit of tokens, which are assumed to be a JWT...
             if (string.IsNullOrWhiteSpace(rawToken)) {

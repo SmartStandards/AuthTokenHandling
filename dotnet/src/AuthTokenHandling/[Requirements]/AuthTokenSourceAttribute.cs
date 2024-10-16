@@ -13,7 +13,7 @@ namespace Security.AccessTokenHandling {
     /// <summary>
     ///  Defines, which 'TokenSource' (some kind of profile) should be used to retrieve or validate the auth tokens
     /// </summary>
-    /// <param name="tokenSourceIdentifier"></param>
+    /// <param name="tokenSourceIdentifier">can be NULL to opt-out default authentication!</param>
     public AuthTokenSourceAttribute(string tokenSourceIdentifier) {
       _TokenSourceIdentifier = tokenSourceIdentifier;
     }

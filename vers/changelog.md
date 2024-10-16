@@ -6,7 +6,7 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-*(none)*
+(**breaking Change**): added IAuthRequirementsProvider to evaluate the necessity of tokens and/or explicit apipermissions per contract
 
 
 

@@ -13,6 +13,11 @@ namespace Security.AccessTokenHandling {
     /// so that you MUST NOT provide a NEW instance on each call (should be some kind of singleton)!
     /// The method can also return null, which represents the semantic, that the token issuer (=origin) is unknown/not trusted.
     /// </summary>
+    /// <param name="tokenSourceIdentifier">
+    /// the tokenSource which was detected by the IAuthRequirementsProvider
+    /// WARNING: can be NULL, if were receiving an token which is not requried!
+    /// </param>
+    /// <param name="contractType">The contract type</param>
     /// <param name="targetContractMethod">the api method, which the client is trying to invoke</param>
     /// <param name="callingMachine">the client machine (name or IP-address), which has initiated the service-request</param>
     /// <param name="tryReadJwtIssuerMethod">
@@ -22,8 +27,11 @@ namespace Security.AccessTokenHandling {
     /// If the token is not a JWT, null will be returned!
     /// </param>
     /// <returns>
-    /// null, if the token issuer (=origin) is unknown/not trusted</returns>
+    /// null, if the token issuer (=origin) is unknown/not trusted
+    /// </returns>
     public delegate IAccessTokenIntrospector IntrospectorLookupMethod(
+      string tokenSourceIdentifier,
+      Type contractType,
       MethodInfo targetContractMethod,
       string callingMachine,
       Func<string> tryReadJwtIssuerMethod
@@ -87,110 +95,10 @@ namespace Security.AccessTokenHandling {
     }
 
     /// <summary>
-    /// Configures the IAccessTokenIntrospector which is used when the EvaluateBearerTokenAttribute
-    /// is evaluated for a method. The returned "scope"-Claim needs to match with ALL of the
-    /// "requiredApiPermissions" (passed to the EvaluateBearerTokenAttribute-Constructor)
-    /// </summary>
-    /// <param name="introspector">
-    /// IAccessTokenIntrospector that should be used to validate the token.
-    /// </param>
-    /// <param name="scopeEnumerationHook">Can be used to:
-    /// extend/modify/clear the scopes returned by the introspector before evaluation AND/OR
-    /// validate against subject black-/white-lists AND/OR
-    /// to distribute them for example to a MAC context.
-    /// </param>
-    /// <param name="anonymousSubjectName">
-    /// if set, tokens will become optional and the provided scopeHook will be
-    /// called in this case passing the anonymousSubjectName to it. The hook can
-    /// provide default scopes to that should be permitted fot the caller. 
-    /// </param>
-    /// <param name="apiPermissionPrefix">
-    /// a prefix for the "requiredScopes", passed to the TryValidateTokenAndEvaluateScopes-Method.
-    /// Example: TryValidateTokenAndEvaluateScopes(,,,{"UserAdministration"}) in combination with the apiPermissionPrefix "API:"
-    /// will require that the "scope"-claim of the token needs to contain the expression "API:UserAdministration"
-    /// </param>
-    /// <param name="introspectionResultCachingMinutes">
-    /// sets, how many minutes the introspection outcome should be cached before it will be re-evaluated
-    /// </param>
-    /// <param name="auditingHook">
-    /// a hook for request-auditing...
-    /// </param>
-    [Obsolete("PLEASE USE 'ConfigureTokenValidation'")]
-    public static void ConfigureTokenIntrospection(
-      IAccessTokenIntrospector introspector,
-      PermittedScopesVisitorMethod scopeEnumerationHook = null,
-      string anonymousSubjectName = null,
-      string apiPermissionPrefix = "API:",
-      int introspectionResultCachingMinutes = 2,
-      AuditingHook auditingHook = null
-    ) {
-      if (introspector == null) {
-        throw new Exception($"{nameof(introspector)} must not be null!");
-      }
-      _IntrospectorSelector = (calledMethod, callingMachine, tryReadJwtIssuerMethod) => introspector;
-      _PermittedScopesVisitorMethod = scopeEnumerationHook;
-      _AnonymousSubjectName = anonymousSubjectName;
-      _ApiPermissionPrefix = apiPermissionPrefix;
-      _IntrospectionResultCachingMinutes = introspectionResultCachingMinutes;
-      _AuditingHook = auditingHook;
-    }
-
-    /// <summary>
-    /// Configures the IAccessTokenIntrospector which is used when the EvaluateBearerTokenAttribute
-    /// is evaluated for a method. The returned "scope"-Claim needs to match with ALL of the
-    /// "requiredApiPermissions" (passed to the EvaluateBearerTokenAttribute-Constructor)
-    /// </summary>
-    /// <param name="introspectorSelector">
-    /// method to retrieve the IAccessTokenIntrospector
-    /// that should be used to validate the token. NOTE: this method will be called for EACH request,
-    /// so that you MUST NOT provide a NEW instance on each call (should be some kind of singleton)!
-    /// The method can also return null, which represents the semantic, that the token issuer (=origin) is unknown/not trusted.
-    /// </param>
-    /// <param name="scopeEnumerationHook">Can be used to:
-    /// extend/modify/clear the scopes returned by the introspector before evaluation AND/OR
-    /// validate against subject black-/white-lists AND/OR
-    /// to distribute them for example to a MAC context.
-    /// </param>
-    /// <param name="anonymousSubjectName">
-    /// if set, tokens will become optional and the provided scopeHook will be
-    /// called in this case passing the anonymousSubjectName to it. The hook can
-    /// provide default scopes to that should be permitted fot the caller. 
-    /// </param>
-    /// <param name="apiPermissionPrefix">
-    /// a prefix for the "requiredScopes", passed to the TryValidateTokenAndEvaluateScopes-Method.
-    /// Example: TryValidateTokenAndEvaluateScopes(,,,{"UserAdministration"}) in combination with the apiPermissionPrefix "API:"
-    /// will require that the "scope"-claim of the token needs to contain the expression "API:UserAdministration"
-    /// </param>
-    /// <param name="introspectionResultCachingMinutes">
-    /// sets, how many minutes the introspection outcome should be cached before it will be re-evaluated
-    /// </param>
-    /// <param name="auditingHook">
-    /// a hook for request-auditing...
-    /// </param>
-    [Obsolete("PLEASE USE 'ConfigureTokenValidation'")]
-    public static void ConfigureTokenIntrospection(
-      IntrospectorLookupMethod introspectorSelector,
-      PermittedScopesVisitorMethod scopeEnumerationHook = null,
-      string anonymousSubjectName = null,
-      string apiPermissionPrefix = "API:",
-      int introspectionResultCachingMinutes = 2,
-      AuditingHook auditingHook = null
-    ) {
-      if (introspectorSelector == null) {
-        throw new Exception($"{nameof(introspectorSelector)} must not be null!");
-      }
-      _IntrospectorSelector = introspectorSelector;
-      _PermittedScopesVisitorMethod = scopeEnumerationHook;
-      _AnonymousSubjectName = anonymousSubjectName;
-      _ApiPermissionPrefix = apiPermissionPrefix;
-      _IntrospectionResultCachingMinutes = introspectionResultCachingMinutes;
-      _AuditingHook = auditingHook;
-    }
-
-    /// <summary>
-    /// Configures the IAccessTokenIntrospector which is used when the EvaluateBearerTokenAttribute
-    /// is evaluated for a method. The returned "scope"-Claim needs to match with ALL of the
-    /// "requiredApiPermissions" (passed to the EvaluateBearerTokenAttribute-Constructor)
+    /// Configures the IAccessTokenIntrospector which is used when the AuthTokenSourceAttribute and 
+    /// optionally the RequiredApiPermissionAttribute is evaluated for a contract.
+    /// The returned "scope"-Claim needs to match with ALL of the
+    /// "requiredApiPermissions" (passed to the RequiredApiPermissionAttribute-Constructor)
     /// </summary>
     /// <param name="introspector">
     /// IAccessTokenIntrospector that should be used to validate the token.
@@ -203,17 +111,24 @@ namespace Security.AccessTokenHandling {
       if (introspector == null) {
         throw new Exception($"{nameof(introspector)} must not be null!");
       }
-      _IntrospectorSelector = (calledMethod, callingMachine, tryReadJwtIssuerMethod) => introspector;
-      if(configurationMethod != null) {
+      _RequirementsProvider = new AttributeBasedAuthRequirementsProvider("default");
+      _IntrospectorSelector = (tokenSource, contractType, calledMethod, callingMachine, tryReadJwtIssuerMethod) => introspector;
+      if (configurationMethod != null) {
         configurationMethod.Invoke(new TokenIntrospectionConfigurator());
       }
     }
 
     /// <summary>
-    /// Configures the IAccessTokenIntrospector which is used when the EvaluateBearerTokenAttribute
-    /// is evaluated for a method. The returned "scope"-Claim needs to match with ALL of the
-    /// "requiredApiPermissions" (passed to the EvaluateBearerTokenAttribute-Constructor)
+    /// Configures the IAccessTokenIntrospector to use an 'IAuthRequirementsProvider' to
+    /// evaluate the necessity of any token validation and/ore additional requirements like
+    /// "requiredApiPermissions".
     /// </summary>
+    /// <param name="requirementsProvider">
+    /// Specifies 'IAuthRequirementsProvider' to
+    /// evaluate the necessity of any token validation and/ore additional requirements like
+    /// "requiredApiPermissions". The "scope"-Claim, returned by the corresponding introspector
+    /// needs to match with ALL of these "requiredApiPermissions" 
+    /// </param>
     /// <param name="introspectorLookupMethod">
     /// method to retrieve the IAccessTokenIntrospector
     /// that should be used to validate the token. NOTE: this method will be called for EACH request,
@@ -222,12 +137,17 @@ namespace Security.AccessTokenHandling {
     /// </param>
     /// <param name="configurationMethod"> several options for customizing the behaviour </param>
     public static void ConfigureTokenValidation(
+      IAuthRequirementsProvider requirementsProvider,
       IntrospectorLookupMethod introspectorLookupMethod, 
       Action<TokenIntrospectionConfigurator> configurationMethod = null
     ) {
+      if (requirementsProvider == null) {
+        throw new Exception($"{nameof(requirementsProvider)} must not be null!");
+      }
       if (introspectorLookupMethod == null) {
         throw new Exception($"{nameof(introspectorLookupMethod)} must not be null!");
       }
+      _RequirementsProvider = requirementsProvider;
       _IntrospectorSelector = introspectorLookupMethod;
       if (configurationMethod != null) {
         configurationMethod.Invoke(new TokenIntrospectionConfigurator());
@@ -289,6 +209,7 @@ namespace Security.AccessTokenHandling {
 
     }
 
+    private static IAuthRequirementsProvider _RequirementsProvider;
     private static IntrospectorLookupMethod _IntrospectorSelector;
     private static PermittedScopesVisitorMethod _PermittedScopesVisitorMethod = null;
     private static AuditingHook _AuditingHook = null;
@@ -297,6 +218,16 @@ namespace Security.AccessTokenHandling {
     private static string _AnonymousSubjectName = null;
     private static string _ApiPermissionPrefix = "API:";
     private static int _IntrospectionResultCachingMinutes = 2;
+
+    [Obsolete("PLEASE USE 'ConfigureTokenValidation'")]
+    public static void ConfigureTokenIntrospection(IAccessTokenIntrospector introspector, PermittedScopesVisitorMethod scopeEnumerationHook = null, string anonymousSubjectName = null, string apiPermissionPrefix = "API:", int introspectionResultCachingMinutes = 2, AuditingHook auditingHook = null) {
+      throw new NotImplementedException("This method was removed, because it was obsolete! PLEASE USE 'ConfigureTokenValidation'.");
+    }
+
+    [Obsolete("PLEASE USE 'ConfigureTokenValidation'", true)]
+    public static void ConfigureTokenIntrospection(IntrospectorLookupMethod introspectorSelector, PermittedScopesVisitorMethod scopeEnumerationHook = null, string anonymousSubjectName = null, string apiPermissionPrefix = "API:", int introspectionResultCachingMinutes = 2, AuditingHook auditingHook = null) {
+      throw new NotImplementedException("This method was removed, because it was obsolete! PLEASE USE 'ConfigureTokenValidation'.");
+    }
 
   }
 

@@ -48,7 +48,7 @@ namespace Security.AccessTokenHandling {
       Dictionary<string, string> customQueryParameters = null
     ) { 
       try {
-        var additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
+        var additionalQueryParameters = SerializeCustomQueryParameters(customQueryParameters);
 
         string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
         string result = this.GetFinalRedirect(url, returnUrl);
@@ -124,11 +124,12 @@ namespace Security.AccessTokenHandling {
 
   //https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type
   public bool TryBrowserAuthViaCodeGrand(IWin32Window windowOwner,
-      string returnUrl, string state, string scopeToRequest, string loginHint, out string retrievedCode, 
+      string returnUrl, string state, string scopeToRequest, string loginHint,
+      out string retrievedCode,
       int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login",
       Dictionary<string, string> customQueryParameters = null
       ) {
-      var additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
+      var additionalQueryParameters = SerializeCustomQueryParameters(customQueryParameters);
 
       using (var dlg = new AuthForm()) {
         dlg.Url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
@@ -171,12 +172,31 @@ namespace Security.AccessTokenHandling {
     }
 
     //https://developer.okta.com/blog/2019/05/01/is-the-oauth-implicit-flow-dead
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="windowOwner"></param>
+    /// <param name="returnUrl"></param>
+    /// <param name="state"></param>
+    /// <param name="scopeToRequest"></param>
+    /// <param name="loginHint"></param>
+    /// <param name="accessToken"></param>
+    /// <param name="refreshToken">OPTIONAL (can be null, if non was received)</param>
+    /// <param name="idToken">OPTIONAL (can be null, if non was received)</param>
+    /// <param name="windowWidth"></param>
+    /// <param name="windowHeight"></param>
+    /// <param name="windowTitle"></param>
+    /// <param name="customQueryParameters"></param>
+    /// <returns></returns>
     public bool TryBrowserAuthViaImplicitGrand(IWin32Window windowOwner,
-      string returnUrl, string state, string scopeToRequest, string loginHint, out string retrievedToken,
+      string returnUrl, string state, string scopeToRequest, string loginHint, 
+      out string accessToken, out string refreshToken, out string idToken,
       int windowWidth = 0, int windowHeight = 0, string windowTitle = "Login",
       Dictionary<string, string> customQueryParameters = null
       ) {
-      var additionalQueryParameters = ParseCustomQueryParameters(customQueryParameters);
+
+      var additionalQueryParameters = SerializeCustomQueryParameters(customQueryParameters);
 
       using (var dlg = new AuthForm()) {
         dlg.Url = $"{_AuthorizeUrl}response_type=token&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
@@ -184,48 +204,53 @@ namespace Security.AccessTokenHandling {
 
         dlg.Text = windowTitle;
         var wa = Screen.PrimaryScreen.WorkingArea;
-          if (windowWidth < 50) {
-            dlg.Left = wa.Left + 100;
-            dlg.Width = wa.Width - 200;
-          }
-          else {
-            dlg.Left = (wa.Width - windowWidth) / 2;
-            dlg.Width = windowWidth;
-          }
-          if (windowHeight < 50) {
-            dlg.Top = wa.Top + 100;
-            dlg.Height = wa.Height - 200;
-          }
-          else {
-            dlg.Top = (wa.Height - windowHeight) / 2;
-            dlg.Height = windowHeight;
-          }
-          dlg.StartPosition= FormStartPosition.CenterScreen;
+        if (windowWidth < 50) {
+          dlg.Left = wa.Left + 100;
+          dlg.Width = wa.Width - 200;
+        }
+        else {
+          dlg.Left = (wa.Width - windowWidth) / 2;
+          dlg.Width = windowWidth;
+        }
+        if (windowHeight < 50) {
+          dlg.Top = wa.Top + 100;
+          dlg.Height = wa.Height - 200;
+        }
+        else {
+          dlg.Top = (wa.Height - windowHeight) / 2;
+          dlg.Height = windowHeight;
+        }
+        dlg.StartPosition= FormStartPosition.CenterScreen;
 
-          dlg.ShowDialog(windowOwner);
+        dlg.ShowDialog(windowOwner);
 
-          string token = null;
-          if (dlg.Url.StartsWith(returnUrl, StringComparison.InvariantCultureIgnoreCase)) {
-            token = this.PickFromUrl(dlg.Url, "access_token");
-            //? = this.PickFromUrl(dlg.Url, "token_type");
-            //? = this.PickFromUrl(dlg.Url, "expires_in");
-            //? = this.PickFromUrl(dlg.Url, "id_token");
-            //? = this.PickFromUrl(dlg.Url, "refresh_token");
-          }
-          if (string.IsNullOrWhiteSpace(token)) {
-            retrievedToken = string.Empty;
-            return false;
-          }
-          else {
-            retrievedToken = token;
-            return true;
-          }
+        string token = null;
+        if (dlg.Url.StartsWith(returnUrl, StringComparison.InvariantCultureIgnoreCase)) {
+          token = this.PickFromUrl(dlg.Url, "access_token");
+          refreshToken = this.PickFromUrl(dlg.Url, "refresh_token");
+          idToken = this.PickFromUrl(dlg.Url, "id_token");
+          //? = this.PickFromUrl(dlg.Url, "token_type");
+          //? = this.PickFromUrl(dlg.Url, "expires_in");
+          string error = this.PickFromUrl(dlg.Url, "error");
+        }
+        if (string.IsNullOrWhiteSpace(token)) {
+          accessToken = string.Empty;
+          idToken = null;
+          refreshToken = null;
+          return false;
+        }
+        else {
+          accessToken = token;
+          idToken = null;
+          refreshToken = null;
+          return true;
         }
       }
+    }
 
     // Returns custom query parameters as string of param name - value pairs WITH & IN FRONT!!!
     // Example: &view_mode=3&login_hith=WINAUTH
-    private static string ParseCustomQueryParameters(Dictionary<string, string> customQueryParameters)
+    private static string SerializeCustomQueryParameters(Dictionary<string, string> customQueryParameters)
     {
       var parsedCustomQueryParameters = string.Empty;
 
@@ -260,6 +285,28 @@ namespace Security.AccessTokenHandling {
     }
 
     public bool TryRetrieveTokenViaCode(string authorizationCode, bool useHttpGet, out string retrievedToken, out string error) {
+      return this.TryRetrieveTokenViaCode(
+        authorizationCode, useHttpGet,
+        out retrievedToken, out string refreshTokenDummy, out string idTokenDummy,
+        out error
+      );
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="authorizationCode"></param>
+    /// <param name="useHttpGet"></param>
+    /// <param name="accessToken"></param>
+    /// <param name="refreshToken">OPTIONAL (can be null, if non was received)</param>
+    /// <param name="idToken">OPTIONAL (can be null, if non was received)</param>
+    /// <param name="error"></param>
+    /// <returns></returns>
+    public bool TryRetrieveTokenViaCode(
+      string authorizationCode, bool useHttpGet,
+      out string accessToken, out string refreshToken, out string idToken,
+      out string error
+    ) {
       try {
         using (WebClient wc = new WebClient()) {
           //HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -281,11 +328,26 @@ namespace Security.AccessTokenHandling {
             rawJsonResponse = wc.DownloadString(_RetrievalUrl + "?" + formEncodedData);
           }
 
-          retrievedToken = this.PickJsonValue("access_token", rawJsonResponse);
-          if (string.IsNullOrWhiteSpace(retrievedToken)) {
-            retrievedToken = null;
-            error = this.PickJsonValue("error", rawJsonResponse);
+          refreshToken = null;
+          idToken = null;
+          accessToken = this.PickJsonValue("access_token", rawJsonResponse);
+          if (string.IsNullOrWhiteSpace(accessToken)) {
+            accessToken = null;
+            error = this.PickJsonValue("error_description", rawJsonResponse);
+            if (string.IsNullOrWhiteSpace(error)) {
+              error = this.PickJsonValue("error", rawJsonResponse);
+            }
+            if (!string.IsNullOrWhiteSpace(error)) {
+              error = "No token received! Server says: " + error;
+            }
+            else {
+              error = "No token received!";
+            }
             return false;
+          }
+          else {
+            idToken = this.PickJsonValue("id_token", rawJsonResponse);
+            refreshToken = this.PickJsonValue("refresh_token", rawJsonResponse);
           }
           error = null;
           return true;
@@ -293,7 +355,9 @@ namespace Security.AccessTokenHandling {
         }
       }
       catch (Exception ex) {
-        retrievedToken = null;
+        accessToken = null;
+        refreshToken = null;
+        idToken = null;
         error = "Exception on client side: " + ex.Message;
         return false;
       }
