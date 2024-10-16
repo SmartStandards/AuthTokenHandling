@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-(**breaking Change**): added IAuthRequirementsProvider to evaluate the necessity of tokens and/or explicit apipermissions per contract
+*(none)*
+
+
+
+## v 3.0.0
+released **2024-10-16**, including:
+ - (**breaking Change**): added IAuthRequirementsProvider to evaluate the necessity of tokens and/or explicit apipermissions per contract
 
 
 
