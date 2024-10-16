@@ -23,8 +23,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)JwtContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\IAccessTokenIntrospector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\AuthTokenConfig (from UShell).cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\..\..\..\%28git%29\SmartStandards\%28SmartStandards%29 AuthTokenHandling\dotnet\src\AuthTokenHandling\[Requirements]\RequiredApiPermissionAttribute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\..\..\..\%28git%29\SmartStandards\%28SmartStandards%29 AuthTokenHandling\dotnet\src\AuthTokenHandling\[Requirements]\IAuthRequirementsProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\RequiredApiPermissionAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\IAuthRequirementsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\CompositeAuthRequirementsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\AuthTokenSourceAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\AttributeBasedAuthRequirementsProvider.cs" />
