@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Fix: malformed token redirect-url
+*(none)*
+
+
+
+## v 3.0.1
+released **2025-02-07**, including:
+ - Fix: malformed token redirect-url
 
 
 
