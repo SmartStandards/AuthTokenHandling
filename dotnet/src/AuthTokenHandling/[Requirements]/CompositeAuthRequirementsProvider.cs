@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -36,16 +38,30 @@ namespace Security.AccessTokenHandling {
         out string tokenSourceIdentifier,
         out string[] explicitelyRequiredApiPermissions
      ) {
+      List<string> req = null;
+      tokenSourceIdentifier = null;
+      explicitelyRequiredApiPermissions = null;
 
       foreach ( IAuthRequirementsProvider provider in _Providers ) {
-        if (provider.IsAuthtokenRequired(contractType, method, out tokenSourceIdentifier, out explicitelyRequiredApiPermissions)) {
-          return true;
+        if (provider.IsAuthtokenRequired(contractType, method, out tokenSourceIdentifier, out var apiPermissions)) {
+          if(req == null) {
+            req = new List<string>();
+          }
+          if(apiPermissions != null) {
+            foreach (string apiPermission in apiPermissions) {
+              req.Add(apiPermission);
+            } 
+          }
         }
       }
 
-      tokenSourceIdentifier = null;
-      explicitelyRequiredApiPermissions = null;
-      return false;
+      if(req != null) {
+        explicitelyRequiredApiPermissions = req.ToArray();
+        return true;
+      }
+      else{
+        return false;
+      }
 
     }
 
