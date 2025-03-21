@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using System.ComponentModel.DataAnnotations;
+#endif
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -120,6 +122,11 @@ namespace Security {
     }
 
 #endif
+
+    [TestMethod]
+    public void TestIssuing() {
+
+    }
 
     //[TestMethod]
     public void TestTokenIntrospection() {

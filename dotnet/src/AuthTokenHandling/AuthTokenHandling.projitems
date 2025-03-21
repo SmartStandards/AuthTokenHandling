@@ -29,4 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\AuthTokenSourceAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\AttributeBasedAuthRequirementsProvider.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Issuing\" />
+  </ItemGroup>
 </Project>
