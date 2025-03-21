@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>SmartStandards.AuthTokenHandling.WinFormsClient</AssemblyName>
     <RootNamespace>System</RootNamespace>
@@ -23,48 +23,48 @@
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
-    <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
+    <DocumentationFile>..\..\dist\bin-net8.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
+    <OutputPath>..\..\dist\bin-net8.0\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
     <DefineConstants>TRACE;DEBUG;NET5</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
-    <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
+    <DocumentationFile>..\..\dist\bin-net8.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
+    <OutputPath>..\..\dist\bin-net8.0\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
     <DefineConstants>TRACE;DEBUG;NET5</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
-    <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
+    <DocumentationFile>..\..\dist\bin-net8.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
+    <OutputPath>..\..\dist\bin-net8.0\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
     <DefineConstants>TRACE;DEBUG;NET5</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
+    <OutputPath>..\..\dist\bin-net8.0\</OutputPath>
+    <DocumentationFile>..\..\dist\bin-net8.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
     <DefineConstants>TRACE;NET5</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
+    <OutputPath>..\..\dist\bin-net8.0\</OutputPath>
+    <DocumentationFile>..\..\dist\bin-net8.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
     <DefineConstants>TRACE;NET5</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <OutputPath>..\..\dist\bin-net5.0\</OutputPath>
-    <DocumentationFile>..\..\dist\bin-net5.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
+    <OutputPath>..\..\dist\bin-net8.0\</OutputPath>
+    <DocumentationFile>..\..\dist\bin-net8.0\SmartStandards.AuthTokenHandling.WinFormsClient.xml</DocumentationFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
     <DefineConstants>TRACE;NET5</DefineConstants>

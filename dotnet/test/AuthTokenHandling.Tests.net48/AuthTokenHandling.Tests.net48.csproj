@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Security</RootNamespace>
     <AssemblyName>AuthTokenHandling.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
@@ -86,7 +86,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\AuthTokenHandling.net461\AuthTokenHandling.net461.csproj">
+    <ProjectReference Include="..\..\src\AuthTokenHandling.net48\AuthTokenHandling.net48.csproj">
       <Project>{b0ba06fe-6437-4b9e-8c76-3adfc8d191d2}</Project>
       <Name>AuthTokenHandling.net461</Name>
     </ProjectReference>

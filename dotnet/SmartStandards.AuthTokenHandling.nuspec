@@ -19,7 +19,7 @@
         <dependency id="jose-jwt" version="4.0.1" />
         <dependency id="System.Text.Encodings.Web" version="6.0.0" />
       </group>
-      <group targetFramework="net5.0">
+      <group targetFramework=".NETFramework4.8">
         <dependency id="jose-jwt" version="4.0.1" />
         <dependency id="System.Text.Encodings.Web" version="6.0.0" />
       </group>
@@ -27,6 +27,10 @@
         <dependency id="jose-jwt" version="4.0.1" />
         <dependency id="System.Text.Encodings.Web" version="6.0.0" />
       </group>
+      <!--<group targetFramework="net8.0">
+        <dependency id="jose-jwt" version="4.0.1" />
+        <dependency id="System.Text.Encodings.Web" version="6.0.0" />
+      </group>-->
     </dependencies>
   </metadata>
   <files>
@@ -36,13 +40,17 @@
     <file src="dist\bin-net46\SmartStandards.AuthTokenHandling.dll" target="lib/net46" />
     <file src="dist\bin-net46\SmartStandards.AuthTokenHandling.xml" target="lib/net46" />
     <file src="dist\bin-net46\SmartStandards.AuthTokenHandling.pdb" target="lib/net46" />
-    <!-- .NET 5.0 -->
-    <file src="dist\bin-net5.0\SmartStandards.AuthTokenHandling.dll" target="lib/net5.0" />
-    <file src="dist\bin-net5.0\SmartStandards.AuthTokenHandling.xml" target="lib/net5.0" />
-    <file src="dist\bin-net5.0\SmartStandards.AuthTokenHandling.pdb" target="lib/net5.0" />
+    <!-- .NET 4.8 -->
+    <file src="dist\bin-net48\SmartStandards.AuthTokenHandling.dll" target="lib/net48" />
+    <file src="dist\bin-net48\SmartStandards.AuthTokenHandling.xml" target="lib/net48" />
+    <file src="dist\bin-net48\SmartStandards.AuthTokenHandling.pdb" target="lib/net48" />
     <!-- .NET 6.0 -->
     <file src="dist\bin-net6.0\SmartStandards.AuthTokenHandling.dll" target="lib/net6.0" />
     <file src="dist\bin-net6.0\SmartStandards.AuthTokenHandling.xml" target="lib/net6.0" />
     <file src="dist\bin-net6.0\SmartStandards.AuthTokenHandling.pdb" target="lib/net6.0" />
+    <!-- .NET 8.0 -->
+    <!--<file src="dist\bin-net8.0\SmartStandards.AuthTokenHandling.dll" target="lib/net8.0" />
+    <file src="dist\bin-net8.0\SmartStandards.AuthTokenHandling.xml" target="lib/net8.0" />
+    <file src="dist\bin-net8.0\SmartStandards.AuthTokenHandling.pdb" target="lib/net8.0" />-->
   </files>
 </package>

@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "js", "js", "{431B90E9-4591-
 		..\js\package.json = ..\js\package.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.net5.0", "src\AuthTokenHandling.net5.0\AuthTokenHandling.net5.0.csproj", "{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.net8.0", "src\AuthTokenHandling.net8.0\AuthTokenHandling.net8.0.csproj", "{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.net6.0", "src\AuthTokenHandling.net6.0\AuthTokenHandling.net6.0.csproj", "{7B5BAEA8-7E79-4A30-B6C1-4DA4831AF970}"
 EndProject
@@ -34,29 +34,31 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AuthTokenHandling.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.Tests.net6.0", "test\AuthTokenHandling.Tests.net6.0\AuthTokenHandling.Tests.net6.0.csproj", "{A6925214-F00D-4F5B-8C3A-60343769A83E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.Tests.net461", "test\AuthTokenHandling.Tests.net461\AuthTokenHandling.Tests.net461.csproj", "{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.Tests.net48", "test\AuthTokenHandling.Tests.net48\AuthTokenHandling.Tests.net48.csproj", "{D0B8734C-340F-4B2A-80EE-C00AFDD59E13}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AuthTokenHandling.MvcSupport", "src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.shproj", "{CF0A161A-99BA-4F01-AF5E-16C6FCBC95AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{ADA576B9-92C4-4C75-9605-06023D1026B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.MvcSupport.net5.0", "src\AuthTokenHandling.MvcSupport.net5.0\AuthTokenHandling.MvcSupport.net5.0.csproj", "{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.MvcSupport.net8.0", "src\AuthTokenHandling.MvcSupport.net8.0\AuthTokenHandling.MvcSupport.net8.0.csproj", "{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.MvcSupport.net6.0", "src\AuthTokenHandling.MvcSupport.net6.0\AuthTokenHandling.MvcSupport.net6.0.csproj", "{4AF041BF-8D36-46D6-9E83-737231CFCB26}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.MvcSupport.net461", "src\AuthTokenHandling.MvcSupport.net461\AuthTokenHandling.MvcSupport.net461.csproj", "{7D9056D5-590B-4A73-A001-597E4269FF78}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.TestApp", "src\AuthTokenHandling.TestApp\AuthTokenHandling.TestApp.csproj", "{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AuthTokenHandling.WinFormsClient", "src\AuthTokenHandling.WinFormsClient\AuthTokenHandling.WinFormsClient.shproj", "{25035403-D38A-4DA2-92FA-845EA4F799A1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.WinFormsClient.net5.0", "src\AuthTokenHandling.WinFormsClient.net5.0\AuthTokenHandling.WinFormsClient.net5.0.csproj", "{A2F84238-F408-4E2C-9FED-698C96AC8268}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthTokenHandling.WinFormsClient.net6.0", "src\AuthTokenHandling.WinFormsClient.net6.0\AuthTokenHandling.WinFormsClient.net6.0.csproj", "{2D7DE462-5FEA-4E11-8DE1-6A4AA996D245}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.WinFormsClient.net461", "src\AuthTokenHandling.WinFormsClient.net461\AuthTokenHandling.WinFormsClient.net461.csproj", "{DCDC3890-1E78-43E6-8ECD-EA77458BDDCE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{93A0C46C-4DAE-4298-B8F5-8DC9B9A49861}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.WinFormsClient.net48", "src\AuthTokenHandling.WinFormsClient.net48\AuthTokenHandling.WinFormsClient.net48.csproj", "{6D4B784F-2226-4331-BE17-9CD522BD09DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.WinFormsClient.net8.0", "src\AuthTokenHandling.WinFormsClient.net8.0\AuthTokenHandling.WinFormsClient.net8.0.csproj", "{95D98328-86D2-4286-A306-77FACE39383F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.net48", "src\AuthTokenHandling.net48\AuthTokenHandling.net48.csproj", "{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,7 +77,6 @@ Global
 		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Debug|x86.Build.0 = Debug|Any CPU
 		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Release|x64.ActiveCfg = Release|Any CPU
 		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Release|x64.Build.0 = Release|Any CPU
 		{88F15535-FAD8-4372-80DC-FD0D8C81AB4C}.Release|x86.ActiveCfg = Release|Any CPU
@@ -135,7 +136,6 @@ Global
 		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Debug|x86.Build.0 = Debug|Any CPU
 		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Release|x64.ActiveCfg = Release|Any CPU
 		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Release|x64.Build.0 = Release|Any CPU
 		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9}.Release|x86.ActiveCfg = Release|Any CPU
@@ -152,18 +152,6 @@ Global
 		{4AF041BF-8D36-46D6-9E83-737231CFCB26}.Release|x64.Build.0 = Release|Any CPU
 		{4AF041BF-8D36-46D6-9E83-737231CFCB26}.Release|x86.ActiveCfg = Release|Any CPU
 		{4AF041BF-8D36-46D6-9E83-737231CFCB26}.Release|x86.Build.0 = Release|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|x64.Build.0 = Debug|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Debug|x86.Build.0 = Debug|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|x64.ActiveCfg = Release|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|x64.Build.0 = Release|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|x86.ActiveCfg = Release|Any CPU
-		{7D9056D5-590B-4A73-A001-597E4269FF78}.Release|x86.Build.0 = Release|Any CPU
 		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Debug|Any CPU.Build.0 = Debug|x86
 		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Debug|x64.ActiveCfg = Debug|x64
@@ -175,18 +163,6 @@ Global
 		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Release|x64.Build.0 = Release|x64
 		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Release|x86.ActiveCfg = Release|x86
 		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F}.Release|x86.Build.0 = Release|x86
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Debug|x64.ActiveCfg = Debug|x64
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Debug|x64.Build.0 = Debug|x64
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Debug|x86.ActiveCfg = Debug|x86
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Debug|x86.Build.0 = Debug|x86
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Release|x64.ActiveCfg = Release|Any CPU
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Release|x64.Build.0 = Release|Any CPU
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Release|x86.ActiveCfg = Release|Any CPU
-		{A2F84238-F408-4E2C-9FED-698C96AC8268}.Release|x86.Build.0 = Release|Any CPU
 		{2D7DE462-5FEA-4E11-8DE1-6A4AA996D245}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2D7DE462-5FEA-4E11-8DE1-6A4AA996D245}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D7DE462-5FEA-4E11-8DE1-6A4AA996D245}.Debug|x64.ActiveCfg = Debug|x64
@@ -211,6 +187,41 @@ Global
 		{DCDC3890-1E78-43E6-8ECD-EA77458BDDCE}.Release|x64.Build.0 = Release|Any CPU
 		{DCDC3890-1E78-43E6-8ECD-EA77458BDDCE}.Release|x86.ActiveCfg = Release|Any CPU
 		{DCDC3890-1E78-43E6-8ECD-EA77458BDDCE}.Release|x86.Build.0 = Release|Any CPU
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Debug|x64.ActiveCfg = Debug|x64
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Debug|x64.Build.0 = Debug|x64
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Debug|x86.ActiveCfg = Debug|x86
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Debug|x86.Build.0 = Debug|x86
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Release|x64.ActiveCfg = Release|x64
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Release|x64.Build.0 = Release|x64
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Release|x86.ActiveCfg = Release|x86
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA}.Release|x86.Build.0 = Release|x86
+		{95D98328-86D2-4286-A306-77FACE39383F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95D98328-86D2-4286-A306-77FACE39383F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95D98328-86D2-4286-A306-77FACE39383F}.Debug|x64.ActiveCfg = Debug|x64
+		{95D98328-86D2-4286-A306-77FACE39383F}.Debug|x64.Build.0 = Debug|x64
+		{95D98328-86D2-4286-A306-77FACE39383F}.Debug|x86.ActiveCfg = Debug|x86
+		{95D98328-86D2-4286-A306-77FACE39383F}.Debug|x86.Build.0 = Debug|x86
+		{95D98328-86D2-4286-A306-77FACE39383F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95D98328-86D2-4286-A306-77FACE39383F}.Release|x64.ActiveCfg = Release|x64
+		{95D98328-86D2-4286-A306-77FACE39383F}.Release|x64.Build.0 = Release|x64
+		{95D98328-86D2-4286-A306-77FACE39383F}.Release|x86.ActiveCfg = Release|x86
+		{95D98328-86D2-4286-A306-77FACE39383F}.Release|x86.Build.0 = Release|x86
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Debug|x64.Build.0 = Debug|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Debug|x86.Build.0 = Debug|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|x64.ActiveCfg = Release|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|x64.Build.0 = Release|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|x86.ActiveCfg = Release|Any CPU
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -228,13 +239,14 @@ Global
 		{ADA576B9-92C4-4C75-9605-06023D1026B2} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
 		{B5FE086A-D548-447B-93CD-3D4B3F37C3C9} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{4AF041BF-8D36-46D6-9E83-737231CFCB26} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
-		{7D9056D5-590B-4A73-A001-597E4269FF78} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{3E8C91F2-37BE-409C-89A7-02DA48C0BE5F} = {C5272353-539E-4138-93FD-9DF437F6DA47}
 		{25035403-D38A-4DA2-92FA-845EA4F799A1} = {EFB5135D-039A-4D92-8FDD-9EA5D070F991}
-		{A2F84238-F408-4E2C-9FED-698C96AC8268} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{2D7DE462-5FEA-4E11-8DE1-6A4AA996D245} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{DCDC3890-1E78-43E6-8ECD-EA77458BDDCE} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{93A0C46C-4DAE-4298-B8F5-8DC9B9A49861} = {C5272353-539E-4138-93FD-9DF437F6DA47}
+		{6D4B784F-2226-4331-BE17-9CD522BD09DA} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{95D98328-86D2-4286-A306-77FACE39383F} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D2F37C1D-32F0-4BF2-AAEB-46B9D8C07D23}
@@ -245,9 +257,9 @@ Global
 		src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems*{4af041bf-8d36-46d6-9e83-737231cfcb26}*SharedItemsImports = 5
 		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{5e17c8e8-0bc8-4f7c-a022-c8104a415628}*SharedItemsImports = 13
 		src\AuthTokenHandling\AuthTokenHandling.projitems*{7b5baea8-7e79-4a30-b6c1-4da4831af970}*SharedItemsImports = 5
-		src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems*{7d9056d5-590b-4a73-a001-597e4269ff78}*SharedItemsImports = 4
+		src\AuthTokenHandling\AuthTokenHandling.projitems*{882aa78a-5d13-4ef6-b1d9-fe4fcfa8415e}*SharedItemsImports = 4
 		src\AuthTokenHandling\AuthTokenHandling.projitems*{88f15535-fad8-4372-80dc-fd0d8c81ab4c}*SharedItemsImports = 5
-		src\AuthTokenHandling.WinFormsClient\AuthTokenHandling.WinFormsClient.projitems*{a2f84238-f408-4e2c-9fed-698c96ac8268}*SharedItemsImports = 5
+		src\AuthTokenHandling.WinFormsClient\AuthTokenHandling.WinFormsClient.projitems*{95d98328-86d2-4286-a306-77face39383f}*SharedItemsImports = 5
 		test\AuthTokenHandling.Tests\AuthTokenHandling.Tests.projitems*{a6925214-f00d-4f5b-8c3a-60343769a83e}*SharedItemsImports = 5
 		src\AuthTokenHandling\AuthTokenHandling.projitems*{b0ba06fe-6437-4b9e-8c76-3adfc8d191d2}*SharedItemsImports = 4
 		src\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems*{b5fe086a-d548-447b-93cd-3d4b3f37c3c9}*SharedItemsImports = 5
