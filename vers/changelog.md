@@ -10,6 +10,12 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 3.0.1
+released **2025-02-07**, including:
+ - Fix: malformed token redirect-url
+
+
+
 ## v 3.0.0
 released **2024-10-16**, including:
  - (**breaking Change**): added IAuthRequirementsProvider to evaluate the necessity of tokens and/or explicit apipermissions per contract

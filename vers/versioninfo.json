@@ -1,13 +1,13 @@
 {
-  "currentVersion": "3.0.0",
-  "currentVersionWithSuffix": "3.0.0",
+  "currentVersion": "3.0.1",
+  "currentVersionWithSuffix": "3.0.1",
   "releaseType": "official",
-  "previousVersion": "2.8.7",
-  "changeGrade": "major",
+  "previousVersion": "3.0.0",
+  "changeGrade": "patch",
   "currentMajor": 3,
   "currentMinor": 0,
-  "currentPatch": 0,
-  "versionDateInfo": "2024-10-16",
-  "versionTimeInfo": "12:03:05",
-  "versionNotes": "- (breaking Change): added IAuthRequirementsProvider to evaluate the necessity of tokens and/or explicit apipermissions per contract\n"
+  "currentPatch": 1,
+  "versionDateInfo": "2025-02-07",
+  "versionTimeInfo": "15:04:53",
+  "versionNotes": "- Fix: malformed token redirect-url\n"
 }

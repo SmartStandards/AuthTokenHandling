@@ -295,7 +295,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         if(_AuthService.TryResolveCodeToClientIdAndSecret(code, out clientId, out string clientSecret)) {
           OAuthTokenResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
           redirectUri = redirectUri + "access_token=" + result.access_token;
-          redirectUri = redirectUri + "token_type=" + result.token_type;
+          redirectUri = redirectUri + "&token_type=" + result.token_type;
           //redirectUri = redirectUri + "expires_in=" + result.access_token;
           //redirectUri = redirectUri + "id_token=" + result.access_token;
           //redirectUri = redirectUri + "refresh_token=" + result.access_token;
