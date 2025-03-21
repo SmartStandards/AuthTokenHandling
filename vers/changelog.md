@@ -6,7 +6,9 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-*(none)*
+* Added Targets for net8.0 and net4.8
+* Removed net5 targets
+* Removed net4.6.1 target for 'MvcSupport'-Package (is now .net-Core only)
 
 
 
@@ -14,7 +16,7 @@ This files contains a version history including all changes relevant for semanti
 released **2025-02-07**, including:
  - Fix: malformed token redirect-url
 
-
+   
 
 ## v 3.0.0
 released **2024-10-16**, including:
