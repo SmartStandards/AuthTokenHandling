@@ -6,9 +6,15 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Added Targets for net8.0 and net4.8
-* Removed net5 targets
-* Removed net4.6.1 target for 'MvcSupport'-Package (is now .net-Core only)
+*(none)*
+
+
+
+## v 3.0.2
+released **2025-03-21**, including:
+ - Added Targets for net8.0 and net4.8
+ - Removed net4.6.1 target for 'MvcSupport'-Package (is now .net-Core only)
+ - Removed net5 targets
 
 
 

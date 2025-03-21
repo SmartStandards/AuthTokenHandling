@@ -1,13 +1,13 @@
 {
-  "currentVersion": "3.0.1",
-  "currentVersionWithSuffix": "3.0.1",
+  "currentVersion": "3.0.2",
+  "currentVersionWithSuffix": "3.0.2",
   "releaseType": "official",
-  "previousVersion": "3.0.0",
+  "previousVersion": "3.0.1",
   "changeGrade": "patch",
   "currentMajor": 3,
   "currentMinor": 0,
-  "currentPatch": 1,
-  "versionDateInfo": "2025-02-07",
-  "versionTimeInfo": "15:04:53",
-  "versionNotes": "- Fix: malformed token redirect-url\n"
+  "currentPatch": 2,
+  "versionDateInfo": "2025-03-21",
+  "versionTimeInfo": "07:53:24",
+  "versionNotes": "- Added Targets for net8.0 and net4.8\n- Removed net4.6.1 target for 'MvcSupport'-Package (is now .net-Core only)\n- Removed net5 targets\n"
 }
