@@ -17,6 +17,43 @@ namespace Security {
   [TestClass]
   public class TokenIntrospectionTests {
 
+    [TestMethod]
+    public void TestLocalJwt() {
+
+      byte[] signKey = Encoding.ASCII.GetBytes("FooBar");
+      const int expireMinutes = 1;
+      const string subject = "Karl";
+      const string audience = "FriendsOfKarl";
+
+      IAccessTokenIssuer issuer = new LocalJwtIssuer(
+        signKey, expireMinutes, true, "UnitTest"
+      );
+
+      string jwt = issuer.RequestAccessToken(subject, audience);
+
+      IAccessTokenIntrospector introspector = new LocalJwtIntrospector(
+        signKey, (claimsToEmulate) => claimsToEmulate["uiuiui"] = "Eieiei"
+      );
+
+      introspector.IntrospectAccessToken(jwt, out bool isActive, out var claims);
+
+      Assert.IsTrue( isActive );
+      Assert.IsNotNull( claims );
+
+      Assert.IsTrue(claims.ContainsKey("iss"));
+      Assert.AreEqual("UnitTest", claims["iss"]);
+
+      Assert.IsTrue(claims.ContainsKey("uiuiui"));
+      Assert.AreEqual("Eieiei", claims["uiuiui"]);
+
+      Assert.IsTrue(claims.ContainsKey("sub"));
+      Assert.AreEqual("Karl", claims["sub"]);
+
+      Assert.IsTrue(claims.ContainsKey("aud"));
+      Assert.AreEqual("FriendsOfKarl", claims["aud"]);
+
+    }
+
 #if NET5_0_OR_GREATER
 
     private const string _SignKey = "2A0C4D2F8A8A8B4C7F0F4D4C1A6B9F4C7A0C6B"; 
@@ -122,11 +159,6 @@ namespace Security {
     }
 
 #endif
-
-    [TestMethod]
-    public void TestIssuing() {
-
-    }
 
     //[TestMethod]
     public void TestTokenIntrospection() {

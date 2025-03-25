@@ -12,8 +12,10 @@ using System.Windows.Forms;
 
 namespace Security.AccessTokenHandling {
 
-  [Obsolete("Please use the 'OAuthInteractiveAuthenticator' or the 'OAuthBackgroundAuthenticator'")]
-  public class OAuthTokenRequestor {
+  public class OAuthInteractiveAuthenticator : IAccessTokenIssuer {
+
+    private OAuthBackgroundAuthenticator _Base;
+
 
     private string _ClientId;
     private string _ClientSecret;
@@ -21,13 +23,17 @@ namespace Security.AccessTokenHandling {
     private string _RetrievalUrl;
     private string _RedirectUrl;
 
-    public OAuthTokenRequestor(
+    public OAuthInteractiveAuthenticator(
       string clientId,
       string clientSecret,
       string authorizeUrl,
       string retrievalUrl,
       string redirectUrl = "https://localhost"
     ) {
+
+      //TODO: die params hier oben auch bennen wie unten
+      _Base = new OAuthBackgroundAuthenticator(clientId, clientSecret, redirectUrl, authorizeUrl, retrievalUrl,x);
+
       _ClientId = clientId;
       _ClientSecret = clientSecret;
       _AuthorizeUrl = authorizeUrl;
@@ -261,26 +267,21 @@ namespace Security.AccessTokenHandling {
       string returnUrl, string state, string scopeToRequest,
       string loginHint, out string retrievedCode,
       Dictionary<string, string> customQueryParameters = null
-    ) { //lassen wir nur als Aufwärts-Kompatibilität am leben...
+    ) {
       try {
+        var additionalQueryParameters = SerializeCustomQueryParameters(customQueryParameters);
 
-        if (customQueryParameters == null) {
-          customQueryParameters = new Dictionary<string, string>();
-        }
-        customQueryParameters["scope"] = scopeToRequest;
-        customQueryParameters["login_hint"] = loginHint;
+        string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
+        string result = this.GetFinalRedirect(url, returnUrl);
 
-        var x = new OAuthBackgroundAuthenticator(
-          _ClientId, _ClientSecret, returnUrl, _AuthorizeUrl, _RetrievalUrl
-        );
-        retrievedCode = x.RequestAccessToken(customQueryParameters);
+        retrievedCode = this.PickFromUrl(result, "code");
 
         if (!string.IsNullOrWhiteSpace(retrievedCode)) {
           return true;
         }
 
       }
-      catch {
+      catch (Exception ex) {
       }
       retrievedCode = null;
       return false;
@@ -398,6 +399,24 @@ namespace Security.AccessTokenHandling {
     }
 
     #endregion
+
+    string IAccessTokenIssuer.RequestAccessToken() {
+      return ((IAccessTokenIssuer)this).RequestAccessToken(null);
+    }
+
+    string IAccessTokenIssuer.RequestAccessToken(Dictionary<string, object> claimsToRequest) {
+
+
+
+
+
+
+      u
+
+
+
+
+    }
 
   }
 

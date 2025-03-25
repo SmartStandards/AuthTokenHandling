@@ -3,20 +3,42 @@ using System.Collections.Generic;
 
 namespace Security.AccessTokenHandling {
 
+  public static class WellknownIssuingModes {
+
+    public const string RAW_INPUT = "RAW_INPUT";
+    public const string HTTP_GET = "HTTP_GET";
+    public const string LOCAL_BASICAUTH_GENERATION = "LOCAL_BASICAUTH_GENERATION";
+    public const string LOCAL_JWT_GENERATION = "LOCAL_JWT_GENERATION";
+    public const string OAUTH_IMPLICIT_FLOW = "OAUTH_IMPLICIT_FLOW";
+    public const string OAUTH_CIBA_CODEGRAND = "OAUTH_CIBA_CODEGRAND";
+    public const string OAUTH_CIBA_CODEGRAND_HTTPGETONLY = "OAUTH_CIBA_CODEGRAND_HTTPGETONLY";
+
+  }
+  public static class WellknownValidationModes {
+
+    public const string IMPLICIT_WHEN_USED = "IMPLICIT_WHEN_USED";
+    public const string LOCAL_JWT_VALIDATION = "LOCAL_JWT_VALIDATION";
+    public const string OAUTH_INTROSPECTION_ENDPOINT = "OAUTH_INTROSPECTION_ENDPOINT";
+    public const string OAUTH_INTROSPECTION_ENDPOINT_HTTPGETONLY = "OAUTH_INTROSPECTION_ENDPOINT_HTTPGETONLY";
+    public const string GITHUB_VALIDATION_ENDPOINT = "GITHUB_VALIDATION_ENDPOINT";
+
+  }
+
   public class AuthTokenConfig {
 
-    #region " ISSUEING "
+    #region " ISSUING "
 
     /// <summary>
-    /// Name of the Straregy:
-    /// RAW-INPUT
-    /// HTTP-GET
-    /// LOCAL_BASICAUTH_GENERATION
-    /// LOCAL_JWT_GENERATION
+    /// Name of the Strategy:
+    /// RAW_INPUT                  (needs interacticve raw-token input)
+    /// HTTP_GET
+    /// LOCAL_BASICAUTH_GENERATION (needs interacticve credential input)
+    /// LOCAL_JWT_GENERATION       (needs interacticve credential input)
+    /// OAUTH_IMPLICIT_FLOW
     /// OAUTH_CIBA_CODEGRAND
     /// OAUTH_CIBA_CODEGRAND_HTTPGETONLY - use url-params instead of post-body to avoid CORS problems
     /// </summary>
-    public string IssueMode { get; set; } = "RAW-INPUT";
+    public string IssueMode { get; set; } = "RAW_INPUT";
 
     /// <summary>
     /// when using issue mode HTTP-GET, then it could be: "assets/demoAccessToken.txt"

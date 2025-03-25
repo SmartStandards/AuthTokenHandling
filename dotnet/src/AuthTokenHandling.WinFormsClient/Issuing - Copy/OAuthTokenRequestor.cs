@@ -12,8 +12,7 @@ using System.Windows.Forms;
 
 namespace Security.AccessTokenHandling {
 
-  [Obsolete("Please use the 'OAuthInteractiveAuthenticator' or the 'OAuthBackgroundAuthenticator'")]
-  public class OAuthTokenRequestor {
+  public class OAuthTokenRequestor : IAccessTokenIssuer {
 
     private string _ClientId;
     private string _ClientSecret;
@@ -261,26 +260,21 @@ namespace Security.AccessTokenHandling {
       string returnUrl, string state, string scopeToRequest,
       string loginHint, out string retrievedCode,
       Dictionary<string, string> customQueryParameters = null
-    ) { //lassen wir nur als Aufwärts-Kompatibilität am leben...
+    ) {
       try {
+        var additionalQueryParameters = SerializeCustomQueryParameters(customQueryParameters);
 
-        if (customQueryParameters == null) {
-          customQueryParameters = new Dictionary<string, string>();
-        }
-        customQueryParameters["scope"] = scopeToRequest;
-        customQueryParameters["login_hint"] = loginHint;
+        string url = $"{_AuthorizeUrl}response_type=code&redirect_uri={returnUrl}&state={state}&scope={scopeToRequest}&login_hint={loginHint}&client_id={_ClientId}{additionalQueryParameters}";
+        string result = this.GetFinalRedirect(url, returnUrl);
 
-        var x = new OAuthBackgroundAuthenticator(
-          _ClientId, _ClientSecret, returnUrl, _AuthorizeUrl, _RetrievalUrl
-        );
-        retrievedCode = x.RequestAccessToken(customQueryParameters);
+        retrievedCode = this.PickFromUrl(result, "code");
 
         if (!string.IsNullOrWhiteSpace(retrievedCode)) {
           return true;
         }
 
       }
-      catch {
+      catch (Exception ex) {
       }
       retrievedCode = null;
       return false;
@@ -398,6 +392,24 @@ namespace Security.AccessTokenHandling {
     }
 
     #endregion
+
+    string IAccessTokenIssuer.RequestAccessToken() {
+      return ((IAccessTokenIssuer)this).RequestAccessToken(null);
+    }
+
+    string IAccessTokenIssuer.RequestAccessToken(Dictionary<string, object> claimsToRequest) {
+
+
+
+
+
+
+      u
+
+
+
+
+    }
 
   }
 

@@ -117,5 +117,11 @@
       <DependentUpon>AuthForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AuthTokenHandling.net48\AuthTokenHandling.net48.csproj">
+      <Project>{882aa78a-5d13-4ef6-b1d9-fe4fcfa8415e}</Project>
+      <Name>AuthTokenHandling.net48</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
