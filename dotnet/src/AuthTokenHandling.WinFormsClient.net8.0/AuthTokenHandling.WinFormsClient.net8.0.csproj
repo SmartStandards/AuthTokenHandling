@@ -82,4 +82,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AuthTokenHandling.net8.0\AuthTokenHandling.net8.0.csproj" />
+  </ItemGroup>
+
 </Project>

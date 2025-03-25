@@ -13,6 +13,8 @@ namespace Security.AccessTokenHandling {
     private Func<string> _EndpointUrlGetter;
     private Func<string> _AuthorizationHeaderGetter;
 
+    //non-standard behaviour (only for configurative special case)
+    internal bool UseHttpGet { get; set; } = false;
 
     public OAuthTokenIntrospectionEndpointCaller(string endpointUrl) : this(()=> endpointUrl) {
     }
@@ -35,9 +37,7 @@ namespace Security.AccessTokenHandling {
 
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary></summary>
     /// <param name="rawToken"></param>
     /// <param name="isActive"></param>
     /// <param name="claims">
@@ -48,6 +48,7 @@ namespace Security.AccessTokenHandling {
       string rawToken, out bool isActive, out Dictionary<string, object> claims
       ) {
 
+      //TODO: auf neuen client umstellen (wie ujmw)
       using (WebClient wc = new WebClient()) {
         wc.UseDefaultCredentials= true; 
 
@@ -56,10 +57,18 @@ namespace Security.AccessTokenHandling {
         if (!string.IsNullOrWhiteSpace(auth)) {
           wc.Headers.Set("Authorization", auth);
         }
-        wc.Headers.Set("Content-Type", "application/x-www-form-urlencoded");
+        if(!this.UseHttpGet) {
+          wc.Headers.Set("Content-Type", "application/x-www-form-urlencoded");
+        }
         wc.Headers.Set("Accept", "application/json");
 
-        string rawJsonResponse = wc.UploadString(url, "token=" + rawToken);
+        string rawJsonResponse;
+        if (!this.UseHttpGet) {
+          rawJsonResponse = wc.UploadString(url, "token=" + rawToken);
+        }
+        else {
+          rawJsonResponse = wc.DownloadString($"{url}?token={rawToken}");
+        }
 
         var activeResp = JsonConvert.DeserializeObject<IntrospectionEndpointResponse>(rawJsonResponse);
         if (activeResp == null || activeResp.active == false) {

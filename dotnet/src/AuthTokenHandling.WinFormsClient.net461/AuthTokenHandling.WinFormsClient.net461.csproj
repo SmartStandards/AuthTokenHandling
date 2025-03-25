@@ -126,5 +126,11 @@
       <DependentUpon>CredentialDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AuthTokenHandling.net461\AuthTokenHandling.net461.csproj">
+      <Project>{b0ba06fe-6437-4b9e-8c76-3adfc8d191d2}</Project>
+      <Name>AuthTokenHandling.net461</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

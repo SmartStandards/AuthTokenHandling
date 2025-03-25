@@ -16,9 +16,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\TokenValidationRuleset (Legacy).cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\CommonVendors\GithubTokenIntrospector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\CommonVendors\GoogleTokenIntrospector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introspection\IntrospectorFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\TokenEqualityComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\OAuthTokenIntrospectionEndpointCaller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\LocalJwtIntrospector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\%28Helpers%29\InteractiveCredentialRequestor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\IAccessTokenIssuer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\IssuerFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\LocalJwtIssuer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\OAuthBackgroundAuthenticator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\IOAuthService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JwtContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\IAccessTokenIntrospector.cs" />
@@ -28,8 +34,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\CompositeAuthRequirementsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\AuthTokenSourceAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)[Requirements]\AttributeBasedAuthRequirementsProvider.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Issuing\" />
   </ItemGroup>
 </Project>
