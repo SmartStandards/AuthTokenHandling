@@ -1,13 +1,13 @@
 {
-  "currentVersion": "3.0.2",
-  "currentVersionWithSuffix": "3.0.2",
-  "releaseType": "official",
-  "previousVersion": "3.0.1",
-  "changeGrade": "patch",
+  "currentVersion": "3.0.3",
+  "currentVersionWithSuffix": "3.0.3",
+  "releaseType": "",
+  "previousVersion": "3.0.2",
+  "changeGrade": "fix",
   "currentMajor": 3,
   "currentMinor": 0,
-  "currentPatch": 2,
-  "versionDateInfo": "2025-03-21",
-  "versionTimeInfo": "07:53:24",
-  "versionNotes": "- Added Targets for net8.0 and net4.8\n- Removed net4.6.1 target for 'MvcSupport'-Package (is now .net-Core only)\n- Removed net5 targets\n"
+  "currentPatch": 3,
+  "versionDateInfo": "2025-05-30",
+  "versionTimeInfo": "10:20:44",
+  "versionNotes": "- Removed .NET 4.6-Targets and enabled .NET 8.0-Targets (while switching build-runner from Win-2019 to WIN-2022)\n"
 }
