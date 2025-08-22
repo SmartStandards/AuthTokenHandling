@@ -38,18 +38,21 @@ namespace Security.AccessTokenHandling {
     private static string _PersistNameChecked;
 
     public static void Setup(AskUserForCredentialsDelegate requestorMethod, AuthTokenConfig configurationDetails) {
-      configurationDetails.LocalLogonNameInputLabel
-      configurationDetails.LocalLogonNameSyntax
 
-        configurationDetails.LocalLogonPassInputLabel
-        configurationDetails.LocalLogonNamePersistation
- configurationDetails.LocalLogonNameToLower
-        LocalLogonSaltDisplayLabel
+      throw new NotImplementedException();
+      
+      //configurationDetails.LocalLogonNameInputLabel
+      //configurationDetails.LocalLogonNameSyntax
+      //configurationDetails.LocalLogonPassInputLabel
+      //configurationDetails.LocalLogonNamePersistation
+      //configurationDetails.LocalLogonNameToLower
+      //LocalLogonSaltDisplayLabel
+
     }
+
     public static void Setup(AskUserForCredentialsDelegate requestorMethod) {
 
-
-
+      throw new NotImplementedException();
 
     }
 

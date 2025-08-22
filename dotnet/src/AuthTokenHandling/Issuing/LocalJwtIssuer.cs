@@ -34,11 +34,13 @@ namespace Security.AccessTokenHandling {
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, signAlg);
     }
+
     public LocalJwtIssuer(byte[] signKey, int expMinutes, ClaimCustomizerDelegate claimCustomizer) {
       _ClaimCustomizer = claimCustomizer;
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, JwsAlgorithm.HS256);
     }
+
     public LocalJwtIssuer(byte[] signKey, JwsAlgorithm signAlg, int expMinutes, ClaimCustomizerDelegate claimCustomizer) {
       _ClaimCustomizer = claimCustomizer;
       _ExpMinutes = expMinutes;

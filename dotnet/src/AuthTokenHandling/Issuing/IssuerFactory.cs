@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jose;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -35,85 +36,80 @@ namespace Security.AccessTokenHandling {
           throw new ArgumentException($"'{nameof(config.JwtValidationKey)}' must not be empty!");
         }
 
-
-       
-
         return new LocalJwtIssuer(
-          Encoding.ASCII.GetBytes(config.JwtSelfSignKey), JwtSelfSignAlg
+          Encoding.ASCII.GetBytes(config.JwtSelfSignKey),
+          (JwsAlgorithm) Enum.Parse(typeof(JwsAlgorithm), config.JwtSelfSignAlg, true),
           config.JwtExpMinutes,
-          (claims) => {
+          (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
             if (convertedClaims != null) {
               foreach (var configuredClaim in convertedClaims) {
-                claims[configuredClaim.Key] = configuredClaim.Value;
+                claimsToUse[configuredClaim.Key] = configuredClaim.Value;
               }
             }
           }
         );
 
       }
-      else if ((config.ValidationMode.Equals(WellknownIssuingModes.LOCAL_JWT_GENERATION, StringComparison.InvariantCultureIgnoreCase)) {
+      else if (config.ValidationMode.Equals(WellknownIssuingModes.LOCAL_JWT_GENERATION, StringComparison.InvariantCultureIgnoreCase)) {
 
         if (string.IsNullOrWhiteSpace(config.JwtValidationKey)) {
           throw new ArgumentException($"'{nameof(config.JwtValidationKey)}' must not be empty!");
         }
 
-
-
-
         return new LocalJwtIssuer(
           Encoding.ASCII.GetBytes(config.JwtValidationKey),
           config.JwtExpMinutes,
-          (claims) => {
+          (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
             if (convertedClaims != null) {
               foreach (var configuredClaim in convertedClaims) {
-                claims[configuredClaim.Key] = configuredClaim.Value;
+                claimsToUse[configuredClaim.Key] = configuredClaim.Value;
               }
             }
           }
         );
 
       }
-      else if (
-        config.ValidationMode.Equals(WellknownValidationModes.OAUTH_INTROSPECTION_ENDPOINT, StringComparison.InvariantCultureIgnoreCase) ||
-        config.ValidationMode.Equals(WellknownValidationModes.OAUTH_INTROSPECTION_ENDPOINT_HTTPGETONLY, StringComparison.InvariantCultureIgnoreCase)
-      ) {
+      //else if (
+      //  config.ValidationMode.Equals(WellknownIssuingModes.oa, StringComparison.InvariantCultureIgnoreCase) ||
+      //  config.ValidationMode.Equals(WellknownIssuingModes.OAUTH_INTROSPECTION_ENDPOINT_HTTPGETONLY, StringComparison.InvariantCultureIgnoreCase)
+      //) {
 
-        UrlGetterMethod urlGetter = DefaultUrlGetter;
-        if (string.IsNullOrWhiteSpace(config.ValidationEndpointUrl)) {
-          if (urlGetter == null) {
-            throw new ArgumentException($"'{nameof(config.ValidationEndpointUrl)}' must not be empty!");
-          }
-        }
-        else {
-          urlGetter = (t) => config.ValidationEndpointUrl;
-        }
+      //  UrlGetterMethod urlGetter = DefaultUrlGetter;
+      //  if (string.IsNullOrWhiteSpace(config.ValidationEndpointUrl)) {
+      //    if (urlGetter == null) {
+      //      throw new ArgumentException($"'{nameof(config.ValidationEndpointUrl)}' must not be empty!");
+      //    }
+      //  }
+      //  else {
+      //    urlGetter = (t) => config.ValidationEndpointUrl;
+      //  }
 
-        AuthHeaderGetterMethod ahGetter = DefaultAuthHeaderGetter;
-        if (string.IsNullOrWhiteSpace(config.validationEndpointAuthorization)) {
-          if (urlGetter == null) {
-            ahGetter = (t) => null;
-          }
-        }
-        else if (config.validationEndpointAuthorization.Contains("%")) {
-          throw new NotImplementedException("%-placholders to address forign-authtokensources are not jet implemented");
-        }
-        else {
-          ahGetter = (t) => config.validationEndpointAuthorization;
-        }
+      //  AuthHeaderGetterMethod ahGetter = DefaultAuthHeaderGetter;
+      //  if (string.IsNullOrWhiteSpace(config.validationEndpointAuthorization)) {
+      //    if (urlGetter == null) {
+      //      ahGetter = (t) => null;
+      //    }
+      //  }
+      //  else if (config.validationEndpointAuthorization.Contains("%")) {
+      //    throw new NotImplementedException("%-placholders to address forign-authtokensources are not jet implemented");
+      //  }
+      //  else {
+      //    ahGetter = (t) => config.validationEndpointAuthorization;
+      //  }
 
-        OAuthTokenIntrospectionEndpointCaller introspector = new OAuthTokenIntrospectionEndpointCaller(
-          () => urlGetter.Invoke(typeof(IAccessTokenIntrospector)),
-          () => ahGetter.Invoke(typeof(IAccessTokenIntrospector))
-        );
+      //  OAuthTokenIntrospectionEndpointCaller introspector = new OAuthTokenIntrospectionEndpointCaller(
+      //    () => urlGetter.Invoke(typeof(IAccessTokenIntrospector)),
+      //    () => ahGetter.Invoke(typeof(IAccessTokenIntrospector))
+      //  );
 
-        if (config.ValidationMode.Equals(WellknownValidationModes.OAUTH_INTROSPECTION_ENDPOINT_HTTPGETONLY, StringComparison.InvariantCultureIgnoreCase)) {
-          introspector.UseHttpGet = true;
-        }
+      //  if (config.ValidationMode.Equals(WellknownValidationModes.OAUTH_INTROSPECTION_ENDPOINT_HTTPGETONLY, StringComparison.InvariantCultureIgnoreCase)) {
+      //    introspector.UseHttpGet = true;
+      //  }
 
-        return introspector;
-      }
+      //  return introspector;
+      //}
       else if (config.ValidationMode.Equals(WellknownValidationModes.IMPLICIT_WHEN_USED, StringComparison.InvariantCultureIgnoreCase)) {
-        return new DummyIssuer(convertedClaims);
+        return new DummyIssuer();
       }
       //else if (config.ValidationMode.Equals(WellknownValidationModes.GITHUB_VALIDATION_ENDPOINT, StringComparison.InvariantCultureIgnoreCase)) {
       //}

@@ -35,6 +35,7 @@ namespace Security.AccessTokenHandling {
           throw new ArgumentException($"'{nameof(config.JwtValidationKey)}' must not be empty!");
         }
 
+        //TODO: byte-arraa wie parsen?
         return new LocalJwtIntrospector(
           config.JwtValidationKey,
           (claims) => {

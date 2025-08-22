@@ -31,8 +31,13 @@ namespace Security.AccessTokenHandling {
       string redirectUrl = "https://localhost"
     ) {
 
+      //TODO: der muss auch noch rein!
+      ClaimCustomizerDelegate claimCustomizer = null;
+
       //TODO: die params hier oben auch bennen wie unten
-      _Base = new OAuthBackgroundAuthenticator(clientId, clientSecret, redirectUrl, authorizeUrl, retrievalUrl,x);
+      _Base = new OAuthBackgroundAuthenticator(
+        clientId, clientSecret, redirectUrl, authorizeUrl, retrievalUrl, claimCustomizer
+      );
 
       _ClientId = clientId;
       _ClientSecret = clientSecret;
@@ -407,13 +412,8 @@ namespace Security.AccessTokenHandling {
     string IAccessTokenIssuer.RequestAccessToken(Dictionary<string, object> claimsToRequest) {
 
 
-
-
-
-
-      u
-
-
+      //TODO: implementieren
+      throw new NotImplementedException();
 
 
     }

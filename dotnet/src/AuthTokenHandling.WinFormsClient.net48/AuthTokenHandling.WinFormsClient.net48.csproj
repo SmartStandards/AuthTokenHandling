@@ -82,8 +82,8 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CefSharp.Wrapped, Version=0.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\vendor\nuget\CefSharp.Wrapped.0.1.2\lib\net46\CefSharp.Wrapped.dll</HintPath>
+    <Reference Include="CefSharp.Wrapped, Version=0.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\vendor\nuget\CefSharp.Wrapped.0.1.4\lib\net48\CefSharp.Wrapped.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
