@@ -73,6 +73,10 @@
   <Import Project="..\AuthTokenHandling.WinFormsClient\AuthTokenHandling.WinFormsClient.projitems" Label="Shared" />
 
   <ItemGroup>
+    <Compile Include="..\AuthTokenHandling.net8.0\SmartStandards.Logging.cs" Link="SmartStandards.Logging.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CefSharp.Wrapped" Version="0.1.2" />
     <PackageReference Include="jose-jwt" Version="4.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

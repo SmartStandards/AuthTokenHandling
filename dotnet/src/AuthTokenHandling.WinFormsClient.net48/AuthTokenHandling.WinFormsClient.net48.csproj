@@ -97,6 +97,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AuthTokenHandling.net8.0\SmartStandards.Logging.cs">
+      <Link>SmartStandards.Logging.cs</Link>
+    </Compile>
     <Compile Include="..\AuthTokenHandling.WinFormsClient\OAuthTokenRequestor.cs">
       <Link>OAuthTokenRequestor.cs</Link>
     </Compile>

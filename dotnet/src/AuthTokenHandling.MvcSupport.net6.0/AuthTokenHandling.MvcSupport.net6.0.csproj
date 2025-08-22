@@ -39,6 +39,10 @@
   <Import Project="..\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems" Label="Shared" />
 
   <ItemGroup>
+    <Compile Include="..\AuthTokenHandling.net8.0\SmartStandards.Logging.cs" Link="SmartStandards.Logging.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="jose-jwt" Version="4.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

@@ -106,6 +106,12 @@
     <Compile Include="AuthForm.designer.cs">
       <DependentUpon>AuthForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CredentialDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CredentialDialog.Designer.cs">
+      <DependentUpon>CredentialDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +121,9 @@
   <ItemGroup>
     <EmbeddedResource Include="AuthForm.resx">
       <DependentUpon>AuthForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CredentialDialog.resx">
+      <DependentUpon>CredentialDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
