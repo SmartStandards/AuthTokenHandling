@@ -60,6 +60,7 @@ namespace Security.AccessTokenHandling {
         if (_JwtSignatureValidationMethod.Invoke(rawToken) == false) {
           isActive = false;
           claims = null;
+          claims["inactive_reason"] = $"Signature verification failed";
           return;
         }
       }
@@ -69,7 +70,9 @@ namespace Security.AccessTokenHandling {
       var expirationTimeUtc = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc).AddSeconds(exp);
       if (DateTime.UtcNow > expirationTimeUtc) {
         isActive = false;
-        claims = null;
+        claims = new Dictionary<string, object>();
+        claims["inactive_reason"] = $"Expired (at {expirationTimeUtc.ToString("u")})";
+        claims["exp"] = jwtContent["exp"];
         return;
       }
 

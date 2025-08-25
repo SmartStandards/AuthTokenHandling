@@ -1,9 +1,11 @@
 ﻿using Jose;
+using Logging.SmartStandards;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 
 namespace Security.AccessTokenHandling {
@@ -19,6 +21,7 @@ namespace Security.AccessTokenHandling {
       public string RawToken { get; set; }
       public string CallerHost { get; set; }
       public bool IsActive { get; set; }
+      public string InactiveReason { get; set; }
       public string[] PermittedScopes { get; set; }
       public string Subject { get; set; }
       public string ValidationOutcomeMessage { get; set; }
@@ -130,6 +133,7 @@ namespace Security.AccessTokenHandling {
       }
     
       ValidationOutcome outcome;
+      string tokenDeniedReason = null;
 
       bool tokenRequired = _RequirementsProvider.IsAuthtokenRequired(
         contractType, targetContractMethod, 
@@ -157,6 +161,7 @@ namespace Security.AccessTokenHandling {
         }
         else {
           outcome = ValidationOutcome.AccessDeniedTokenRequired;
+          tokenDeniedReason = "No Token provided";
         }
       }
       else {
@@ -173,6 +178,7 @@ namespace Security.AccessTokenHandling {
           callingMachine,
           authTokenSourceIdentifier,
           out bool isActive,
+          out tokenDeniedReason,
           out permittedScopes,
           out subject,
           out fromCache,
@@ -208,9 +214,29 @@ namespace Security.AccessTokenHandling {
         foreach (string requiredScope in requiredScopes) {
           if (!permittedScopes.Where((s) => s.Equals(requiredScope, StringComparison.CurrentCultureIgnoreCase)).Any()) {
             outcome = ValidationOutcome.AccessDeniedMissingPrivileges;
+            tokenDeniedReason = "Required scope not present";
             break;
           }
         }    
+      }
+
+      //default logging
+      if (outcome != ValidationOutcome.AccessGranted) {
+        string tokenContentProbe = "[EMPTY]";
+        if (!string.IsNullOrWhiteSpace(rawToken)) {
+          if (rawToken.Length < 16) {
+            //short tokens are fully masked
+            tokenContentProbe = new string('*', rawToken.Length);
+          }
+          else {
+            //longer tokens: only show the last 3 chars
+            tokenContentProbe = "...**********" + rawToken.Substring(rawToken.Length - 3);
+          }
+        }
+        SecLogger.LogWarning(
+          2078854485086216369L, 73001,
+          "Negative outcome when validating Auth-Token '{tokenContentProbe}': {tokenInactiveReason}", tokenContentProbe, tokenDeniedReason
+        );   
       }
 
       if(_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
@@ -226,7 +252,8 @@ namespace Security.AccessTokenHandling {
           subject,
           permittedScopes,
           requiredScopes.ToArray(),
-          fromCache
+          fromCache,
+          tokenDeniedReason
         );
       }
 
@@ -240,6 +267,7 @@ namespace Security.AccessTokenHandling {
       string callingMachine,
       string authTokenSourceIdentifier, //can be NULL
       out bool isActive,
+      out string inactiveReason,
       out string[] permittedScopes,
       out string subject,
       out bool fromCache,
@@ -266,6 +294,7 @@ namespace Security.AccessTokenHandling {
           }
 
           isActive = result.IsActive;
+          inactiveReason = result.InactiveReason;
           permittedScopes = result.PermittedScopes;
           subject = result.Subject;
           fromCache = true;
@@ -323,12 +352,35 @@ namespace Security.AccessTokenHandling {
               _PermittedScopesVisitorMethod.Invoke(subject, scopes);
             }
             permittedScopes = scopes.ToArray();
+            inactiveReason = null;
           }
-
+          else {
+            inactiveReason = "No details provided";
+            if (extractedClaims != null ) {
+              try {
+                if (extractedClaims.ContainsKey("inactive_reason") && extractedClaims["inactive_reason"] != null) {
+                  inactiveReason = extractedClaims["inactive_reason"].ToString();
+                }
+                else if (extractedClaims.ContainsKey("exp")){
+                  object expClaim = extractedClaims["exp"];
+                  if (expClaim != null) {
+                    long exp = Convert.ToInt64(expClaim);
+                    DateTime expirationTimeUtc = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc).AddSeconds(exp);
+                    if (DateTime.UtcNow > expirationTimeUtc) {
+                      inactiveReason = $"Expired (at {expirationTimeUtc.ToString("u")})";
+                    }
+                  }
+                }
+              }
+              catch { 
+              }
+            }
+          }
         }
         else { //introspector == null:   
           unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
           isActive = false;
+          inactiveReason = "Introspection not possible";
           return;
         }
 
@@ -346,6 +398,7 @@ namespace Security.AccessTokenHandling {
         newEntry.RawToken = rawToken;
         newEntry.CallerHost = callingMachine;
         newEntry.IsActive = isActive;
+        newEntry.InactiveReason = inactiveReason;
         newEntry.PermittedScopes = permittedScopes;
         newEntry.Subject = subject;
         newEntry.CachableUntil = DateTime.Now.AddMinutes(_IntrospectionResultCachingMinutes);

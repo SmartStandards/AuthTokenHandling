@@ -45,6 +45,16 @@ namespace Security.AccessTokenHandling {
 
     public delegate void RawTokenExposalMethod(string token, MethodInfo targetContractMethod, string subject, string[] permittedScopes);
 
+    /// <summary>
+    /// </summary>
+    /// <param name="targetContractMethod"></param>
+    /// <param name="callingMachine"></param>
+    /// <param name="outcome"></param>
+    /// <param name="discoveredSubjectIdentity"></param>
+    /// <param name="permittedScopes"></param>
+    /// <param name="requiredScopes"></param>
+    /// <param name="fromCache"></param>
+    /// <param name="detailedReason">null, when outcome==AccessGranted</param>
     public delegate void AuditingHook(
       MethodInfo targetContractMethod,
       string callingMachine,
@@ -52,7 +62,8 @@ namespace Security.AccessTokenHandling {
       string discoveredSubjectIdentity,
       string[] permittedScopes,
       string[] requiredScopes,
-      bool fromCache
+      bool fromCache,
+      string detailedReason
     );
 
     //public enum TokenProcessingOutcome {
@@ -218,16 +229,6 @@ namespace Security.AccessTokenHandling {
     private static string _AnonymousSubjectName = null;
     private static string _ApiPermissionPrefix = "API:";
     private static int _IntrospectionResultCachingMinutes = 2;
-
-    [Obsolete("PLEASE USE 'ConfigureTokenValidation'")]
-    public static void ConfigureTokenIntrospection(IAccessTokenIntrospector introspector, PermittedScopesVisitorMethod scopeEnumerationHook = null, string anonymousSubjectName = null, string apiPermissionPrefix = "API:", int introspectionResultCachingMinutes = 2, AuditingHook auditingHook = null) {
-      throw new NotImplementedException("This method was removed, because it was obsolete! PLEASE USE 'ConfigureTokenValidation'.");
-    }
-
-    [Obsolete("PLEASE USE 'ConfigureTokenValidation'", true)]
-    public static void ConfigureTokenIntrospection(IntrospectorLookupMethod introspectorSelector, PermittedScopesVisitorMethod scopeEnumerationHook = null, string anonymousSubjectName = null, string apiPermissionPrefix = "API:", int introspectionResultCachingMinutes = 2, AuditingHook auditingHook = null) {
-      throw new NotImplementedException("This method was removed, because it was obsolete! PLEASE USE 'ConfigureTokenValidation'.");
-    }
 
   }
 

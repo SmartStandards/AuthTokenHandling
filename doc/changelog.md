@@ -6,9 +6,9 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-*(none)*
+* **breaking Change**: Added transport of concrete reason-phrases when tokens are rejected to increase auditing details.
 
-
+  
 
 ## v 3.0.4
 released **2025-05-30**, including:

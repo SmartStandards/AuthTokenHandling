@@ -69,7 +69,7 @@ namespace Security {
       AuditingHook auditingHook = (
         (
           calledMethod, callingMachine, outcome, discoveredSubjectIdentity,
-          permittedScopes, requiredScopes, fromCache
+          permittedScopes, requiredScopes, fromCache, inactiveReason
         ) => {
           Assert.IsFalse(fromCache);//cache has been set to 0 minutes for unit tests
           switch (callNumer) {
@@ -89,6 +89,7 @@ namespace Security {
             case 3:
               //EXPIRED
               Assert.AreEqual(ValidationOutcome.AccessDeniedTokenInvalid, outcome);
+              Assert.IsTrue(inactiveReason.Contains("Expired"));
               Assert.IsTrue(requiredScopes.Contains("API:Bar"));
               Assert.IsTrue(permittedScopes.Count() == 0);
               break;
