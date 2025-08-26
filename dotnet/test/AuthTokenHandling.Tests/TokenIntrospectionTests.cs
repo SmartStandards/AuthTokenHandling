@@ -10,6 +10,7 @@ using System.Text;
 using Jose;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Security.AccessTokenHandling;
+using Security.AccessTokenHandling.OAuthServer;
 using static Security.AccessTokenHandling.AccessTokenValidator;
 
 namespace Security {
@@ -29,13 +30,13 @@ namespace Security {
         signKey, expireMinutes, true, "UnitTest"
       );
 
-      string jwt = issuer.RequestAccessToken(subject, audience);
+    bool success = issuer.RequestAccessToken(subject, audience, out TokenIssuingResult result);
 
       IAccessTokenIntrospector introspector = new LocalJwtIntrospector(
         signKey, (claimsToEmulate) => claimsToEmulate["uiuiui"] = "Eieiei"
       );
 
-      introspector.IntrospectAccessToken(jwt, out bool isActive, out var claims);
+      introspector.IntrospectAccessToken(result.access_token, out bool isActive, out var claims);
 
       Assert.IsTrue( isActive );
       Assert.IsNotNull( claims );
