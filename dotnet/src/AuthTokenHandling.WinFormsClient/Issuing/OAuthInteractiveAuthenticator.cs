@@ -1,6 +1,7 @@
 //using CefSharp.DevTools.Database;
 //using CefSharp.DevTools.DOM;
 //using Newtonsoft.Json.Linq;
+using Security.AccessTokenHandling.OAuthServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -405,11 +406,11 @@ namespace Security.AccessTokenHandling {
 
     #endregion
 
-    string IAccessTokenIssuer.RequestAccessToken() {
-      return ((IAccessTokenIssuer)this).RequestAccessToken(null);
+    bool IAccessTokenIssuer.TryRequestAccessToken(out TokenIssuingResult accessToken) {
+      return ((IAccessTokenIssuer)this).TryRequestAccessToken(null, out accessToken);
     }
 
-    string IAccessTokenIssuer.RequestAccessToken(Dictionary<string, object> claimsToRequest) {
+    bool IAccessTokenIssuer.TryRequestAccessToken(Dictionary<string, object> claimsToRequest, out TokenIssuingResult accessToken) {
 
 
       //TODO: implementieren

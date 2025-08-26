@@ -137,18 +137,18 @@ namespace AuthTokenHandling.TestApp {
       this.SaveFields();
       try {
 
-        var client = new OAuthTokenRequestor(
-          txtClientId.Text, txtClientSecret.Text, txtAuthorizeUrl.Text, txtRetrievalUrl.Text
-        );
+        //var client = new OAuthTokenRequestor(
+        //  txtClientId.Text, txtClientSecret.Text, txtAuthorizeUrl.Text, txtRetrievalUrl.Text
+        //);
 
-        if (client.TrySilentAuthViaCodeGrand(
-          txtRedirectUrl.Text, txtState.Text, txtScopeToRequest.Text, txtLoginHint.Text, out string code
-        )) {
-          txtRetrievalCode.Text = code;
-        }
-        else {
-          txtRetrievalCode.Text = string.Empty;
-        }
+        //if (client.TrySilentAuthViaCodeGrand(
+        //  txtRedirectUrl.Text, txtState.Text, txtScopeToRequest.Text, txtLoginHint.Text, out string code
+        //)) {
+        //  txtRetrievalCode.Text = code;
+        //}
+        //else {
+        //  txtRetrievalCode.Text = string.Empty;
+        //}
       }
       catch (Exception ex) {
         MessageBox.Show(this, ex.Message, "EXCEPTION", MessageBoxButtons.OK, MessageBoxIcon.Error);

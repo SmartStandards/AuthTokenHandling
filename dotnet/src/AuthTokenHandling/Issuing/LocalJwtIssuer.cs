@@ -1,4 +1,5 @@
 ﻿using Jose;
+using Security.AccessTokenHandling.OAuthServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -115,13 +116,13 @@ namespace Security.AccessTokenHandling {
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, signAlg);
     }
 
-    public string RequestAccessToken() {
-      return this.RequestAccessToken(null);
+    public bool TryRequestAccessToken(out TokenIssuingResult accessToken) {
+      return this.TryRequestAccessToken(null, out accessToken);
     }
 
   #endregion
 
-    public string RequestAccessToken(Dictionary<string, object> claimsToRequest) {
+    public bool TryRequestAccessToken(Dictionary<string, object> claimsToRequest, out TokenIssuingResult result) {
       var claimsToUse = new Dictionary<string, object>();
 
       if (_ClaimCustomizer != null) {
@@ -173,8 +174,13 @@ namespace Security.AccessTokenHandling {
       }
 
       string jwt = _EncodingMethod.Invoke(claimsToUse);
+      result = new TokenIssuingResult();
+      result.token_type = "Bearer";
+      result.scope = (claimsToUse.ContainsKey("scope") && claimsToUse["scope"] != null) ? claimsToUse["scope"].ToString() : null;
+      result.access_token = jwt;
+      result.expires_in = (_ExpMinutes * 60);
 
-      return jwt;
+      return true;
     }
 
     private static DateTime _UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);

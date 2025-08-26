@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issuing\IssuerFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issuing\LocalJwtIssuer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issuing\OAuthBackgroundAuthenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthErrorPhrases.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\IOAuthService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JwtContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\IAccessTokenIntrospector.cs" />

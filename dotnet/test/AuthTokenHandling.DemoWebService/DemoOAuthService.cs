@@ -37,7 +37,7 @@ public class DemoOAuthService : IOAuthService {
 
   // States
   private Dictionary<long, string> _LoginsPerSessionId = new Dictionary<long, string>();
-  private Dictionary<long, OAuthTokenResult> _TokensPerRetrievalCode = new Dictionary<long, OAuthTokenResult>();
+  private Dictionary<long, TokenIssuingResult> _TokensPerRetrievalCode = new Dictionary<long, TokenIssuingResult>();
 
   public bool TryAuthenticate(
     string apiClientId, string login, string password, bool noPasswordNeeded, string clientProvidedState,
@@ -119,10 +119,10 @@ public class DemoOAuthService : IOAuthService {
 
   public bool TryValidateSessionIdAndCreateToken(
     string apiClientId, string sessionId, string[] selectedScopes,
-    out OAuthTokenResult tokenResult
+    out TokenIssuingResult tokenResult
   ) {
 
-    tokenResult = new OAuthTokenResult();
+    tokenResult = new TokenIssuingResult();
 
     if (TryValidateSessionId(sessionId, out string login)) {
 
@@ -133,12 +133,9 @@ public class DemoOAuthService : IOAuthService {
       //in a real world scenario not a good idea...
       string subject = login;
 
-      tokenResult.token_type = "Bearer";
-      tokenResult.access_token = _JwtIssuer.RequestAccessToken(
-        nameof(DemoOAuthService), subject, "Everybody", selectedScopes
+      return  _JwtIssuer.RequestAccessToken(
+        nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
       );
-
-    return true;
 
     }
     else {
@@ -153,11 +150,11 @@ public class DemoOAuthService : IOAuthService {
 
   #region " CLIENT CREDENTIAL - FLOW "
 
-  public OAuthTokenResult ValidateClientAndCreateToken(
+  public TokenIssuingResult ValidateClientAndCreateToken(
     string clientId, string clientSecret, string[] selectedScopes
   ) {
 
-    OAuthTokenResult tokenResult = new OAuthTokenResult();
+    TokenIssuingResult tokenResult = new TokenIssuingResult();
 
     if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
       tokenResult.error = "invalid_client";
@@ -172,9 +169,8 @@ public class DemoOAuthService : IOAuthService {
     //in a real world scenario not a good idea...
     string subject = "API_" + clientId;
 
-    tokenResult.token_type = "Bearer";
-    tokenResult.access_token = _JwtIssuer.RequestAccessToken(
-      nameof(DemoOAuthService), subject, "Everybody", selectedScopes
+    bool success = _JwtIssuer.RequestAccessToken(
+      nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
     );
 
     return tokenResult;
@@ -191,7 +187,7 @@ public class DemoOAuthService : IOAuthService {
 
     bool success = this.TryValidateSessionIdAndCreateToken(
       apiClientId, sessionId, selectedScopes,
-      out OAuthTokenResult tokenResult
+      out TokenIssuingResult tokenResult
     );
 
     if (success) {
@@ -213,8 +209,8 @@ public class DemoOAuthService : IOAuthService {
     }
   }
 
-  public OAuthTokenResult RetrieveTokenByCode(string clientId, string clientSecret, string code) {
-    OAuthTokenResult result = new OAuthTokenResult();
+  public TokenIssuingResult RetrieveTokenByCode(string clientId, string clientSecret, string code) {
+    TokenIssuingResult result = new TokenIssuingResult();
 
     if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
       result.error = "invalid_client";
@@ -251,6 +247,15 @@ public class DemoOAuthService : IOAuthService {
   }
 
   #endregion
+
+  public TokenIssuingResult CreateFollowUpToken(string refreshToken) {
+    TokenIssuingResult tokenResult = new TokenIssuingResult();
+
+    tokenResult.error = "invalid_request";
+    tokenResult.error_description = "Refresh-Token currently not supported";
+
+    return tokenResult;
+  }
 
   #region " Introspection (RFC7662) "
 

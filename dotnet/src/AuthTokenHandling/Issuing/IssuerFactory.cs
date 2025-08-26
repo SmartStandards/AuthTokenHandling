@@ -1,4 +1,5 @@
 ﻿using Jose;
+using Security.AccessTokenHandling.OAuthServer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +11,7 @@ namespace Security.AccessTokenHandling {
 
     public static IAccessTokenIssuer CreateFromConfig(AuthTokenConfig config) {
       
-      if (string.IsNullOrWhiteSpace(config.ValidationMode)) {
+      if (string.IsNullOrWhiteSpace(config.IssueMode)) {
         return new DummyIssuer();
       }
 
@@ -30,7 +31,7 @@ namespace Security.AccessTokenHandling {
         }
       }
 
-      if (config.ValidationMode.Equals(WellknownIssuingModes.LOCAL_JWT_GENERATION, StringComparison.InvariantCultureIgnoreCase)) {
+      if (config.IssueMode.Equals(WellknownIssuingModes.LOCAL_JWT_GENERATION, StringComparison.InvariantCultureIgnoreCase)) {
 
         if (string.IsNullOrWhiteSpace(config.JwtValidationKey)) {
           throw new ArgumentException($"'{nameof(config.JwtValidationKey)}' must not be empty!");
@@ -50,7 +51,7 @@ namespace Security.AccessTokenHandling {
         );
 
       }
-      else if (config.ValidationMode.Equals(WellknownIssuingModes.LOCAL_JWT_GENERATION, StringComparison.InvariantCultureIgnoreCase)) {
+      else if (config.IssueMode.Equals(WellknownIssuingModes.LOCAL_JWT_GENERATION, StringComparison.InvariantCultureIgnoreCase)) {
 
         if (string.IsNullOrWhiteSpace(config.JwtValidationKey)) {
           throw new ArgumentException($"'{nameof(config.JwtValidationKey)}' must not be empty!");
@@ -108,13 +109,13 @@ namespace Security.AccessTokenHandling {
 
       //  return introspector;
       //}
-      else if (config.ValidationMode.Equals(WellknownValidationModes.IMPLICIT_WHEN_USED, StringComparison.InvariantCultureIgnoreCase)) {
-        return new DummyIssuer();
-      }
+      //else if (config.IssueMode.Equals(WellknownIssuingModes., StringComparison.InvariantCultureIgnoreCase)) {
+      //  return new DummyIssuer();
+      //}
       //else if (config.ValidationMode.Equals(WellknownValidationModes.GITHUB_VALIDATION_ENDPOINT, StringComparison.InvariantCultureIgnoreCase)) {
       //}
       else {
-        throw new NotImplementedException($"A '{nameof(config.ValidationMode)}' called '{config.ValidationMode}' is not jet implemented!");
+        throw new NotImplementedException($"A '{nameof(config.IssueMode)}' called '{config.IssueMode}' is not jet implemented!");
       }
     }
 
@@ -137,12 +138,14 @@ namespace Security.AccessTokenHandling {
       public DummyIssuer() {
       }
 
-      public string RequestAccessToken() {
-        return null;
+      public bool TryRequestAccessToken(out TokenIssuingResult result) {
+        result = new TokenIssuingResult();
+        return true;
       }
 
-      public string RequestAccessToken(Dictionary<string, object> claimsToRequest) {
-        return null;
+      public bool TryRequestAccessToken(Dictionary<string, object> claimsToRequest, out TokenIssuingResult result) {
+        result = new TokenIssuingResult();
+        return true;
       }
 
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Security.AccessTokenHandling.OAuthServer;
+using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
 
@@ -21,53 +22,59 @@ namespace Security.AccessTokenHandling {
 
   public interface IAccessTokenIssuer {
 
-    string RequestAccessToken();
+    bool TryRequestAccessToken(out TokenIssuingResult accessToken);
 
-    string RequestAccessToken(
-      Dictionary<String, object> claimsToRequest
+    bool TryRequestAccessToken(
+      Dictionary<String, object> claimsToRequest, out TokenIssuingResult result
     );
 
   }
 
   public static class AccessTokenIssuerExtensions {
 
-    public static string RequestAccessToken(
+    [Obsolete("Use overload with 'Dictionary<string, OBJECT>'")]
+    public static bool TryRequestAccessToken(
       this IAccessTokenIssuer issuer,
-      Dictionary<string, string> claimsToRequest
+      Dictionary<string, string> claimsToRequest, out TokenIssuingResult result
     ) {
-      var mappedDict = new Dictionary<string, object>();
+      Dictionary<string, object> mappedDict = new Dictionary<string, object>();
       foreach (var claim in claimsToRequest) {
         mappedDict[claim.Key] = claim.Value;
       }
-      return issuer.RequestAccessToken(mappedDict);
+      return issuer.TryRequestAccessToken(mappedDict, out result);
     }
 
-    public static string RequestAccessToken(
+    public static bool RequestAccessToken(
       this IAccessTokenIssuer issuer,
-      string subject, string audience
+      string subject, string audience,
+      out TokenIssuingResult result
     ) {
-      return issuer.RequestAccessToken(null, subject, audience);
+      return issuer.RequestAccessToken(null, subject, audience, out result);
     }
 
-    public static string RequestAccessToken(
+    public static bool RequestAccessToken(
       this IAccessTokenIssuer issuer,
-      string subject, string audience, string[] scope
+      string subject, string audience, string[] scope,
+      out TokenIssuingResult result
     ) {
-      return issuer.RequestAccessToken(null, subject, audience, scope);
+      return issuer.RequestAccessToken(null, subject, audience, scope, out result);
     }
 
-    public static string RequestAccessToken(
+    public static bool RequestAccessToken(
       this IAccessTokenIssuer issuer,
-      string issuerName, string subject, string audience
+      string issuerName, string subject, string audience,
+      out TokenIssuingResult result
     ) {
-      return issuer.RequestAccessToken(issuerName, subject, audience, null);
+      return issuer.RequestAccessToken(issuerName, subject, audience, null, out result);
     }
 
-    public static string RequestAccessToken(
+    public static bool RequestAccessToken(
       this IAccessTokenIssuer issuer,
-      string issuerName, string subject, string audience, string[] scope
+      string issuerName, string subject, string audience, string[] scope,
+      out TokenIssuingResult result
     ) {
-      var claimsToRequest = new Dictionary<String, object>();
+
+      Dictionary<String, object> claimsToRequest = new Dictionary<String, object>();
       if (!string.IsNullOrWhiteSpace(issuerName)) {
         claimsToRequest["iss"] = issuerName;
       }
@@ -83,7 +90,8 @@ namespace Security.AccessTokenHandling {
           claimsToRequest["scope"] = raw;
         }
       }
-      return issuer.RequestAccessToken(claimsToRequest);
+
+      return issuer.TryRequestAccessToken(claimsToRequest, out result);
     }
 
   }

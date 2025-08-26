@@ -642,7 +642,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
     #region " Token Display Page "
 
-    public string GetTokenDisplayPage(string token, AuthPageViewModeOptions viewMode) {
+    public string GetTokenDisplayPage(TokenIssuingResult tokenResult, AuthPageViewModeOptions viewMode) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
       if (viewMode.LowSpaceEmbedded) {
@@ -652,7 +652,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         sb.Replace("<body />", _GetTokenDisplayPageTemplate);
       }
       this.ReplaceCommonPlaceholders(sb, viewMode);
-      sb.Replace("{{token}}", token);
+      sb.Replace("{{token}}", tokenResult.access_token);
       return sb.ToString();
     }
 

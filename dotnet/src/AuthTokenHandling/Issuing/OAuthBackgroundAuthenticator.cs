@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Security.AccessTokenHandling.OAuthServer;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Security.AccessTokenHandling {
   public class OAuthBackgroundAuthenticator : IAccessTokenIssuer {
 
     private ClaimCustomizerDelegate _ClaimCustomizer = null;
+
     private Func<string> _EntryUrlGetter;
     private Func<string> _RetrivalUrlGetter;
     private Func<string> _AuthorizationHeaderGetter;
@@ -69,11 +71,12 @@ namespace Security.AccessTokenHandling {
 
     }
 
-    public string RequestAccessToken() {
-      return this.RequestAccessToken(null);
+    public bool TryRequestAccessToken(out TokenIssuingResult result) {
+      return this.TryRequestAccessToken(null, out result);
     }
 
-    public string RequestAccessToken(Dictionary<string, object> claimsToRequest) {
+    public bool TryRequestAccessToken(Dictionary<string, object> claimsToRequest, out TokenIssuingResult result) {
+      result = new TokenIssuingResult();  
       if (claimsToRequest == null) {
         claimsToRequest = new Dictionary<string, object>();
       }
@@ -132,17 +135,23 @@ namespace Security.AccessTokenHandling {
         arrivalUrl = this.GetFinalRedirect(entryUrl, _DummyRedirectUrl);
       }
       catch (Exception ex) {
-        throw new Exception($"OAuth-Flow failed during authorize: " + ex.Message);
+        //throw new Exception($"OAuth-Flow failed during authorize: " + ex.Message);
+        result.error = $"OAuth-Flow failed during authorize: " + ex.Message;
+        return false;
       }
       string retrievedCode = this.PickFromUrl(arrivalUrl, "code");
       string returnedState = this.PickFromUrl(arrivalUrl, "state");
       string error = this.PickFromUrl(arrivalUrl, "error");
       if (string.IsNullOrWhiteSpace(retrievedCode)) {
         if (!string.IsNullOrWhiteSpace(error)) {
-          throw new Exception($"OAuth-Flow failed during authorize: " + error);
+          //throw new Exception($"OAuth-Flow failed during authorize: " + error);
+          result.error = $"OAuth-Flow failed during authorize: " + error;
+          return false;
         }
         else {
-          throw new Exception($"OAuth-Flow failed during authorize: There is no 'code' within the query-params of url " + arrivalUrl);
+          //throw new Exception($"OAuth-Flow failed during authorize: There is no 'code' within the query-params of url " + arrivalUrl);
+          result.error = $"OAuth-Flow failed during authorize: There is no 'code' within the query-params of url " + arrivalUrl;
+          return false;
         }
       }
 
@@ -154,19 +163,27 @@ namespace Security.AccessTokenHandling {
         );
 
         if (!string.IsNullOrWhiteSpace(token)) {
-          return token;
+          result.token_type = "Bearer";
+          result.access_token = token;
+          return true;
         }
         else { 
           if (!string.IsNullOrWhiteSpace(retError)) {
-            throw new Exception(retError);
+            //throw new Exception(retError);
+            result.error = retError;
+            return false;
           }
           else {
-            throw new Exception("There is no 'code' within the query-params of url " + arrivalUrl);
+            //throw new Exception("There is no 'code' within the query-params of url " + arrivalUrl);
+            result.error = "There is no 'code' within the query-params of url " + arrivalUrl;
+            return false;
           }
         }
       }
       catch (Exception ex) {
-        throw new Exception($"OAuth-Flow failed during token retrival: " + ex.Message);
+        //throw new Exception($"OAuth-Flow failed during token retrival: " + ex.Message);
+        result.error = "OAuth-Flow failed during token retrival: " + ex.Message;
+        return false;
       }
 
     }

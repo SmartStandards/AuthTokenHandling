@@ -91,13 +91,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <returns></returns>
     string GetErrorPage(string message, AuthPageViewModeOptions viewMode);
 
-    /// <summary>
-    /// Generates a HTML ERROR PAGE
-    /// </summary>
-    /// <param name="token"></param>
-    /// <param name="viewMode">1=regular page / 2=optimized page for embedding in iframes (small width + white bg)</param>
-    /// <returns></returns>
-    string GetTokenDisplayPage(string token, AuthPageViewModeOptions viewMode);
+    string GetTokenDisplayPage(TokenIssuingResult tokenResult, AuthPageViewModeOptions viewMode);
 
     string GetCustomPage(
       string customHtmlBodyTemplate,

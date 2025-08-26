@@ -294,20 +294,22 @@ namespace Security.AccessTokenHandling.OAuthServer {
         else if (responseType.Equals("token", StringComparison.InvariantCultureIgnoreCase)) {
           //token oder id_token kann gefordert sein!
 
-          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out OAuthTokenResult result )) {
-            redirectUri = redirectUri + "access_token=" + result.access_token;
-            redirectUri = redirectUri + "&token_type=" + result.token_type;
-          //redirectUri = redirectUri + "&expires_in=" + result.expires_in;
-          //redirectUri = redirectUri + "&id_token=" + result.id_token;
-          //redirectUri = redirectUri + "&refresh_token=" + result.refresh_token;
+          TokenIssuingResult tokenResult = null;
+          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out tokenResult)) {
+            redirectUri = redirectUri + tokenResult.ToString();
           }
           else {
-            redirectUri = redirectUri + "error=no-token";
+            if(!string.IsNullOrWhiteSpace(tokenResult?.error)) {
+              redirectUri = redirectUri + "error=" + tokenResult.error;
+            }
+            else {
+              redirectUri = redirectUri + "error=no-token";
+            }       
           }
         }
         else if (responseType.Equals("display", StringComparison.InvariantCultureIgnoreCase)) {
-          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out OAuthTokenResult result)) {
-            string displayPage = _AuthPageBuilder.GetTokenDisplayPage(result.access_token, viewOpt);
+          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out TokenIssuingResult result)) {
+            string displayPage = _AuthPageBuilder.GetTokenDisplayPage(result, viewOpt);
             return this.Content(displayPage, "text/html");
           }
           else {
@@ -334,7 +336,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     [HttpPost(), Produces("application/json")]
     [Route("token")]
     [Consumes("application/x-www-form-urlencoded")]
-    public OAuthTokenResult RetrieveToken([FromForm] IFormCollection value) {
+    public TokenIssuingResult RetrieveToken([FromForm] IFormCollection value) {
       try {
         string grantType = null;
         string clientId = null;
@@ -358,7 +360,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
             code = codeValue.ToString();
           }
 
-          OAuthTokenResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
+          TokenIssuingResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
           return result;
         } 
         else if (grantType == "client_credentials") {
@@ -368,18 +370,25 @@ namespace Security.AccessTokenHandling.OAuthServer {
             requestedScopes = scopeValue.ToString().Split(' ');
           }
 
-          OAuthTokenResult result = _AuthService.ValidateClientAndCreateToken(
+          TokenIssuingResult result = _AuthService.ValidateClientAndCreateToken(
             clientId, clientSecret, requestedScopes
           );
           return result;
         }
-        //else if (grantType == "refresh_token") {
+        else if (grantType == "refresh_token") {
 
-            //TODO: comming soon...
+          string refreshToken = null;
+          if (value.TryGetValue("refresh_token", out StringValues refTokenValue)) {
+            refreshToken = refTokenValue.ToString();
+          }
 
-        //}
+          TokenIssuingResult result = _AuthService.CreateFollowUpToken(
+            refreshToken
+          );
+          return result;
+        }
         else {
-          return new OAuthTokenResult {
+          return new TokenIssuingResult {
             error = $"Grant-Type '{grantType}' not supported!",
             error_description = $"Grant-Type '{grantType}' not supported!"
           };
@@ -387,7 +396,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       }
       catch (Exception ex) {
         DevLogger.LogCritical(ex);
-        return new OAuthTokenResult {
+        return new TokenIssuingResult {
           error = "Processing Error",
           error_description = ex.Message
         };
@@ -406,7 +415,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <returns></returns>
     [HttpGet(), Produces("application/json")]
     [Route("token")]
-    public OAuthTokenResult RetrieveTokenViaGet(
+    public TokenIssuingResult RetrieveTokenViaGet(
       [FromQuery(Name = "grant_type")] string grantType,
       [FromQuery(Name = "client_id")] string clientId,
       [FromQuery(Name = "client_secret")] string clientSecret,
@@ -425,7 +434,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       }
       catch (Exception ex) {
         DevLogger.LogCritical(ex);
-        return new OAuthTokenResult { 
+        return new TokenIssuingResult { 
           error = "Processing Error",
           error_description = ex.Message
         };

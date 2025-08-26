@@ -1,6 +1,7 @@
 //using CefSharp.DevTools.Database;
 //using CefSharp.DevTools.DOM;
 //using Newtonsoft.Json.Linq;
+using Security.AccessTokenHandling.OAuthServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -256,35 +257,35 @@ namespace Security.AccessTokenHandling {
 
     }
 
-    [Obsolete("Use the 'OAuthBackgroundAuthenticator' instead!")]
-    public bool TrySilentAuthViaCodeGrand(
-      string returnUrl, string state, string scopeToRequest,
-      string loginHint, out string retrievedCode,
-      Dictionary<string, string> customQueryParameters = null
-    ) { //lassen wir nur als Aufwärts-Kompatibilität am leben...
-      try {
+    //[Obsolete("Use the 'OAuthBackgroundAuthenticator' instead!")]
+    //public bool TrySilentAuthViaCodeGrand(
+    //  string returnUrl, string state, string scopeToRequest,
+    //  string loginHint, out string retrievedCode,
+    //  Dictionary<string, string> customQueryParameters = null
+    //) { //lassen wir nur als Aufwärts-Kompatibilität am leben...
+    //  try {
 
-        if (customQueryParameters == null) {
-          customQueryParameters = new Dictionary<string, string>();
-        }
-        customQueryParameters["scope"] = scopeToRequest;
-        customQueryParameters["login_hint"] = loginHint;
+    //    if (customQueryParameters == null) {
+    //      customQueryParameters = new Dictionary<string, string>();
+    //    }
+    //    customQueryParameters["scope"] = scopeToRequest;
+    //    customQueryParameters["login_hint"] = loginHint;
 
-        var x = new OAuthBackgroundAuthenticator(
-          _ClientId, _ClientSecret, returnUrl, _AuthorizeUrl, _RetrievalUrl
-        );
-        retrievedCode = x.RequestAccessToken(customQueryParameters);
+    //    var x = new OAuthBackgroundAuthenticator(
+    //      _ClientId, _ClientSecret, returnUrl, _AuthorizeUrl, _RetrievalUrl
+    //    );
+    //    retrievedCode = x.RequestAccessToken(customQueryParameters);
 
-        if (!string.IsNullOrWhiteSpace(retrievedCode)) {
-          return true;
-        }
+    //    if (!string.IsNullOrWhiteSpace(retrievedCode)) {
+    //      return true;
+    //    }
 
-      }
-      catch {
-      }
-      retrievedCode = null;
-      return false;
-    }
+    //  }
+    //  catch {
+    //  }
+    //  retrievedCode = null;
+    //  return false;
+    //}
 
     #region " Helpers "
 

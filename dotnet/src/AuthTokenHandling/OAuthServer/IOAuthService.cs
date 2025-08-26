@@ -46,13 +46,13 @@ namespace Security.AccessTokenHandling.OAuthServer {
       out string message
     );
 
-    OAuthTokenResult ValidateClientAndCreateToken(
+    TokenIssuingResult ValidateClientAndCreateToken(
       string clientId, string clientSecret, string[] selectedScopes
     );
 
     bool TryValidateSessionIdAndCreateToken(
       string apiClientId, string sessionId, string[] selectedScopes,
-      out OAuthTokenResult tokenResult
+      out TokenIssuingResult tokenResult
     );
 
     bool TryValidateSessionIdAndCreateRetrievalCode(
@@ -60,7 +60,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       out string code, out string message
     );
 
-    OAuthTokenResult RetrieveTokenByCode(
+    TokenIssuingResult RetrieveTokenByCode(
       string clientId, string clientSecret, string code
     );
 
@@ -71,35 +71,66 @@ namespace Security.AccessTokenHandling.OAuthServer {
       out string message
     );
 
-
-
-
-
-    //bool ValidateSessionOtpAndCreateToken(string code, out string clientId, out string clientSecret);
-
-    //EnvironmentUiCustomizing GetEnvironmentUiCustomizing(string apiClientId);
-
-
-    //OAuthTokenIntrospectionResult IntrospectToken(string token, string tokenTypeHint);
-
-    //void ValidateAccessToken(
-    //  string rawToken,
-    //  string callerHost,
-    //  out int authStateCode,
-    //  out string[] permittedScopes,
-    //  out int cachableForMinutes,
-    //  out string identityLabel,
-    //  out string validationOutcomeMessage
-    //);
+    TokenIssuingResult CreateFollowUpToken(
+      string refreshToken
+    );
 
   }
 
-  public class OAuthTokenResult {
+  /// <summary>
+  /// Conform to https://www.rfc-editor.org/rfc/rfc6749#section-5.1
+  /// </summary>
+  public class TokenIssuingResult {
+
     public string access_token { get; set; }
-    public string scope { get; set; } = "";
+    public string scope { get; set; }
     public string token_type { get; set; }
+
+    /// <summary>
+    /// seconds until expiration
+    /// </summary>
+    public int expires_in { get; set; }
+
+    public string id_token { get; set; }
+    public string refresh_token { get; set; }
     public string error { get; set; }
     public string error_description { get; set; }
+
+    public override string ToString() {
+      StringBuilder sb = new StringBuilder(300);
+      sb.Append("access_token=");
+      sb.Append(access_token);
+
+      if (!string.IsNullOrWhiteSpace(scope)) {
+        sb.Append("&scope=");
+        sb.Append(scope);
+      }
+      if (!string.IsNullOrWhiteSpace(token_type)) {
+        sb.Append("&token_type=");
+        sb.Append(token_type);
+      }
+      if (expires_in > 0) {
+        sb.Append("&expires_in=");
+        sb.Append(expires_in.ToString());
+      }
+      if (!string.IsNullOrWhiteSpace(id_token)) {
+        sb.Append("&id_token=");
+        sb.Append(id_token);
+      }
+      if (!string.IsNullOrWhiteSpace(refresh_token)) {
+        sb.Append("&refresh_token=");
+        sb.Append(refresh_token);
+      }
+      if (!string.IsNullOrWhiteSpace(error)) {
+        sb.Append("&error=");
+        sb.Append(error);
+      }
+      if (!string.IsNullOrWhiteSpace(error_description)) {
+        sb.Append("&error_description=");
+        sb.Append(error_description);
+      }
+      return sb.ToString();
+    }
   }
 
   /// <summary>
