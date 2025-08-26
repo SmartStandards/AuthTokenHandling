@@ -19,32 +19,40 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="logo">URL or 'DATA:...'</param>
     /// <param name="portalUrl"></param>
     /// <param name="legalUrl"></param>
-    /// <param name="bgColor"></param>
-    /// <param name="textColor"></param>
+    /// <param name="defaultBgColor"></param>
+    /// <param name="defaultTextColor"></param>
+    /// <param name="defaultBgColorDarkmode"></param>
+    /// <param name="defaultTextColorDarkmode"></param>
     public DefaultAuthPageBuilder(
       string title,
       string portalUrl,
       string legalUrl,
       string logo = null,
-      string bgColor = "#0ca3d2",
-      string textColor= "#404040"
+      string defaultBgColor = "#7db1c1",
+      string defaultTextColor= "#404040",
+      string defaultBgColorDarkmode = "#000000",
+      string defaultTextColorDarkmode = "#cccccc"
       ) {
       _Title = title;
       _Logo = logo;
       _PortalUrl = portalUrl;
       _LegalUrl = legalUrl;
-      _BgColor = bgColor;
-      _TextColor = textColor;
+      _DefaultBgColor = defaultBgColor;
+      _DefaultTextColor = defaultTextColor;
+      _DefaultBgColorDarkmode = defaultBgColorDarkmode;
+      _DefaultTextColorDarkmode = defaultTextColorDarkmode;
     }
 
     private readonly string _Title;
     private readonly string _Logo;
     private readonly string _PortalUrl;
     private readonly string _LegalUrl;
-    private readonly string _BgColor;
-    private readonly string _TextColor;
+    private readonly string _DefaultBgColor;
+    private readonly string _DefaultTextColor;
+    private readonly string _DefaultBgColorDarkmode;
+    private readonly string _DefaultTextColorDarkmode;
 
-    private void ReplaceCommonPlaceholders(StringBuilder sb) {
+    private void ReplaceCommonPlaceholders(StringBuilder sb, AuthPageViewModeOptions viewMode) {
       sb.Replace("{{title}}", _Title);
       if (string.IsNullOrWhiteSpace(_Logo)) {
         sb.Replace("{{logo}}", "");
@@ -59,17 +67,38 @@ namespace Security.AccessTokenHandling.OAuthServer {
       sb.Replace("<p>Problems with your password?<br /><a rel=\"noopener\" target=\"_blank\" href=\"\">Click here to go to the portal</a></p><br />", "<br />");
       sb.Replace("<p><a rel=\"noopener\" target=\"_blank\" href=\"\">Impressum</a></p>", "<br />");
 
-      sb.Replace("{{bgcolor}}", _BgColor);
-      sb.Replace("{{textcolor}}", _TextColor);
+      if (string.IsNullOrWhiteSpace(viewMode.CustomBgColor)) {
+        if (viewMode.Darkmode) {
+          sb.Replace("{{bgcolor}}", _DefaultBgColorDarkmode);
+        }
+        else {
+          sb.Replace("{{bgcolor}}", _DefaultBgColor);
+        }
+      }
+      else {
+        sb.Replace("{{bgcolor}}", viewMode.CustomBgColor);
+      }
+      if (string.IsNullOrWhiteSpace(viewMode.CustomTextColor)) {
+        if (viewMode.Darkmode) {
+          sb.Replace("{{textcolor}}", _DefaultTextColorDarkmode);
+        }
+        else {
+          sb.Replace("{{textcolor}}", _DefaultTextColor);
+        }
+      }
+      else {
+        sb.Replace("{{textcolor}}", viewMode.CustomTextColor);
+      }
+
     }
 
     #region " HTML Base Template "
 
-    public string GetCustomPage(string customHtmlBodyTemplate) {
+    public string GetCustomPage(string customHtmlBodyTemplate, AuthPageViewModeOptions viewMode) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
       sb.Replace("<body />", customHtmlBodyTemplate);
-      this.ReplaceCommonPlaceholders(sb);
+      this.ReplaceCommonPlaceholders(sb, viewMode);
       return sb.ToString();
     }
 
@@ -275,17 +304,18 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     public string GetAuthForm(
-      string responseType, string prompt, string login_hint, string state, string clientId, string redirectUri, string requestedScopes, int viewMode, string error
+      string responseType, string prompt, string login_hint, string state, string clientId, string redirectUri, string requestedScopes,
+      AuthPageViewModeOptions viewMode, string error
     ) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
-      if(viewMode == 2) {
+      if(viewMode.LowSpaceEmbedded) {
         sb.Replace("<body />", _AuthFormTemplateEmbedded);
       }
       else {
         sb.Replace("<body />", _AuthFormTemplate);
       }
-      this.ReplaceCommonPlaceholders(sb);
+      this.ReplaceCommonPlaceholders(sb, viewMode);
       sb.Replace("{{responseType}}", responseType);
       sb.Replace("{{prompt}}", prompt);
       sb.Replace("{{login_hint}}", login_hint);
@@ -312,17 +342,18 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="error"></param>
     /// <returns></returns>
     public string GetWinAuthForm(
-      string responseType, string prompt, string identifiedWinUser, string state, string clientId, string redirectUri, string requestedScopes, int viewMode, string error
+      string responseType, string prompt, string identifiedWinUser, string state, string clientId,
+      string redirectUri, string requestedScopes, AuthPageViewModeOptions viewMode, string error
     ) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
-      if(viewMode == 2) {
+      if(viewMode.LowSpaceEmbedded) {
         sb.Replace("<body />", _AuthFormTemplateEmbeddedWinAuth);
       }
       else {
         sb.Replace("<body />", _AuthFormTemplateWinAuth);
       }
-      this.ReplaceCommonPlaceholders(sb);
+      this.ReplaceCommonPlaceholders(sb, viewMode);
       sb.Replace("{{responseType}}", responseType);
       sb.Replace("{{prompt}}", prompt);
       sb.Replace("{{identifiedWinUser}}", identifiedWinUser);
@@ -458,18 +489,18 @@ namespace Security.AccessTokenHandling.OAuthServer {
       string redirectUri, 
       string requestedScopes,
       ScopeDescriptor[] availableScopes,
-      int viewMode,
+      AuthPageViewModeOptions viewMode,
       string error
     ) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
-      if (viewMode == 2) {
+      if (viewMode.LowSpaceEmbedded) {
         sb.Replace("<body />", _ScopeConfirmationTemplateEmbedded);
       }
       else {
         sb.Replace("<body />", _ScopeConfirmationTemplate);
       }
-      this.ReplaceCommonPlaceholders(sb);
+      this.ReplaceCommonPlaceholders(sb, viewMode);
       sb.Replace("{{responseType}}", responseType);
       sb.Replace("{{prompt}}", prompt);
       sb.Replace("{{otp}}", otp);
@@ -571,16 +602,16 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="message"></param>
     /// <param name="viewMode">1=regular page / 2=optimized page for embedding in iframes (small width + white bg)</param>
     /// <returns></returns>
-    public string GetErrorPage(string message, int viewMode) {
+    public string GetErrorPage(string message, AuthPageViewModeOptions viewMode) {
       var sb = new StringBuilder(8000);
       sb.Append(_HtmlBaseTemplateWithCSS);
-      if (viewMode == 2) {
+      if (viewMode.LowSpaceEmbedded) {
         sb.Replace("<body />", _GetErrorPageTemplateEmbedded);
       }
       else {
         sb.Replace("<body />", _GetErrorPageTemplate);
       }
-      this.ReplaceCommonPlaceholders(sb);
+      this.ReplaceCommonPlaceholders(sb, viewMode);
       sb.Replace("{{message}}", message);
       return sb.ToString();
     }
@@ -604,6 +635,72 @@ namespace Security.AccessTokenHandling.OAuthServer {
     <div class=""login"">
       <h1>Error</h1>
       <p><span style=""color:red""><b>{{message}}</b></span></p>
+    </div>
+  </body>");
+
+    #endregion
+
+    #region " Token Display Page "
+
+    public string GetTokenDisplayPage(string token, AuthPageViewModeOptions viewMode) {
+      var sb = new StringBuilder(8000);
+      sb.Append(_HtmlBaseTemplateWithCSS);
+      if (viewMode.LowSpaceEmbedded) {
+        sb.Replace("<body />", _GetTokenDisplayPageTemplateEmbedded);
+      }
+      else {
+        sb.Replace("<body />", _GetTokenDisplayPageTemplate);
+      }
+      this.ReplaceCommonPlaceholders(sb, viewMode);
+      sb.Replace("{{token}}", token);
+      return sb.ToString();
+    }
+
+    private readonly string _GetTokenDisplayPageTemplate = (
+@"  <body>
+    <div class=""login"" style=""min-width:600px"">
+      <h1>Your Token:</h1>
+      <div style=""display:inline-flex;align-items:stretch;gap:6px;max-width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;"">
+        <textarea
+          readonly
+          aria-label=""Token""
+          style=""height:130px;width:600px;max-width:100%;line-height:1.35;padding:6px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;overflow:auto;resize:vertical;""
+        >{{token}}</textarea>
+
+        <button
+          type=""button""
+          aria-label=""COPY""
+          style=""padding:8px 10px;border:0;border-radius:6px;cursor:pointer;white-space:nowrap;""
+          onclick=""(async(b)=>{const t=b.previousElementSibling;t.focus();t.select();t.setSelectionRange(0,t.value.length);try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t.value);}else{document.execCommand('copy');}const o=b.textContent;b.textContent='copied!';setTimeout(()=>b.textContent=o,1500);}catch(e){const o=b.textContent;b.textContent='Fehler';setTimeout(()=>b.textContent=o,1500);}})(this)""
+        >COPY</button>
+      </div>
+    </div>
+    <div class=""login-help"">
+      <p>Problems with your password?<br /><a rel=""noopener"" target=""_blank"" href=""{{portal_url}}"">Click here to go to the portal</a></p><br />
+      <br />
+      <br />
+      <p><a rel=""noopener"" target=""_blank"" href=""{{legal_url}}"">Impressum</a></p>
+    </div>
+  </body>");
+
+    private readonly string _GetTokenDisplayPageTemplateEmbedded = (
+@"  <body>
+    <div class=""login"" style=""min-width:600px"">
+      <h1>Your Token:</h1>
+      <div style=""display:inline-flex;align-items:stretch;gap:6px;max-width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;"">
+        <textarea
+          readonly
+          aria-label=""Token""
+          style=""height:130px;width:600px;max-width:100%;line-height:1.35;padding:6px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;overflow:auto;resize:vertical;""
+        >{{token}}</textarea>
+
+        <button
+          type=""button""
+          aria-label=""COPY""
+          style=""padding:8px 10px;border:0;border-radius:6px;cursor:pointer;white-space:nowrap;""
+          onclick=""(async(b)=>{const t=b.previousElementSibling;t.focus();t.select();t.setSelectionRange(0,t.value.length);try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t.value);}else{document.execCommand('copy');}const o=b.textContent;b.textContent='copied!';setTimeout(()=>b.textContent=o,1500);}catch(e){const o=b.textContent;b.textContent='Fehler';setTimeout(()=>b.textContent=o,1500);}})(this)""
+        >COPY</button>
+      </div>
     </div>
   </body>");
 

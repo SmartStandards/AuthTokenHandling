@@ -9,6 +9,7 @@
     <Import_RootNamespace>System</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\ControllerRegistrar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EvaluateBearerTokenAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EvaluateBearerTokenAttribute.Net4Dummy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\DefaultAuthPageBuilder.cs" />

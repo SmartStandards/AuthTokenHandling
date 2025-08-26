@@ -15,7 +15,22 @@ namespace Security.AccessTokenHandling {
     public LocalJwtIssuer(byte[] signKey, int expMinutes, bool passtroughAllRequestedClaims = false, string enforcedIssuer = null) {
       _ClaimCustomizer = (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
         mergeRequestedClaims = passtroughAllRequestedClaims;
-        if(!string.IsNullOrWhiteSpace(enforcedIssuer)) {
+        if (!passtroughAllRequestedClaims) {
+          //peserve at least the minimum required claims!
+          if (requestedClaims.ContainsKey("aud")) {
+            //shuld be preserved!
+            claimsToUse["aud"] = requestedClaims["aud"];
+          }
+          if (requestedClaims.ContainsKey("sub")) {
+            //shuld be preserved!
+            claimsToUse["sub"] = requestedClaims["sub"];
+          }
+          if (requestedClaims.ContainsKey("iss")) {
+            //shuld be preserved!
+            claimsToUse["iss"] = requestedClaims["iss"];
+          }
+        }
+        if (!string.IsNullOrWhiteSpace(enforcedIssuer)) {
           requestedClaims["iss"] = enforcedIssuer;
           claimsToUse["iss"] = enforcedIssuer;
         }
@@ -26,6 +41,21 @@ namespace Security.AccessTokenHandling {
     public LocalJwtIssuer(byte[] signKey, JwsAlgorithm signAlg, int expMinutes, bool passtroughAllRequestedClaims = false, string enforcedIssuer = null) {
       _ClaimCustomizer = (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
         mergeRequestedClaims = passtroughAllRequestedClaims;
+        if (!passtroughAllRequestedClaims) {
+          //peserve at least the minimum required claims!
+          if (requestedClaims.ContainsKey("aud")) {
+            //shuld be preserved!
+            claimsToUse["aud"] = requestedClaims["aud"];
+          }
+          if (requestedClaims.ContainsKey("sub")) {
+            //shuld be preserved!
+            claimsToUse["sub"] = requestedClaims["sub"];
+          }
+          if (requestedClaims.ContainsKey("iss")) {
+            //shuld be preserved!
+            claimsToUse["iss"] = requestedClaims["iss"];
+          }
+        }
         if (!string.IsNullOrWhiteSpace(enforcedIssuer)) {
           requestedClaims["iss"] = enforcedIssuer;
           claimsToUse["iss"] = enforcedIssuer;
@@ -93,6 +123,7 @@ namespace Security.AccessTokenHandling {
 
     public string RequestAccessToken(Dictionary<string, object> claimsToRequest) {
       var claimsToUse = new Dictionary<string, object>();
+
       if (_ClaimCustomizer != null) {
         if (claimsToRequest == null) {
           claimsToRequest = new Dictionary<string, object>();

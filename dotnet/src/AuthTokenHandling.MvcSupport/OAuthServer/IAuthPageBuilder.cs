@@ -6,8 +6,6 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
   public interface IAuthPageBuilder {
 
-    string GetCustomPage(string customHtmlBodyTemplate);
-
     /// <summary>
     /// Generates the HTML LOGON Form
     /// </summary>
@@ -29,7 +27,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       string clientId,
       string redirectUri,
       string requestedScopes,
-      int viewMode,
+      AuthPageViewModeOptions viewMode,
       string error
     );
 
@@ -54,7 +52,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       string clientId,
       string redirectUri,
       string requestedScopes,
-      int viewMode,
+      AuthPageViewModeOptions viewMode,
       string error
     );
 
@@ -81,7 +79,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       string redirectUri,
       string requestedScopes,
       ScopeDescriptor[] availableScopes,
-      int viewMode,
+      AuthPageViewModeOptions viewMode,
       string error
     );
 
@@ -91,8 +89,28 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="message"></param>
     /// <param name="viewMode">1=regular page / 2=optimized page for embedding in iframes (small width + white bg)</param>
     /// <returns></returns>
-    string GetErrorPage(string message, int viewMode);
+    string GetErrorPage(string message, AuthPageViewModeOptions viewMode);
 
+    /// <summary>
+    /// Generates a HTML ERROR PAGE
+    /// </summary>
+    /// <param name="token"></param>
+    /// <param name="viewMode">1=regular page / 2=optimized page for embedding in iframes (small width + white bg)</param>
+    /// <returns></returns>
+    string GetTokenDisplayPage(string token, AuthPageViewModeOptions viewMode);
+
+    string GetCustomPage(
+      string customHtmlBodyTemplate,
+      AuthPageViewModeOptions viewMode
+    );
+
+  }
+
+  public class AuthPageViewModeOptions {  
+    public bool LowSpaceEmbedded { get; set; } = false;
+    public bool Darkmode { get; set; } = false;
+    public string CustomBgColor { get; set; } = null;
+    public string CustomTextColor { get; set; } = null;
   }
 
 }

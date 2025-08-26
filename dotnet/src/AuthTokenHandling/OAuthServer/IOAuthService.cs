@@ -15,14 +15,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
   public interface IOAuthService : IAccessTokenIntrospector {
 
-    #region " for CIBA UI " 
 
-    bool TryValidateApiClient(
-      string apiClientId,
-      string apiCallerHost,
-      string redirectUri,
-      out string message
-    );
 
     /// <summary>
     /// should return a sessionOtp
@@ -32,7 +25,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="password"> is empty when noPasswordNeeded</param>
     /// <param name="noPasswordNeeded"> is true when windows pass-trough has already been processed</param>
     /// <param name="clientProvidedState"></param>
-    /// <param name="sessionOtp"></param>
+    /// <param name="sessionId"></param>
     /// <param name="message"></param>
     /// <returns></returns>
     bool TryAuthenticate(
@@ -41,45 +34,63 @@ namespace Security.AccessTokenHandling.OAuthServer {
       string password,
       bool noPasswordNeeded,
       string clientProvidedState,
-      out string sessionOtp,
+      out string sessionId,
       out string message
     );
 
-    bool TryGetAvailableScopesBySessionOtp(
+    bool TryGetAvailableScopesBySessionId(
       string apiClientId,
-      string sessionOtp,
+      string sessionId,
       string[] prefferedScopes,
       out ScopeDescriptor[] availableScopes,
       out string message
     );
 
-    string ValidateSessionOtpAndCreateRetrievalCode(
+    OAuthTokenResult ValidateClientAndCreateToken(
+      string clientId, string clientSecret, string[] selectedScopes
+    );
+
+    bool TryValidateSessionIdAndCreateToken(
+      string apiClientId, string sessionId, string[] selectedScopes,
+      out OAuthTokenResult tokenResult
+    );
+
+    bool TryValidateSessionIdAndCreateRetrievalCode(
+      string apiClientId, string sessionId, string[] selectedScopes,
+      out string code, out string message
+    );
+
+    OAuthTokenResult RetrieveTokenByCode(
+      string clientId, string clientSecret, string code
+    );
+
+    bool TryValidateApiClient(
       string apiClientId,
-      string login,
-      string sessionOtp,
-      string[] selectedScopes,
+      string apiCallerHost,
+      string redirectUri,
       out string message
     );
 
-    #endregion
 
-    bool TryResolveCodeToClientIdAndSecret(string code, out string clientId, out string clientSecret);
+
+
+
+    //bool ValidateSessionOtpAndCreateToken(string code, out string clientId, out string clientSecret);
 
     //EnvironmentUiCustomizing GetEnvironmentUiCustomizing(string apiClientId);
 
-    OAuthTokenResult RetrieveTokenByCode(string clientId, string clientSecret, string code);
 
     //OAuthTokenIntrospectionResult IntrospectToken(string token, string tokenTypeHint);
 
-    void ValidateAccessToken(
-      string rawToken,
-      string callerHost,
-      out int authStateCode,
-      out string[] permittedScopes,
-      out int cachableForMinutes,
-      out string identityLabel,
-      out string validationOutcomeMessage
-    );
+    //void ValidateAccessToken(
+    //  string rawToken,
+    //  string callerHost,
+    //  out int authStateCode,
+    //  out string[] permittedScopes,
+    //  out int cachableForMinutes,
+    //  out string identityLabel,
+    //  out string validationOutcomeMessage
+    //);
 
   }
 
@@ -197,6 +208,14 @@ namespace Security.AccessTokenHandling.OAuthServer {
     public bool Selected { get; set; }
     public bool ReadOnly { get; set; }
     public bool Invisible { get; set; }
+  }
+
+  public static class ScopeDescriptorExtensions {
+
+    public static string[] ToStringArray(this ScopeDescriptor[] scopes) {
+      return scopes.Where((s) => s.Selected).Select((s) => s.Expression).ToArray();
+    }
+
   }
 
   public class EnvironmentUiCustomizing {

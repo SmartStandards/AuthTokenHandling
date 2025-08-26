@@ -204,8 +204,8 @@ namespace Security.AccessTokenHandling {
           //HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
           wc.UseDefaultCredentials = true;
 
-          string formEncodedData = "client_id=" + _ClientId + "&client_secret=" + _ClientSecret + "&code=" + authorizationCode +
-            "&grant_type=authorization_code&redirect_uri=" + _RedirectUrl;
+          string formEncodedData = "grant_type=authorization_code&client_id=" + _ClientId + "&client_secret=" + _ClientSecret + "&code=" + authorizationCode +
+            "&redirect_uri=" + _RedirectUrl;
 
           string rawJsonResponse;
 

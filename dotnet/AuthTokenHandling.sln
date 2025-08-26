@@ -56,6 +56,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.WinFormsC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.net48", "src\AuthTokenHandling.net48\AuthTokenHandling.net48.csproj", "{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthTokenHandling.DemoWebService", "test\AuthTokenHandling.DemoWebService\AuthTokenHandling.DemoWebService.csproj", "{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -198,6 +202,18 @@ Global
 		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|x64.Build.0 = Release|Any CPU
 		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|x86.ActiveCfg = Release|Any CPU
 		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E}.Release|x86.Build.0 = Release|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Debug|x64.Build.0 = Debug|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Debug|x86.Build.0 = Debug|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Release|x64.ActiveCfg = Release|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Release|x64.Build.0 = Release|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Release|x86.ActiveCfg = Release|Any CPU
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -221,6 +237,7 @@ Global
 		{6D4B784F-2226-4331-BE17-9CD522BD09DA} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{95D98328-86D2-4286-A306-77FACE39383F} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
 		{882AA78A-5D13-4EF6-B1D9-FE4FCFA8415E} = {ADA576B9-92C4-4C75-9605-06023D1026B2}
+		{3228A7F0-F7E9-DB5A-882E-3138D8765C5C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D2F37C1D-32F0-4BF2-AAEB-46B9D8C07D23}

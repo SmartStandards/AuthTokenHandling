@@ -8,26 +8,24 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Xml.Linq;
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
-  /// <summary>
-  ///  YOU NEED IN INHERIT FROM THIS GLASS AND PLACE THE FOLLOWING CLASS-ATTRIBUTES:
-  ///  [ApiController]
-  ///  [ApiExplorerSettings(GroupName = "OAuth")]
-  ///  [Route("oauth2")]
-  /// </summary>
-  public abstract partial class OAuthServiceControllerBase : ControllerBase {
+  [ApiController]
+  [ApiExplorerSettings(GroupName = "OAuth")]
+  [Route("oauth2")]
+  internal partial class OAuthServiceController : ControllerBase {
 
-    private readonly ILogger<OAuthServiceControllerBase> _Logger;
+    private readonly ILogger<OAuthServiceController> _Logger;
     private readonly IOAuthService _AuthService;
     private readonly IAuthPageBuilder _AuthPageBuilder;
 
-    public OAuthServiceControllerBase(
-      ILogger<OAuthServiceControllerBase> logger, IOAuthService authService, IAuthPageBuilder authPageBuilder
+    public OAuthServiceController(
+      ILogger<OAuthServiceController> logger, IOAuthService authService, IAuthPageBuilder authPageBuilder
     ) {
       _Logger = logger;
       _AuthService = authService;
@@ -44,7 +42,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="rawScopePreference"></param>
     /// <param name="loginHint"></param>
     /// <param name="errorMessageViaRoundtrip"></param>
-    /// <param name="sessionOtp"></param>
+    /// <param name="sessionId"></param>
     /// <param name="viewMode"></param>
     /// <returns></returns>
     [Route("authorize")] //Step 1 - GET
@@ -57,68 +55,64 @@ namespace Security.AccessTokenHandling.OAuthServer {
       [FromQuery(Name = "scope")] string rawScopePreference,
       [FromQuery(Name = "login_hint")] string loginHint,
       [FromQuery(Name = "err")] string errorMessageViaRoundtrip,
-      [FromQuery(Name = "otp")] string sessionOtp,
+      [FromQuery(Name = "otp")] string sessionId,
       [FromQuery(Name = "view_mode")] int viewMode
     ) {
+
+      AuthPageViewModeOptions viewOpt = new AuthPageViewModeOptions();
+      viewOpt.LowSpaceEmbedded = (viewMode == 2);
 
       try {
 
         if (string.IsNullOrWhiteSpace(responseType)) {
-          string errorPage = _AuthPageBuilder.GetErrorPage("Url-param 'response_type' is missing! Please provide one ('code'/'token'/...)", viewMode);
+          string errorPage = _AuthPageBuilder.GetErrorPage("Url-param 'response_type' is missing! Please provide one ('code'/'token'/'display'/...)", viewOpt);
           return this.Content(errorPage, "text/html");
         }
 
         //validate clientId
         HostString apiCallerHost = this.HttpContext.Request.Host;
         if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
-          string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewMode);
+          string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewOpt);
           return this.Content(errorPage, "text/html");
         }
 
         ScopeDescriptor[] availableScopes = null;
         string authFormTemplate;
-        if (String.IsNullOrWhiteSpace(sessionOtp)) {
+        if (String.IsNullOrWhiteSpace(sessionId)) {
 
           string winUserName = null;
 
-          if (loginHint == "WINAUTH") {
+          if (loginHint == "pass-trough" || loginHint == "WINAUTH") {
             loginHint = string.Empty;
-#if !NET5_0 && !NET46
-            WindowsIdentity windowsUserIfIdentified = null;
-            try {
-              windowsUserIfIdentified = (WindowsIdentity)this.HttpContext.User.Identity!;
-              winUserName = windowsUserIfIdentified.Name?.ToString();
-              Trace.TraceInformation($"Identified pass-trough windowws user identity: " + winUserName);
-            }
-            catch (Exception ex) {
-              Trace.TraceWarning($"Cannot identify pass-trough windowws user identity: " + ex.Message);
+
+            if (this.TryGetPasstroughUserIdentity(out winUserName)) {
+
+              //no UI / unattended
+              if (viewMode == 3 && !String.IsNullOrWhiteSpace(winUserName)) {
+                string[] selectedScopes = rawScopePreference.Split(' ');
+                bool logonSuccess = _AuthService.TryAuthenticate(
+                  clientId, winUserName, null, true, state, out sessionId, out string step1Msg
+                );
+                bool success = _AuthService.TryValidateSessionIdAndCreateRetrievalCode(
+                  clientId, sessionId, selectedScopes, out string code, out string step2Msg
+                );
+                if (redirectUri.Contains("?")) {
+                  redirectUri = redirectUri + "&";
+                }
+                else {
+                  redirectUri = redirectUri + "?";
+                }
+                redirectUri = redirectUri + "code=" + code;
+
+                if (!string.IsNullOrWhiteSpace(state)) {
+                  redirectUri = redirectUri + "&state=" + state;
+                }
+
+                return this.Redirect(redirectUri);
+              }
+
             }
 
-            //no UI / unattended
-            if (viewMode == 3 && !String.IsNullOrWhiteSpace(winUserName)) {
-              string[] selectedScopes = rawScopePreference.Split(' ');
-              bool logonSuccess = _AuthService.TryAuthenticate(
-                clientId, winUserName, null, true, state, out sessionOtp, out var step1Msg
-              );
-              string code = _AuthService.ValidateSessionOtpAndCreateRetrievalCode(
-                clientId, winUserName, sessionOtp, selectedScopes, out var step2Msg
-              );
-              if (redirectUri.Contains("?")) {
-                redirectUri = redirectUri + "&";
-              }
-              else {
-                redirectUri = redirectUri + "?";
-              }
-              redirectUri = redirectUri + "code=" + code;
-
-              if (!string.IsNullOrWhiteSpace(state)) {
-                redirectUri = redirectUri + "&state=" + state;
-              }
-              return this.Redirect(redirectUri);
-            }
-#else
-              Trace.TraceWarning($"Cannot identify pass-trough windowws user identity: NOT IMPLEMENTED IN THIS VERSION!");
-#endif
           }
 
           if (!string.IsNullOrWhiteSpace(errorMessageViaRoundtrip)) {
@@ -132,13 +126,13 @@ namespace Security.AccessTokenHandling.OAuthServer {
           if (!String.IsNullOrWhiteSpace(winUserName)) {
             authFormTemplate = _AuthPageBuilder.GetWinAuthForm(
               responseType, "Please confirm pass-trough credentials:",
-              winUserName, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
+              winUserName, state, clientId, redirectUri, rawScopePreference, viewOpt, errorMessageViaRoundtrip
             );
           }
           else {
             authFormTemplate = _AuthPageBuilder.GetAuthForm(
               responseType, "Please enter your credentials:",
-              loginHint, state, clientId, redirectUri, rawScopePreference, viewMode, errorMessageViaRoundtrip
+              loginHint, state, clientId, redirectUri, rawScopePreference, viewOpt, errorMessageViaRoundtrip
             );
           }
 
@@ -153,8 +147,8 @@ namespace Security.AccessTokenHandling.OAuthServer {
             prefferredScopes = new string[] { };
           }
 
-          if (!_AuthService.TryGetAvailableScopesBySessionOtp(clientId, sessionOtp, prefferredScopes, out availableScopes, out var msg2)) {
-            string errorPage = _AuthPageBuilder.GetErrorPage(msg2, viewMode);
+          if (!_AuthService.TryGetAvailableScopesBySessionId(clientId, sessionId, prefferredScopes, out availableScopes, out var msg2)) {
+            string errorPage = _AuthPageBuilder.GetErrorPage(msg2, viewOpt);
             return this.Content(errorPage, "text/html");
           }
           else {
@@ -167,7 +161,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
             }
             authFormTemplate = _AuthPageBuilder.GetScopeConfirmationForm(
               responseType, "Please select the access scopes to be granted:",
-              sessionOtp, state, clientId, redirectUri, rawScopePreference, availableScopes, viewMode, errorMessageViaRoundtrip
+              sessionId, state, clientId, redirectUri, rawScopePreference, availableScopes, viewOpt, errorMessageViaRoundtrip
             );
           }
         }
@@ -176,7 +170,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       }
       catch (Exception ex) {
         DevLogger.LogCritical(ex);
-        string errorPage = _AuthPageBuilder.GetErrorPage("Processing Error: " + ex.Message, viewMode);
+        string errorPage = _AuthPageBuilder.GetErrorPage("Processing Error: " + ex.Message, viewOpt);
         return this.Content(errorPage, "text/html");
       }
     }
@@ -184,94 +178,88 @@ namespace Security.AccessTokenHandling.OAuthServer {
     [Route("authorize")] //Step2 - POST
     [HttpPost(), Produces("text/html")]
     [Consumes("application/x-www-form-urlencoded")]
-    public ActionResult PostLogonFormViaGet([FromForm] IFormCollection value) {
+    public ActionResult PostLogonForm([FromForm] IFormCollection value) {
 
       string login = null;
       string password = null;
-      string sessionOtp = null;
+      string sessionId = null;
       string clientId = null;
       string redirectUri = null;
       string state = null;
       string prefferredScope = "";
       int viewMode = 1;
+      AuthPageViewModeOptions viewOpt = new AuthPageViewModeOptions();
+
 
       try {
 
         string responseType = null;
-        if (value.TryGetValue("responseType", out var responseTypeValue)) {
+        if (value.TryGetValue("responseType", out StringValues responseTypeValue)) {
           responseType = responseTypeValue.ToString();
         }
 
-        if (value.TryGetValue("requestedScopes", out var prefferredScopeValue)) {
+        if (value.TryGetValue("requestedScopes", out StringValues prefferredScopeValue)) {
           prefferredScope = prefferredScopeValue.ToString();
         }
-        if (value.TryGetValue("login", out var loginValue)) {
+        if (value.TryGetValue("login", out StringValues loginValue)) {
           login = loginValue.ToString();
         }
-        if (value.TryGetValue("password", out var passwordValue)) {
+        if (value.TryGetValue("password", out StringValues passwordValue)) {
           password = passwordValue.ToString();
         }
-        if (value.TryGetValue("otp", out var otpValue)) {
-          sessionOtp = otpValue.ToString();
+        if (value.TryGetValue("otp", out StringValues sessionIdValue)) {
+          sessionId = sessionIdValue.ToString();
         }
-        if (value.TryGetValue("clientId", out var clientIdValue)) {
+        if (value.TryGetValue("clientId", out StringValues clientIdValue)) {
           clientId = clientIdValue.ToString();
         }
-        if (value.TryGetValue("redirectUri", out var redirectUriValue)) {
+        if (value.TryGetValue("redirectUri", out StringValues redirectUriValue)) {
           redirectUri = redirectUriValue.ToString();
         }
-        if (value.TryGetValue("state", out var stateValue)) {
+        if (value.TryGetValue("state", out StringValues stateValue)) {
           state = stateValue.ToString();
         }
-        if (value.TryGetValue("viewMode", out var viewModeValue)) {
+        if (value.TryGetValue("viewMode", out StringValues viewModeValue)) {
           Int32.TryParse(viewModeValue.ToString(), out viewMode);
-        }
-
-        bool winAuthSuccess = false;
-        if (string.IsNullOrEmpty(password)) {
-          login = "";
-#if !NET5_0 && !NET46
-          WindowsIdentity windowsUserIfIdentified = null;
-          try {
-            windowsUserIfIdentified = (WindowsIdentity)this.HttpContext.User.Identity!;
-            login = windowsUserIfIdentified.Name?.ToString();
-          }
-          catch (Exception ex) {
-          }
-#endif
-          if (string.IsNullOrEmpty(login)) {
-            string errorPage = _AuthPageBuilder.GetErrorPage("PASS-THROUGH FAILED!", viewMode);
-            return this.Content(errorPage, "text/html");
-          }
-          else {
-            winAuthSuccess = true;
-          }
-        }
-        else {
-          if (string.IsNullOrEmpty(login)) {
-            string errorPage = _AuthPageBuilder.GetErrorPage("NO USERNAME PROVIDED!", viewMode);
-            return this.Content(errorPage, "text/html");
-          }
+          viewOpt.LowSpaceEmbedded = (viewMode == 2);
         }
 
         HostString apiCallerHost = this.HttpContext.Request.Host;
-        if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
-          string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewMode);
+        if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
+          string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewOpt);
           return this.Content(errorPage, "text/html");
         }
 
         //beim ersten post (also noch kein OTP da....)
-        if (String.IsNullOrWhiteSpace(sessionOtp)) {
+        if (String.IsNullOrWhiteSpace(sessionId)) {
+
+          bool winAuthSuccess = false;
+          if (string.IsNullOrEmpty(password)) {
+            login = "";
+            if (!this.TryGetPasstroughUserIdentity(out login) || string.IsNullOrEmpty(login)) {
+              string errorPage = _AuthPageBuilder.GetErrorPage("PASS-THROUGH FAILED!", viewOpt);
+              return this.Content(errorPage, "text/html");
+            }
+            else {
+              winAuthSuccess = true;
+            }
+          }
+          else {
+            if (string.IsNullOrEmpty(login)) {
+              string errorPage = _AuthPageBuilder.GetErrorPage("NO USERNAME PROVIDED!", viewOpt);
+              return this.Content(errorPage, "text/html");
+            }
+          }
 
           //credentials prüfen...
           bool logonSuccess = _AuthService.TryAuthenticate(
-            clientId, login, password, winAuthSuccess, state, out sessionOtp, out var step1Msg
+            clientId, login, password, winAuthSuccess, state, out sessionId, out var step1Msg
           );
 
           //und zurück zur seite leiten
           if (logonSuccess) {
             //inkl. übergabe des OTP
-            return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionOtp}");
+            return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}");
           }
           else {
             //inkl. übergabe der fehlermeldung
@@ -284,14 +272,6 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
         string[] selectedScopes = value.Keys.Where((k) => k.StartsWith("scope_")).Select((k) => k.Substring(6)).ToArray();
 
-        string code = _AuthService.ValidateSessionOtpAndCreateRetrievalCode(
-          clientId, login, sessionOtp, selectedScopes, out var step2Msg
-        );
-
-        if (string.IsNullOrWhiteSpace(code)) {
-          return this.Redirect($"./response_type={responseType}&authorize?client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionOtp}&view_mode={viewMode}&err={step2Msg}");
-        }
-
         if (redirectUri.Contains("?")) {
           redirectUri = redirectUri + "&";
         }
@@ -300,19 +280,39 @@ namespace Security.AccessTokenHandling.OAuthServer {
         }
 
         if (responseType.Equals("code", StringComparison.InvariantCultureIgnoreCase)) {
+
+          bool success = _AuthService.TryValidateSessionIdAndCreateRetrievalCode(
+            clientId, sessionId, selectedScopes, out string code, out string step2Msg
+          );
+
+          if (!success || string.IsNullOrWhiteSpace(code)) {
+            return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionId}&view_mode={viewMode}&err={step2Msg}");
+          }
+
           redirectUri = redirectUri + "code=" + code;
         }
         else if (responseType.Equals("token", StringComparison.InvariantCultureIgnoreCase)) {
-          if (_AuthService.TryResolveCodeToClientIdAndSecret(code, out clientId, out string clientSecret)) {
-            OAuthTokenResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
+          //token oder id_token kann gefordert sein!
+
+          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out OAuthTokenResult result )) {
             redirectUri = redirectUri + "access_token=" + result.access_token;
             redirectUri = redirectUri + "&token_type=" + result.token_type;
-            //redirectUri = redirectUri + "expires_in=" + result.access_token;
-            //redirectUri = redirectUri + "id_token=" + result.access_token;
-            //redirectUri = redirectUri + "refresh_token=" + result.access_token;
+          //redirectUri = redirectUri + "&expires_in=" + result.expires_in;
+          //redirectUri = redirectUri + "&id_token=" + result.id_token;
+          //redirectUri = redirectUri + "&refresh_token=" + result.refresh_token;
           }
           else {
             redirectUri = redirectUri + "error=no-token";
+          }
+        }
+        else if (responseType.Equals("display", StringComparison.InvariantCultureIgnoreCase)) {
+          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out OAuthTokenResult result)) {
+            string displayPage = _AuthPageBuilder.GetTokenDisplayPage(result.access_token, viewOpt);
+            return this.Content(displayPage, "text/html");
+          }
+          else {
+            string errorPage = _AuthPageBuilder.GetErrorPage("Got no Token to display...", viewOpt);
+            return this.Content(errorPage, "text/html");
           }
         }
         else {
@@ -326,7 +326,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
       }
       catch (Exception ex) {
         DevLogger.LogCritical(ex);
-        string errorPage = _AuthPageBuilder.GetErrorPage("Processing Error: " + ex.Message, viewMode);
+        string errorPage = _AuthPageBuilder.GetErrorPage("Processing Error: " + ex.Message, viewOpt);
         return this.Content(errorPage, "text/html");
       }
     }
@@ -334,25 +334,56 @@ namespace Security.AccessTokenHandling.OAuthServer {
     [HttpPost(), Produces("application/json")]
     [Route("token")]
     [Consumes("application/x-www-form-urlencoded")]
-    public OAuthTokenResult RetrieveTokenByCode([FromForm] IFormCollection value) {
+    public OAuthTokenResult RetrieveToken([FromForm] IFormCollection value) {
       try {
+        string grantType = null;
         string clientId = null;
         string clientSecret = null;
-        string code = null;
 
-        if (value.TryGetValue("client_id", out var clientIdValue)) {
+
+        if (value.TryGetValue("grant_type", out StringValues grantTypeValue)) {
+          grantType = grantTypeValue.ToString();
+        }
+        if (value.TryGetValue("client_id", out StringValues clientIdValue)) {
           clientId = clientIdValue.ToString();
         }
-        if (value.TryGetValue("client_secret", out var clientSecretValue)) {
+        if (value.TryGetValue("client_secret", out StringValues clientSecretValue)) {
           clientSecret = clientSecretValue.ToString();
         }
-        if (value.TryGetValue("code", out var codeValue)) {
-          code = codeValue.ToString();
+
+        if (grantType == "authorization_code") {
+
+          string code = null;
+          if (value.TryGetValue("code", out StringValues codeValue)) {
+            code = codeValue.ToString();
+          }
+
+          OAuthTokenResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
+          return result;
+        } 
+        else if (grantType == "client_credentials") {
+
+          string[] requestedScopes = Array.Empty<string>();
+          if (value.TryGetValue("scope", out StringValues scopeValue)) {
+            requestedScopes = scopeValue.ToString().Split(' ');
+          }
+
+          OAuthTokenResult result = _AuthService.ValidateClientAndCreateToken(
+            clientId, clientSecret, requestedScopes
+          );
+          return result;
         }
+        //else if (grantType == "refresh_token") {
 
-        OAuthTokenResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
+            //TODO: comming soon...
 
-        return result;
+        //}
+        else {
+          return new OAuthTokenResult {
+            error = $"Grant-Type '{grantType}' not supported!",
+            error_description = $"Grant-Type '{grantType}' not supported!"
+          };
+        }
       }
       catch (Exception ex) {
         DevLogger.LogCritical(ex);
@@ -368,13 +399,15 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// It is NOT part of the oauth2 standard, but resolved the problem, that browsers
     /// will make CORS problems when a SPA is tying to retrieve a token via post using javascript.
     /// </summary>
+    /// <param name="grantType"></param>
     /// <param name="clientId"></param>
     /// <param name="clientSecret"></param>
     /// <param name="code"></param>
     /// <returns></returns>
     [HttpGet(), Produces("application/json")]
     [Route("token")]
-    public OAuthTokenResult RetrieveTokenByCodeViaGet(
+    public OAuthTokenResult RetrieveTokenViaGet(
+      [FromQuery(Name = "grant_type")] string grantType,
       [FromQuery(Name = "client_id")] string clientId,
       [FromQuery(Name = "client_secret")] string clientSecret,
       [FromQuery(Name = "code")] string code
@@ -383,11 +416,12 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
         var args = new Dictionary<string, StringValues>();
 
+        args["grant_type"] = grantType;
         args["client_id"] = clientId;
         args["client_secret"] = clientSecret;
         args["code"] = code;
 
-        return this.RetrieveTokenByCode(new FormCollection(args));
+        return this.RetrieveToken(new FormCollection(args));
       }
       catch (Exception ex) {
         DevLogger.LogCritical(ex);
@@ -429,6 +463,34 @@ namespace Security.AccessTokenHandling.OAuthServer {
           { "inactive_reason", "Processing Error (Introspection Endpoint)" },
         };
       }
+    }
+
+    private bool TryGetPasstroughUserIdentity(out string userName) {
+      userName = null;
+#if !NET5_0 && !NET46
+      try {
+        if (this.HttpContext.User.Identity is WindowsIdentity) {
+          WindowsIdentity windowsUserIfIdentified = null;
+          windowsUserIfIdentified = (WindowsIdentity)this.HttpContext.User.Identity!;
+          userName = windowsUserIfIdentified.Name?.ToString();
+        }
+        else if (this.HttpContext.User.Identity is ClaimsIdentity) {
+          ClaimsIdentity windowsUserIfIdentified = null;
+          windowsUserIfIdentified = (ClaimsIdentity)this.HttpContext.User.Identity!;
+          userName = windowsUserIfIdentified.Name?.ToString();
+        }
+        else {
+          Trace.TraceWarning($"Cannot identify pass-trough user identity: Unknown identity-class");
+        }
+        Trace.TraceInformation($"Identified pass-trough user identity: " + userName);
+      }
+      catch (Exception ex) {
+        Trace.TraceWarning($"Cannot identify pass-trough user identity: " + ex.Message);
+      }
+#else
+      Trace.TraceWarning($"Cannot identify pass-trough user identity: NOT IMPLEMENTED IN THIS VERSION!");
+#endif
+      return !string.IsNullOrWhiteSpace(userName);
     }
 
   }

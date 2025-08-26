@@ -193,7 +193,7 @@ namespace Security.AccessTokenHandling {
       /// <summary>
       /// if set, TOKENS WILL BECOME OPTIONAL and the provided 'ScopeVisitor' will be
       /// called in this case passing the given anonymousSubjectName to it.
-      /// The hook can provide default scopes to that should be permitted fot the caller. 
+      /// The hook can provide default scopes which should be permitted for the caller. 
       /// </summary>
       /// <param name="anonymousSubjectName"></param>
       public void EnableAnonymousSubject(string anonymousSubjectName) {
