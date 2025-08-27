@@ -41,7 +41,7 @@ namespace Security.AccessTokenHandling {
       IEnumerable<ApplicationPart> parts, ControllerFeature feature
     ) {
 
-      Type controllerType = typeof(OAuthServiceController);
+      Type controllerType = typeof(OAuth2Controller);
       feature.Controllers.Add(controllerType.GetTypeInfo());
 
     }

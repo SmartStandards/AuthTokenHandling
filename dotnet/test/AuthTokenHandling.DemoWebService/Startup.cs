@@ -1,5 +1,7 @@
 using DistributedDataFlow;
 using Logging.SmartStandards;
+using Logging.SmartStandards;
+using Logging.SmartStandards.AspSupport;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,13 +13,12 @@ using Microsoft.OpenApi.Models;
 using Security.AccessTokenHandling;
 using Security.AccessTokenHandling.OAuthServer;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web.UJMW;
-using Logging.SmartStandards;
-using Logging.SmartStandards.AspSupport;
 
 namespace Security {
 
@@ -40,7 +41,7 @@ namespace Security {
       _ApiVersion = typeof(AccessTokenValidator).Assembly.GetName().Version;
 
       string outDir = AppDomain.CurrentDomain.BaseDirectory;
-
+      string baseUrl = _Configuration.GetValue<string>("BaseUrl");
       services.AddSmartStandardsLogging(_Configuration, _ApiTitle);
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +60,7 @@ namespace Security {
       DemoOAuthService demoOAuthService  = new DemoOAuthService();
 
       IAuthPageBuilder authPageBuilder = new DefaultAuthPageBuilder(
-        _ApiTitle, "https://ushell.org", "https://ushell.org"
+        _ApiTitle, baseUrl + "docs/", baseUrl + "docs/"
       );
 
       services.AddSingleton<IOAuthService>(demoOAuthService);
@@ -123,31 +124,68 @@ namespace Security {
         //  getLinkMd = " [get one...](../oauth?state=myState&client_id=master&login_hint=API-CLIENT&redirect_uri=/oauth/display)";
         //}
 
-        //https://www.thecodebuzz.com/jwt-authorization-token-swagger-open-api-asp-net-core-3-0/
-        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
-          Name = "Authorization",
-          Type = SecuritySchemeType.ApiKey,
-          Scheme = "Bearer",
-          BearerFormat = "JWT",
-          In = ParameterLocation.Header,
-          Description = "API-TOKEN" + getLinkMd
-        });
+        ////https://www.thecodebuzz.com/jwt-authorization-token-swagger-open-api-asp-net-core-3-0/
+        //c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
+        //  Name = "Authorization",
+        //  Type = SecuritySchemeType.ApiKey,
+        //  Scheme = "Bearer",
+        //  BearerFormat = "JWT",
+        //  In = ParameterLocation.Header,
+        //  Description = "API-TOKEN" + getLinkMd
+        //});
 
-        c.AddSecurityRequirement(new OpenApiSecurityRequirement
-          {
-              {
-                    new OpenApiSecurityScheme
-                      {
-                          Reference = new OpenApiReference
-                          {
-                              Type = ReferenceType.SecurityScheme,
-                              Id = "Bearer"
-                          }
-                      },
-                      new string[] {}
+        //c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        //  {    
+        //      {
+        //            new OpenApiSecurityScheme
+        //              {
+        //                  Reference = new OpenApiReference
+        //                  {
+        //                      Type = ReferenceType.SecurityScheme,
+        //                      Id = "Bearer"
+        //                  }
+        //              },
+        //              new string[] {}
 
+        //      }
+        //  });
+        //});
+
+
+
+          // Security Definition für OAuth2 Implicit Flow
+          c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme {
+            Type = SecuritySchemeType.OAuth2,
+            Flows = new OpenApiOAuthFlows {
+              Implicit = new OpenApiOAuthFlow {
+                AuthorizationUrl = new Uri("http://localhost:55202" + baseUrl + "oauth2/authorize"), // deine Auth-URL
+                Scopes = new Dictionary<string, string>
+                {
+                    { "write", "Schreibrechte anfordern" }
+                }
               }
+            }
           });
+
+          // Security Requirement, damit Swagger UI die Authorisierung anfordert
+          c.AddSecurityRequirement(new OpenApiSecurityRequirement
+          {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "oauth2"
+                    },
+                    Scheme = "oauth2",
+                    Name = "oauth2",
+                    In = ParameterLocation.Header
+                },
+                new List<string> { "write" }
+            }
+          });
+       
 
         #endregion
 
@@ -158,7 +196,7 @@ namespace Security {
           new OpenApiInfo {
             Title = "OAuth",
             Version = "2",
-            Description = ""
+            Description = $"[**DEMO-LOGON**]({baseUrl}oauth2/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=U_001&client_id=11aa22bb33cc) *(pwd: **U_001!**)*"
             //Contact = new OpenApiContact {
             //  Name = "",
             //  Email = "",
@@ -229,13 +267,20 @@ namespace Security {
           c.DocumentTitle = _ApiTitle + " - OpenAPI Definition(s)";
 
           //represents the sorting in SwaggerUI combo-box
-          c.SwaggerEndpoint("schema/OAuth.json", "OAuth");
+          c.SwaggerEndpoint("schema/OAuth.json", "OAuth2 Demo");
           c.SwaggerEndpoint("schema/ApiV3.json", _ApiTitle + " - API v" + _ApiVersion.ToString(3));
       
           c.RoutePrefix = "docs";
 
           //requires MVC app.UseStaticFiles();
           c.InjectStylesheet(baseUrl + "swagger-ui/custom.css");
+
+
+          c.OAuthClientId(DemoOAuthService._MyOAuthClientId);
+          c.OAuthScopes("write");
+          c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> {
+            ["login_hint"] = "U_001",
+          });
 
         });
 

@@ -17,7 +17,7 @@ public class DemoOAuthService : IOAuthService {
 
   // In a real world scenario these would be stored in a secure database!
 
-  private static readonly string _MyOAuthClientId = "11aa22bb33cc";
+  internal static readonly string _MyOAuthClientId = "11aa22bb33cc";
   private static readonly string _MyOAuthClientSecret = "wow!";
 
   private static readonly byte[] _MyTotallySecretDemoJwtKey = Encoding.ASCII.GetBytes("TheBigAndMightyFoo");

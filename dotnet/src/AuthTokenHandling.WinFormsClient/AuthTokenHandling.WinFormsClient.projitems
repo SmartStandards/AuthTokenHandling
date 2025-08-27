@@ -32,7 +32,4 @@
       <DependentUpon>CredentialDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Issuing - Copy\" />
-  </ItemGroup>
 </Project>

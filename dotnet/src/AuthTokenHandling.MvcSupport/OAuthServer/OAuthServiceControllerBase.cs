@@ -18,14 +18,14 @@ namespace Security.AccessTokenHandling.OAuthServer {
   [ApiController]
   [ApiExplorerSettings(GroupName = "OAuth")]
   [Route("oauth2")]
-  internal partial class OAuthServiceController : ControllerBase {
+  internal partial class OAuth2Controller : ControllerBase {
 
-    private readonly ILogger<OAuthServiceController> _Logger;
+    private readonly ILogger<OAuth2Controller> _Logger;
     private readonly IOAuthService _AuthService;
     private readonly IAuthPageBuilder _AuthPageBuilder;
 
-    public OAuthServiceController(
-      ILogger<OAuthServiceController> logger, IOAuthService authService, IAuthPageBuilder authPageBuilder
+    public OAuth2Controller(
+      ILogger<OAuth2Controller> logger, IOAuthService authService, IAuthPageBuilder authPageBuilder
     ) {
       _Logger = logger;
       _AuthService = authService;

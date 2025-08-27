@@ -670,7 +670,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <button
           type=""button""
           aria-label=""COPY""
-          style=""padding:8px 10px;border:0;border-radius:6px;cursor:pointer;white-space:nowrap;""
+          style=""min-width:70px;padding:8px 10px;border:0;border-radius:6px;cursor:pointer;white-space:nowrap;""
           onclick=""(async(b)=>{const t=b.previousElementSibling;t.focus();t.select();t.setSelectionRange(0,t.value.length);try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t.value);}else{document.execCommand('copy');}const o=b.textContent;b.textContent='copied!';setTimeout(()=>b.textContent=o,1500);}catch(e){const o=b.textContent;b.textContent='Fehler';setTimeout(()=>b.textContent=o,1500);}})(this)""
         >COPY</button>
       </div>
@@ -697,7 +697,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         <button
           type=""button""
           aria-label=""COPY""
-          style=""padding:8px 10px;border:0;border-radius:6px;cursor:pointer;white-space:nowrap;""
+          style=""min-width:70px;padding:8px 10px;border:0;border-radius:6px;cursor:pointer;white-space:nowrap;""
           onclick=""(async(b)=>{const t=b.previousElementSibling;t.focus();t.select();t.setSelectionRange(0,t.value.length);try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t.value);}else{document.execCommand('copy');}const o=b.textContent;b.textContent='copied!';setTimeout(()=>b.textContent=o,1500);}catch(e){const o=b.textContent;b.textContent='Fehler';setTimeout(()=>b.textContent=o,1500);}})(this)""
         >COPY</button>
       </div>

@@ -83,7 +83,9 @@ namespace Security.AccessTokenHandling.OAuthServer {
   public class TokenIssuingResult {
 
     public string access_token { get; set; }
+
     public string scope { get; set; }
+
     public string token_type { get; set; }
 
     /// <summary>
@@ -92,9 +94,14 @@ namespace Security.AccessTokenHandling.OAuthServer {
     public int expires_in { get; set; }
 
     public string id_token { get; set; }
+
     public string refresh_token { get; set; }
+
     public string error { get; set; }
+
     public string error_description { get; set; }
+
+    #region  " ToString (Url-Serialization) "
 
     public override string ToString() {
       StringBuilder sb = new StringBuilder(300);
@@ -131,6 +138,9 @@ namespace Security.AccessTokenHandling.OAuthServer {
       }
       return sb.ToString();
     }
+
+    #endregion
+
   }
 
   /// <summary>
@@ -249,13 +259,13 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
   }
 
-  public class EnvironmentUiCustomizing {
-    public string AuthPageTitle { get; set; } = "OAuth Logon";
-    public string AuthPageLogonText { get; set; } = "Please enter your credentials:";
-    public string AuthPageLogoImage { get; set; } = "";
-    public string AuthPageBgColor { get; set; } = "#0ca3d2";
-    public string PortalUrl { get; set; } = "";
-    public string LegalUrl { get; set; } = "";
-  }
+  //public class EnvironmentUiCustomizing {
+  //  public string AuthPageTitle { get; set; } = "OAuth Logon";
+  //  public string AuthPageLogonText { get; set; } = "Please enter your credentials:";
+  //  public string AuthPageLogoImage { get; set; } = "";
+  //  public string AuthPageBgColor { get; set; } = "#0ca3d2";
+  //  public string PortalUrl { get; set; } = "";
+  //  public string LegalUrl { get; set; } = "";
+  //}
 
 }
