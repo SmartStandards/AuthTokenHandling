@@ -1,6 +1,6 @@
 {
   "name": "smartstandards.authtokenhandling",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "AuthTokenHandling",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

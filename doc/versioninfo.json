@@ -1,13 +1,13 @@
 {
-  "currentVersion": "4.0.0",
-  "currentVersionWithSuffix": "4.0.0",
+  "currentVersion": "4.0.1",
+  "currentVersionWithSuffix": "4.0.1",
   "releaseType": "",
-  "previousVersion": "3.0.4",
-  "changeGrade": "major",
+  "previousVersion": "4.0.0",
+  "changeGrade": "fix",
   "currentMajor": 4,
   "currentMinor": 0,
-  "currentPatch": 0,
+  "currentPatch": 1,
   "versionDateInfo": "2025-08-27",
-  "versionTimeInfo": "07:04:18",
-  "versionNotes": "- breaking Change: Added transport of concrete reason-phrases when tokens are rejected to increase auditing details.\n- breaking Change: Implemented ClientCredential-Flow (changed *IOAuthService*)\n- *\n- Added DemoService\n"
+  "versionTimeInfo": "13:40:08",
+  "versionNotes": "- Fix multi threading issue when accessing the validation cache\n"
 }

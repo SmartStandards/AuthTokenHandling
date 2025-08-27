@@ -6,7 +6,15 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Fix multi threading issue when accessing the validation cache
+*(none)*
+
+
+
+## v 4.0.1
+released **2025-08-27**, including:
+ - Fix multi threading issue when accessing the validation cache
+
+
 
 ## v 4.0.0
 released **2025-08-27**, including:
