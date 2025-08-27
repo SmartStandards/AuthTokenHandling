@@ -1,13 +1,13 @@
 {
-  "currentVersion": "3.0.4",
-  "currentVersionWithSuffix": "3.0.4",
+  "currentVersion": "4.0.0",
+  "currentVersionWithSuffix": "4.0.0",
   "releaseType": "",
-  "previousVersion": "3.0.3",
-  "changeGrade": "fix",
-  "currentMajor": 3,
+  "previousVersion": "3.0.4",
+  "changeGrade": "major",
+  "currentMajor": 4,
   "currentMinor": 0,
-  "currentPatch": 4,
-  "versionDateInfo": "2025-05-30",
-  "versionTimeInfo": "12:20:29",
-  "versionNotes": "- new revision without significant changes\n"
+  "currentPatch": 0,
+  "versionDateInfo": "2025-08-27",
+  "versionTimeInfo": "07:04:18",
+  "versionNotes": "- breaking Change: Added transport of concrete reason-phrases when tokens are rejected to increase auditing details.\n- breaking Change: Implemented ClientCredential-Flow (changed *IOAuthService*)\n- *\n- Added DemoService\n"
 }

@@ -6,15 +6,18 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* **breaking Change**: Added transport of concrete reason-phrases when tokens are rejected to increase auditing details.
+*(none)*
 
-* **breaking Change**: Implemented ClientCredential-Flow (changed *IOAuthService*)
 
-* Added DemoService
 
-  
+## v 4.0.0
+released **2025-08-27**, including:
+ - **breaking Change**: Added transport of concrete reason-phrases when tokens are rejected to increase auditing details.
+ - **breaking Change**: Implemented ClientCredential-Flow (changed *IOAuthService*)
+ - *
+ - Added DemoService
 
-* 
+
 
 ## v 3.0.4
 released **2025-05-30**, including:
