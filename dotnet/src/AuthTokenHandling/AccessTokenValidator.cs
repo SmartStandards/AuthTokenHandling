@@ -276,6 +276,7 @@ namespace Security.AccessTokenHandling {
       unknownIssuer = false;
 
       lock (_Cache) {
+
         CacheEntry result = null;
         int idx = 0;
         foreach (CacheEntry entry in _Cache) {
@@ -289,6 +290,7 @@ namespace Security.AccessTokenHandling {
         if (result != null) {
 
           if (idx > 20) {
+            //roll back to first position!
             _Cache.RemoveAt(idx);
             _Cache.Insert(0, result);
           }
@@ -301,117 +303,119 @@ namespace Security.AccessTokenHandling {
           
           return;
         }
-        fromCache = false;
 
-        IAccessTokenIntrospector introspector = _IntrospectorSelector.Invoke(
-          authTokenSourceIdentifier, targetContract, targetContractMethod, callingMachine,
-          () => {
-            // an explicitely requested pre-visit of tokens, which are assumed to be a JWT...
-            if (string.IsNullOrWhiteSpace(rawToken)) {
-              return null;
-            }
-            try {
-              JwtContent jwtContent = JWT.Payload<JwtContent>(rawToken);
-              //...with the goal to read the issuer BEFORE introspecting/validating the token
-              return jwtContent.iss;
-              //this needs to be done sometimes, to select issuer dedicated-introspectors 
-            }
-            catch {
-              return null;
-            }
+      }
+      fromCache = false;
+
+      IAccessTokenIntrospector introspector = _IntrospectorSelector.Invoke(
+        authTokenSourceIdentifier, targetContract, targetContractMethod, callingMachine,
+        () => {
+          // an explicitely requested pre-visit of tokens, which are assumed to be a JWT...
+          if (string.IsNullOrWhiteSpace(rawToken)) {
+            return null;
           }
+          try {
+            JwtContent jwtContent = JWT.Payload<JwtContent>(rawToken);
+            //...with the goal to read the issuer BEFORE introspecting/validating the token
+            return jwtContent.iss;
+            //this needs to be done sometimes, to select issuer dedicated-introspectors 
+          }
+          catch {
+            return null;
+          }
+        }
+      );
+
+      subject = string.Empty;
+      permittedScopes = new string[] { };
+
+      if (introspector != null) {
+
+        introspector.IntrospectAccessToken(
+          rawToken,
+          out isActive,
+          out Dictionary<string, object> extractedClaims
         );
 
-        subject = string.Empty;
-        permittedScopes = new string[] { };
+        if (extractedClaims != null && extractedClaims.ContainsKey("sub")) {
+          object subClaim = extractedClaims["sub"];
+          if (subClaim != null) {
+            subject = subClaim.ToString();
+          }
+        }
 
-        if (introspector != null) {
-
-          introspector.IntrospectAccessToken(
-            rawToken,
-            out isActive,
-            out Dictionary<string, object> extractedClaims
-          );
-
-          if (extractedClaims != null && extractedClaims.ContainsKey("sub")) {
-            object subClaim = extractedClaims["sub"];
-            if (subClaim != null) {
-              subject = subClaim.ToString();
+        if (isActive) {
+          var scopes = new List<string>();
+          if (extractedClaims.ContainsKey("scope")) {
+            object scopeClaim = extractedClaims["scope"];
+            if (scopeClaim != null) {
+              scopes = scopeClaim.ToString().Split(' ').Where((s) => !string.IsNullOrWhiteSpace(s)).ToList();
             }
           }
-
-          if (isActive) {
-            var scopes = new List<string>();
-            if (extractedClaims.ContainsKey("scope")) {
-              object scopeClaim = extractedClaims["scope"];
-              if (scopeClaim != null) {
-                scopes = scopeClaim.ToString().Split(' ').Where((s) => !string.IsNullOrWhiteSpace(s)).ToList();
+          if (_PermittedScopesVisitorMethod != null) {
+            _PermittedScopesVisitorMethod.Invoke(subject, scopes);
+          }
+          permittedScopes = scopes.ToArray();
+          inactiveReason = null;
+        }
+        else {
+          inactiveReason = "No details provided";
+          if (extractedClaims != null ) {
+            try {
+              if (extractedClaims.ContainsKey("inactive_reason") && extractedClaims["inactive_reason"] != null) {
+                inactiveReason = extractedClaims["inactive_reason"].ToString();
               }
-            }
-            if (_PermittedScopesVisitorMethod != null) {
-              _PermittedScopesVisitorMethod.Invoke(subject, scopes);
-            }
-            permittedScopes = scopes.ToArray();
-            inactiveReason = null;
-          }
-          else {
-            inactiveReason = "No details provided";
-            if (extractedClaims != null ) {
-              try {
-                if (extractedClaims.ContainsKey("inactive_reason") && extractedClaims["inactive_reason"] != null) {
-                  inactiveReason = extractedClaims["inactive_reason"].ToString();
-                }
-                else if (extractedClaims.ContainsKey("exp")){
-                  object expClaim = extractedClaims["exp"];
-                  if (expClaim != null) {
-                    long exp = Convert.ToInt64(expClaim);
-                    DateTime expirationTimeUtc = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc).AddSeconds(exp);
-                    if (DateTime.UtcNow > expirationTimeUtc) {
-                      inactiveReason = $"Expired (at {expirationTimeUtc.ToString("u")})";
-                    }
+              else if (extractedClaims.ContainsKey("exp")){
+                object expClaim = extractedClaims["exp"];
+                if (expClaim != null) {
+                  long exp = Convert.ToInt64(expClaim);
+                  DateTime expirationTimeUtc = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc).AddSeconds(exp);
+                  if (DateTime.UtcNow > expirationTimeUtc) {
+                    inactiveReason = $"Expired (at {expirationTimeUtc.ToString("u")})";
                   }
                 }
               }
-              catch { 
-              }
+            }
+            catch { 
             }
           }
         }
-        else { //introspector == null:   
-          unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
-          isActive = false;
-          inactiveReason = "Introspection not possible";
-          return;
-        }
-
+      }
+      else { //introspector == null:   
+        unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
+        isActive = false;
+        inactiveReason = "Introspection not possible";
+        return;
       }
 
       if (_IntrospectionResultCachingMinutes > 0) {
+        lock (_Cache) {
 
-        //protect against DOS attack
-        if (_Cache.Count >= 10000) {
-          _Cache.RemoveAt(9999);
-        }
-
-        var newEntry = new CacheEntry();
-
-        newEntry.RawToken = rawToken;
-        newEntry.CallerHost = callingMachine;
-        newEntry.IsActive = isActive;
-        newEntry.InactiveReason = inactiveReason;
-        newEntry.PermittedScopes = permittedScopes;
-        newEntry.Subject = subject;
-        newEntry.CachableUntil = DateTime.Now.AddMinutes(_IntrospectionResultCachingMinutes);
-
-        _Cache.Insert(0, newEntry);
-
-        //remove expired entries
-        for (int i = _Cache.Count - 1; i > 0; i--) {
-          if (_Cache[i].CachableUntil < DateTime.Now) {
-            _Cache.RemoveAt(i);
+          //protect against DOS attack
+          if (_Cache.Count >= 10000) {
+            _Cache.RemoveAt(9999);
           }
-        }
 
+          CacheEntry newEntry = new CacheEntry();
+
+          newEntry.RawToken = rawToken;
+          newEntry.CallerHost = callingMachine;
+          newEntry.IsActive = isActive;
+          newEntry.InactiveReason = inactiveReason;
+          newEntry.PermittedScopes = permittedScopes;
+          newEntry.Subject = subject;
+          newEntry.CachableUntil = DateTime.Now.AddMinutes(_IntrospectionResultCachingMinutes);
+
+          _Cache.Insert(0, newEntry);
+
+          //remove expired entries
+          for (int i = _Cache.Count - 1; i > 0; i--) {
+            if (_Cache[i].CachableUntil < DateTime.Now) {
+              _Cache.RemoveAt(i);
+            }
+          }
+
+        }
       }
 
       return;
