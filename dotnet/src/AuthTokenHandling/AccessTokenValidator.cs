@@ -24,7 +24,6 @@ namespace Security.AccessTokenHandling {
       public string InactiveReason { get; set; }
       public string[] PermittedScopes { get; set; }
       public string Subject { get; set; }
-      public string ValidationOutcomeMessage { get; set; }
       public DateTime CachableUntil { get; set; }
     }
 
@@ -305,87 +304,120 @@ namespace Security.AccessTokenHandling {
         }
 
       }
+
       fromCache = false;
-
-      IAccessTokenIntrospector introspector = _IntrospectorSelector.Invoke(
-        authTokenSourceIdentifier, targetContract, targetContractMethod, callingMachine,
-        () => {
-          // an explicitely requested pre-visit of tokens, which are assumed to be a JWT...
-          if (string.IsNullOrWhiteSpace(rawToken)) {
-            return null;
-          }
-          try {
-            JwtContent jwtContent = JWT.Payload<JwtContent>(rawToken);
-            //...with the goal to read the issuer BEFORE introspecting/validating the token
-            return jwtContent.iss;
-            //this needs to be done sometimes, to select issuer dedicated-introspectors 
-          }
-          catch {
-            return null;
-          }
-        }
-      );
-
       subject = string.Empty;
       permittedScopes = new string[] { };
+      IAccessTokenIntrospector introspector = null;
+      Dictionary<string, object> extractedClaims = null;
 
-      if (introspector != null) {
+      try {
+        introspector = _IntrospectorSelector.Invoke(
+          authTokenSourceIdentifier, targetContract, targetContractMethod, callingMachine,
+          () => {
+            // an explicitely requested pre-visit of tokens, which are assumed to be a JWT...
+            if (string.IsNullOrWhiteSpace(rawToken)) {
+              return null;
+            }
+            try {
+              JwtContent jwtContent = JWT.Payload<JwtContent>(rawToken);
+              //...with the goal to read the issuer BEFORE introspecting/validating the token
+              return jwtContent.iss;
+              //this needs to be done sometimes, to select issuer dedicated-introspectors 
+            }
+            catch {
+              return null;
+            }
+          }
+        );
+      }
+      catch (Exception ex){
+        DevLogger.LogCritical(ex.Wrap(73004, "Introspector selection hook has thrown an Exception!"));
+        unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
+        isActive = false;
+        inactiveReason = "Introspection not possible (73004)";
+        return;
+      }
 
+      if (introspector == null) {
+        unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
+        isActive = false;
+        inactiveReason = "Introspection not possible (73006)"; //(introspector == null)
+        return;
+      }
+
+      try {
         introspector.IntrospectAccessToken(
           rawToken,
           out isActive,
-          out Dictionary<string, object> extractedClaims
+          out extractedClaims
         );
+      }
+      catch (Exception ex) {
+        DevLogger.LogCritical(ex.Wrap(73005, "Introspector has thrown an Exception!"));
+        isActive = false;
+        inactiveReason = "Introspection not possible (73005)";
+        return;
+      }
 
-        if (extractedClaims != null && extractedClaims.ContainsKey("sub")) {
-          object subClaim = extractedClaims["sub"];
-          if (subClaim != null) {
-            subject = subClaim.ToString();
+      //subject will always be extracted (if possible)
+      if (extractedClaims != null && extractedClaims.ContainsKey("sub")) {
+        object subClaim = extractedClaims["sub"];
+        if (subClaim != null) {
+          subject = subClaim.ToString();
+        }
+      }
+
+      if (isActive) {
+
+        var scopes = new List<string>();
+        if (extractedClaims != null && extractedClaims.ContainsKey("scope")) {
+          object scopeClaim = extractedClaims["scope"];
+          if (scopeClaim != null) {
+            scopes = scopeClaim.ToString().Split(' ').Where((s) => !string.IsNullOrWhiteSpace(s)).ToList();
           }
         }
+        if (_PermittedScopesVisitorMethod != null) {
+          _PermittedScopesVisitorMethod.Invoke(subject, scopes);
+        }
+        permittedScopes = scopes.ToArray();
+        inactiveReason = null;
 
-        if (isActive) {
-          var scopes = new List<string>();
-          if (extractedClaims.ContainsKey("scope")) {
-            object scopeClaim = extractedClaims["scope"];
-            if (scopeClaim != null) {
-              scopes = scopeClaim.ToString().Split(' ').Where((s) => !string.IsNullOrWhiteSpace(s)).ToList();
+      }
+      else {
+
+        inactiveReason = "No details provided";
+
+        if (extractedClaims != null ) {
+          try {
+            if (extractedClaims.ContainsKey("inactive_reason") && extractedClaims["inactive_reason"] != null) {
+              //explicitely delivered detail (but not standard)
+              inactiveReason = extractedClaims["inactive_reason"].ToString();
             }
-          }
-          if (_PermittedScopesVisitorMethod != null) {
-            _PermittedScopesVisitorMethod.Invoke(subject, scopes);
-          }
-          permittedScopes = scopes.ToArray();
-          inactiveReason = null;
-        }
-        else {
-          inactiveReason = "No details provided";
-          if (extractedClaims != null ) {
-            try {
-              if (extractedClaims.ContainsKey("inactive_reason") && extractedClaims["inactive_reason"] != null) {
-                inactiveReason = extractedClaims["inactive_reason"].ToString();
-              }
-              else if (extractedClaims.ContainsKey("exp")){
-                object expClaim = extractedClaims["exp"];
-                if (expClaim != null) {
-                  long exp = Convert.ToInt64(expClaim);
-                  DateTime expirationTimeUtc = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc).AddSeconds(exp);
-                  if (DateTime.UtcNow > expirationTimeUtc) {
-                    inactiveReason = $"Expired (at {expirationTimeUtc.ToString("u")})";
-                  }
+            else if (extractedClaims.ContainsKey("error_description") && extractedClaims["error_description"] != null) {
+              //part of the standard, but different semantic (means, the the introspection itself failed)
+              inactiveReason = extractedClaims["error_description"].ToString();
+            }
+            else if (extractedClaims.ContainsKey("error") && extractedClaims["error"] != null) {
+              //part of the standard, but different semantic (means, the the introspection itself failed)
+              inactiveReason = extractedClaims["error"].ToString();
+            }
+            else if (extractedClaims.ContainsKey("exp")){
+              //last fallback, if no details are present: check for expiration by our own
+              object expClaim = extractedClaims["exp"];
+              if (expClaim != null) {
+                long exp = Convert.ToInt64(expClaim);
+                DateTime expirationTimeUtc = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc).AddSeconds(exp);
+                if (DateTime.UtcNow > expirationTimeUtc) {
+                  inactiveReason = $"Expired (at {expirationTimeUtc.ToString("u")})";
                 }
               }
             }
-            catch { 
-            }
+          }
+          catch { 
           }
         }
-      }
-      else { //introspector == null:   
-        unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
-        isActive = false;
-        inactiveReason = "Introspection not possible";
-        return;
+
       }
 
       if (_IntrospectionResultCachingMinutes > 0) {
