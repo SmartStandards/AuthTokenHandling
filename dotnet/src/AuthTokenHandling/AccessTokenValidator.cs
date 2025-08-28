@@ -335,14 +335,14 @@ namespace Security.AccessTokenHandling {
         DevLogger.LogCritical(ex.Wrap(73004, "Introspector selection hook has thrown an Exception!"));
         unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
         isActive = false;
-        inactiveReason = "Introspection not possible (73004)";
+        inactiveReason = "Introspection not possible (SL-EXP)";
         return;
       }
 
       if (introspector == null) {
         unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
         isActive = false;
-        inactiveReason = "Introspection not possible (73006)"; //(introspector == null)
+        inactiveReason = "Introspection not possible (no Introspector available)"; //(introspector == null)
         return;
       }
 
@@ -356,7 +356,7 @@ namespace Security.AccessTokenHandling {
       catch (Exception ex) {
         DevLogger.LogCritical(ex.Wrap(73005, "Introspector has thrown an Exception!"));
         isActive = false;
-        inactiveReason = "Introspection not possible (73005)";
+        inactiveReason = "Introspection failed (IS-EXP)";
         return;
       }
 
@@ -378,7 +378,15 @@ namespace Security.AccessTokenHandling {
           }
         }
         if (_PermittedScopesVisitorMethod != null) {
-          _PermittedScopesVisitorMethod.Invoke(subject, scopes);
+          try {
+            _PermittedScopesVisitorMethod.Invoke(subject, scopes);
+          }
+          catch (Exception ex) {
+            DevLogger.LogCritical(ex.Wrap(73006, "ScopeVisitor has thrown an Exception!"));
+            isActive = false;
+            inactiveReason = "Introspection failed (SV-EXP)";
+            return;
+          }
         }
         permittedScopes = scopes.ToArray();
         inactiveReason = null;

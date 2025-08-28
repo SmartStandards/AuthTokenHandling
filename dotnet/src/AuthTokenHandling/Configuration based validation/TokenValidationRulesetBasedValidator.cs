@@ -134,6 +134,10 @@ namespace Security.AccessTokenHandling {
       JwtContent jwtContent = null;
       try {
 
+        if (string.IsNullOrWhiteSpace(rawJwt)) {
+          return false;
+        }
+
         jwtContent = JWT.Payload<JwtContent>(rawJwt);
          
         if (issuerProfile == null) {
