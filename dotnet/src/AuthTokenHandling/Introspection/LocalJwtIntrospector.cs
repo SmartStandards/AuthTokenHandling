@@ -1,4 +1,5 @@
 ﻿using Jose;
+using Logging.SmartStandards;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -50,7 +51,7 @@ namespace Security.AccessTokenHandling {
         }
       }
       catch (Exception ex){
-        Debug.WriteLine($"JWT signature verification failed (Decode-Error): {ex.Message}");
+        SecLogger.LogTrace($"JWT signature verification failed (Decode-Error): {ex.Message}");
       }
       return false;
     }
@@ -67,7 +68,6 @@ namespace Security.AccessTokenHandling {
         }
         else {
           isActive = false;
-          claims = null;
           claims["inactive_reason"] = $"Signature verification failed";
           return;
         }
