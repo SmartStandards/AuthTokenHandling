@@ -1,13 +1,13 @@
 {
-  "currentVersion": "4.0.3",
-  "currentVersionWithSuffix": "4.0.3",
+  "currentVersion": "4.0.4",
+  "currentVersionWithSuffix": "4.0.4",
   "releaseType": "",
-  "previousVersion": "4.0.2",
+  "previousVersion": "4.0.3",
   "changeGrade": "fix",
   "currentMajor": 4,
   "currentMinor": 0,
-  "currentPatch": 3,
+  "currentPatch": 4,
   "versionDateInfo": "2025-08-28",
-  "versionTimeInfo": "09:57:25",
-  "versionNotes": "- Bugfix: NullRefExepction in LocalJwtIntrospector\n"
+  "versionTimeInfo": "10:38:41",
+  "versionNotes": "- new revision without significant changes\n"
 }

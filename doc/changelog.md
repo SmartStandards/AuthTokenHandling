@@ -10,6 +10,12 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 4.0.4
+released **2025-08-28**, including:
+ - new revision without significant changes
+
+
+
 ## v 4.0.3
 released **2025-08-28**, including:
  - Bugfix: NullRefExepction in LocalJwtIntrospector
