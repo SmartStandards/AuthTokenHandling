@@ -1,5 +1,6 @@
 #if !NET46
 
+using Logging.SmartStandards;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -35,45 +36,34 @@ namespace Security.AccessTokenHandling {
           }
         }
 
-        HostString apiCaller = context.HttpContext.Request.Host;
+        int httpReturnCode = 200;
+        string httpReasonPhrase = string.Empty;
+        string apiCaller = context.HttpContext.Connection.RemoteIpAddress.ToString();
         MethodInfo calledContractMethod = GetMethodInfoFromContext(context, out Type contractType);
 
-        var outcome = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-          rawToken, contractType, calledContractMethod, apiCaller.Host, _RequiredApiPermissions
-        );
-
-        if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
+        if(AccessTokenValidator.TryValidateHttpAuthHeader(
+          rawToken, contractType, calledContractMethod, apiCaller,
+          ref httpReturnCode, ref httpReasonPhrase,
+          _RequiredApiPermissions
+        )) {
 
           //continue with the api call...
           await next();
 
         }
-        else if (outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenRequired) {
+        else {
           context.Result = new ContentResult() {
-            StatusCode = 401, Content = "ACCESS DENIED: an auth token (within the 'Authorization'-Header) is required for this operation!"
-          };
-        }
-        else if (outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenFromBadOrigin) {
-          context.Result = new ContentResult() {
-            StatusCode = 401, Content = "ACCESS DENIED: the origin of the provided auth token is not trusted!"
-          };
-        }
-        else if (outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedMissingPrivileges) {
-          context.Result = new ContentResult() {
-            StatusCode = 401, Content = "ACCESS DENIED: you don't have the privileges for this operation!"
-          };
-        }
-        else { //(outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenInvalid)
-          context.Result = new ContentResult() {
-            StatusCode = 401, Content = "ACCESS DENIED: the provided auth token invalid (expired/revoked/...)!"
+            StatusCode = httpReturnCode,
+            Content = httpReasonPhrase
           };
         }
 
       }
       catch (Exception ex) {
+        DevLogger.LogCritical(ex);
         context.Result = new ContentResult() {
           StatusCode = 500,
-          Content = "Error during token validation: " + ex.Message
+          Content = "Internal Server Error (EBT-ATR)"
         };
       }
 

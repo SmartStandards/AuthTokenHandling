@@ -113,13 +113,14 @@ namespace Security {
       );
 
       string tokenA = this.GenerateTestToken("UnitTest", "Max4711", "API:Foo API:Bar Baz Tenant:123");
+      string invalidReason = null;
 
       ValidationOutcome result1 = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-       tokenA, myMethod.DeclaringType, myMethod, "localhost", "Bar", "Baz"
+       tokenA, myMethod.DeclaringType, myMethod, "localhost", out invalidReason, "Bar", "Baz"
       );
 
       ValidationOutcome result2 = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-       tokenA, myMethod.DeclaringType, myMethod, "localhost", "Bar"
+       tokenA, myMethod.DeclaringType, myMethod, "localhost", out invalidReason, "Bar"
       );
 
       string expiredToken = this.GenerateTestToken(
@@ -127,7 +128,7 @@ namespace Security {
       );
 
       ValidationOutcome result3 = AccessTokenValidator.TryValidateTokenAndEvaluateScopes(
-       expiredToken, myMethod.DeclaringType, myMethod, "localhost", "Bar"
+       expiredToken, myMethod.DeclaringType, myMethod, "localhost", out invalidReason, "Bar"
       );
 
       //setup the token validation environment to use the config-based way
