@@ -37,15 +37,15 @@ namespace Security.AccessTokenHandling {
     /// <param name="contractType"></param>
     /// <param name="calledContractMethod"></param>
     /// <param name="callingMachine"></param>
-    /// <param name="httpReturnCode"></param>
-    /// <param name="failedReason"></param>
+    /// <param name="httpReturnCode">will only be changed on negative outcome (401/403)</param>
+    /// <param name="httpReasonPhrase">a Reason-Phrase which shall be transmitted to the client (low detail!, to reduce attack-surface)</param>
     /// <returns></returns>
     public static bool TryValidateHttpAuthHeader (
-      string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, ref string failedReason
+      string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, ref string httpReasonPhrase
     ) {
       var noExplicitelyRequiredApiPermissions = new string[] { };
       return TryValidateHttpAuthHeader(
-        rawAuthHeader, contractType, calledContractMethod, callingMachine, ref httpReturnCode, ref failedReason, noExplicitelyRequiredApiPermissions
+        rawAuthHeader, contractType, calledContractMethod, callingMachine, ref httpReturnCode, ref httpReasonPhrase, noExplicitelyRequiredApiPermissions
       );
     }
 
@@ -57,13 +57,14 @@ namespace Security.AccessTokenHandling {
     /// <param name="contractType"></param>
     /// <param name="calledContractMethod"></param>
     /// <param name="callingMachine"></param>
-    /// <param name="httpReturnCode"></param>
+    /// <param name="httpReturnCode">will only be changed on negative outcome (401/403)</param>
     /// <param name="requiredApiPermissions"></param>
-    /// <param name="failedReason"></param>
+    /// <param name="httpReasonPhrase">a Reason-Phrase which shall be transmitted to the client (low detail!, to reduce attack-surface)</param>
     /// <returns></returns>
     public static bool TryValidateHttpAuthHeader(
       string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine,
-      ref int httpReturnCode, ref string failedReason, params string[] requiredApiPermissions
+      ref int httpReturnCode, ref string httpReasonPhrase,
+      params string[] requiredApiPermissions
     ) {
 
       string rawToken = rawAuthHeader;
@@ -72,24 +73,39 @@ namespace Security.AccessTokenHandling {
       }
 
       ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(
-        rawToken, contractType, calledContractMethod, callingMachine, requiredApiPermissions
+        rawToken, contractType, calledContractMethod, callingMachine,
+        out string invalidReason,
+        requiredApiPermissions
       );
+
+      if (string.IsNullOrWhiteSpace(invalidReason)) {
+        invalidReason = string.Empty;
+      }
 
       if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
         return true;
       }
-      else if (outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenRequired) {
+      else if (
+        outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenRequired
+      ) {
         httpReturnCode = 401;
+        httpReasonPhrase = "Unauthorized (token required)"; //low detail - just a hint for the client
       }
       else {
-        httpReturnCode = 403;
+        if (invalidReason.Contains("xpired")) { //<< 401 semantical more correct for expired tokens than 403)
+          httpReturnCode = 401;
+          httpReasonPhrase = "Unauthorized (expired)"; //low detail - just a hint for the client
+        }
+        else {
+          httpReturnCode = 403;
+          httpReasonPhrase = "Forbidden (bad token)"; //low detail - just a hint for the client
+        }
       }
-      failedReason = Enum.GetName(typeof(AccessTokenValidator.ValidationOutcome), outcome);
-      return false;
 
+      return false;
     }
 
-    #endregion 
+    #endregion
 
     /// <summary>
     /// This method will:
@@ -106,8 +122,9 @@ namespace Security.AccessTokenHandling {
     /// Make sure, that this method is called also if there was no Token, to support anonymous access (if configured)
     /// </param>
     /// <param name="contractType"></param>
-    /// <param name="callingMachine">the client machine (name or IP-address), which has initiated the service-request</param>
     /// <param name="targetContractMethod">the api method, which the client is trying to invoke</param>
+    /// <param name="callingMachine">the client machine (name or IP-address), which has initiated the service-request</param>
+    /// <param name="invalidReason"> some detail why the token is invalid</param>
     /// <param name="requiredApiPermissions">
     /// OPTIONAL: all expressions, passed to this array,
     /// are required to be present within the permittedScopes that are evaluated when introspecting the token.
@@ -121,7 +138,7 @@ namespace Security.AccessTokenHandling {
       string rawToken,
       Type contractType,
       MethodInfo targetContractMethod,
-      string callingMachine,
+      string callingMachine, out string invalidReason,
       params string[] requiredApiPermissions
     ) {
 
@@ -132,8 +149,7 @@ namespace Security.AccessTokenHandling {
       }
     
       ValidationOutcome outcome;
-      string tokenDeniedReason = null;
-
+ 
       bool tokenRequired = _RequirementsProvider.IsAuthtokenRequired(
         contractType, targetContractMethod, 
         out string authTokenSourceIdentifier, out string[] requiredApiPermissionsFromProvider
@@ -157,10 +173,11 @@ namespace Security.AccessTokenHandling {
             permittedScopes = scopes.ToArray();
           }
 
+          invalidReason = string.Empty;
         }
         else {
           outcome = ValidationOutcome.AccessDeniedTokenRequired;
-          tokenDeniedReason = "No Token provided";
+          invalidReason = "No Token provided";
         }
       }
       else {
@@ -177,7 +194,7 @@ namespace Security.AccessTokenHandling {
           callingMachine,
           authTokenSourceIdentifier,
           out bool isActive,
-          out tokenDeniedReason,
+          out invalidReason,
           out permittedScopes,
           out subject,
           out fromCache,
@@ -213,7 +230,7 @@ namespace Security.AccessTokenHandling {
         foreach (string requiredScope in requiredScopes) {
           if (!permittedScopes.Where((s) => s.Equals(requiredScope, StringComparison.CurrentCultureIgnoreCase)).Any()) {
             outcome = ValidationOutcome.AccessDeniedMissingPrivileges;
-            tokenDeniedReason = "Required scope not present";
+            invalidReason = "Required scope not present";
             break;
           }
         }    
@@ -234,7 +251,8 @@ namespace Security.AccessTokenHandling {
         }
         SecLogger.LogWarning(
           2078854485086216369L, 73001,
-          "Negative outcome when validating Auth-Token '{tokenContentProbe}': {tokenInactiveReason}", tokenContentProbe, tokenDeniedReason
+          "Negative outcome when validating Auth-Token '{tokenContentProbe}': {tokenInactiveReason}",
+          tokenContentProbe, invalidReason
         );   
       }
 
@@ -252,7 +270,7 @@ namespace Security.AccessTokenHandling {
           permittedScopes,
           requiredScopes.ToArray(),
           fromCache,
-          tokenDeniedReason
+          invalidReason
         );
       }
 
