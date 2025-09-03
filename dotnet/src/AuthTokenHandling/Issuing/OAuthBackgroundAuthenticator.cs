@@ -280,6 +280,7 @@ namespace Security.AccessTokenHandling {
         foreach (var kvp in queryParams) {
           if (first) {
             sb.Append('?');
+            first = false;
           }
           else {
             sb.Append('&');
