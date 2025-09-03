@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>SmartStandards.AuthTokenHandling.WinFormsClient</id>
-    <version>4.0.5</version>
+    <version>4.0.6</version>
     <title>SmartStandards.AuthTokenHandling.WinFormsClient</title>
     <authors>SmartStandards</authors>
     <owners>(public domain)</owners>
@@ -16,17 +16,17 @@
     <projectUrl>https://github.com/SmartStandards/AuthTokenHandling</projectUrl>
     <dependencies>
       <group targetFramework=".NETFramework4.8">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[4.0.5]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[4.0.6]" />
         <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>
       <group targetFramework="net6.0">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[4.0.5]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[4.0.6]" />
         <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>
       <group targetFramework="net8.0">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[4.0.5]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[4.0.6]" />
         <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>

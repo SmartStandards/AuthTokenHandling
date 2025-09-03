@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Fix: malformed query-url creation
+*(none)*
+
+
+
+## v 4.0.6
+released **2025-09-03**, including:
+ - Fix: malformed query-url creation
 
 
 
