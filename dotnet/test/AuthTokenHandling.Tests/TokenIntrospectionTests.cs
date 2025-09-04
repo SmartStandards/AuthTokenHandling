@@ -13,6 +13,9 @@ using Security.AccessTokenHandling;
 using Security.AccessTokenHandling.OAuthServer;
 using static Security.AccessTokenHandling.AccessTokenValidator;
 
+
+[assembly: AssemblyMetadata("SourceContext", "AuthTokenHandling")]
+
 namespace Security {
 
   [TestClass]

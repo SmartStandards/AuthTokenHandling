@@ -1,11 +1,23 @@
 ﻿
+using Security.AccessTokenHandling.OAuthServer;
+
 namespace Security.OAuth {
 
   /// <summary>
   /// Offizielle OAuth-/OIDC-Fehlercodes als String-Konstanten.
   /// Tipp: Nutze sie für Vergleiche auf error/error_description/error_uri Feldern.
   /// </summary>
-  public static class OAuthErrorPhrases {
+  internal static class OAuthErrorPhrases {
+
+    //TODO: konsequent hierauf umbauen!
+
+    public static void SetError_InvalidRequest(this TokenIssuingResult extendee, string detailAppendix = null) {
+      extendee.error = InvalidRequest;
+      extendee.error_description = extendee.error;
+      if (!string.IsNullOrWhiteSpace(detailAppendix)) {
+        extendee.error_description = extendee.error_description + ": " + detailAppendix;
+      }
+    }
 
     // === RFC 6749 — Authorization Endpoint (Authz-Fehler) ===
     public const string InvalidRequest = "invalid_request";

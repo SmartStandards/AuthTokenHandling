@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+
+[assembly: AssemblyMetadata("SourceContext", "AuthTokenHandling")]
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
@@ -14,8 +17,6 @@ namespace Security.AccessTokenHandling.OAuthServer {
   //in eine ebenfalls technologieunabhängigen 'AuthTokenHandling.Server' assembly (wäre aktuell aber oversized)
 
   public interface IOAuthService : IAccessTokenIntrospector {
-
-
 
     /// <summary>
     /// should return a sessionOtp
@@ -73,6 +74,44 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
     TokenIssuingResult CreateFollowUpToken(
       string refreshToken
+    );
+  }
+
+  public interface IOAuthServiceWithDelegation : IOAuthService {
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="clientId"></param>
+    /// <param name="loginHint"></param>
+    /// <param name="targetAuthorizeUrl"></param>
+    /// <param name="targetClientId"></param>
+    /// <param name="anonymousSessionId">
+    /// A valid sessionId, but without any relation to a user-identity
+    /// (because we wont have any subject-identity before returning from the delegate).
+    /// Instead this sessionId needs to hold neccesarry information to identify the delegation target
+    /// and to be able to retrieve the token when only having the code (after returning).
+    /// </param>
+    /// <returns></returns>
+    bool CodeFlowDelegationRequired(
+      string clientId, ref string loginHint, out string targetAuthorizeUrl, out string targetClientId, out string anonymousSessionId
+    );
+
+    /// <summary>
+    /// IMPORTANT: after retrieving the token, this method must also identify the subject 
+    /// and impersonate the sessionId to the now discovered user-identity
+    /// (otherwiese the scopes cannot be evauated)
+    /// </summary>
+    /// <param name="codeFromDelegate"></param>
+    /// <param name="sessionId">The sessionId was transferred trough the whole external flow inside of the 'state'</param>
+    /// <param name="thisRedirectUri">
+    /// In some cases the initial redirect_uri needs to be provided also when retriving the token.
+    /// Because of inversion of control the server logic must not know the exact url (its the job of the controller) - 
+    /// so we will provide it on demand, comming directly from the incomming http-request...
+    /// </param>
+    /// <returns></returns>
+    bool TryHandleCodeflowDelegationResult(
+      string codeFromDelegate, string sessionId, string thisRedirectUri
     );
 
   }

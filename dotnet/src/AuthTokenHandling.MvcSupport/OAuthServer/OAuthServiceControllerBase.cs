@@ -1,17 +1,25 @@
 ﻿using Logging.SmartStandards;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
+using System.Web;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
+
+[assembly: AssemblyMetadata("SourceContext", "AuthTokenHandling")]
 
 namespace Security.AccessTokenHandling.OAuthServer {
 
@@ -44,6 +52,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
     /// <param name="errorMessageViaRoundtrip"></param>
     /// <param name="sessionId"></param>
     /// <param name="viewMode"></param>
+    /// <param name="codeFromDelegate"></param> 
     /// <returns></returns>
     [Route("authorize")] //Step 1 - GET
     [HttpGet(), Produces("text/html")]
@@ -56,25 +65,101 @@ namespace Security.AccessTokenHandling.OAuthServer {
       [FromQuery(Name = "login_hint")] string loginHint,
       [FromQuery(Name = "err")] string errorMessageViaRoundtrip,
       [FromQuery(Name = "otp")] string sessionId,
-      [FromQuery(Name = "view_mode")] int viewMode
+      [FromQuery(Name = "view_mode")] int viewMode,
+      [FromQuery(Name = "code")] string codeFromDelegate //NUR WENN EIN DELEGATE DAZWISCHEN HING
     ) {
+
+      Uri thisUri = new Uri(HttpContext.Request.GetDisplayUrl());
 
       AuthPageViewModeOptions viewOpt = new AuthPageViewModeOptions();
       viewOpt.LowSpaceEmbedded = (viewMode == 2);
 
       try {
 
+        //validate clientId
+        HostString apiCallerHost = this.HttpContext.Request.Host;
+        if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
+          string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewOpt);
+          return this.Content(errorPage, "text/html");
+        }
+
+        #region " IOAuthServiceWithDelegation "
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        //this is an addition extended feature to support delegation to another oauth server
+        if (_AuthService is IOAuthServiceWithDelegation) {
+
+          // WE ARE JUST RETURNING FROM THE DELEGATED AUTHORIZATION  
+          if (!string.IsNullOrWhiteSpace(codeFromDelegate)) {
+            try {
+
+              //STATE muss dann auch da sein!
+              string stateBagJson = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(state));
+              StateBag deserializedStateBag = JsonConvert.DeserializeObject<StateBag>(stateBagJson);
+              if (((IOAuthServiceWithDelegation)_AuthService).TryHandleCodeflowDelegationResult(
+                codeFromDelegate, deserializedStateBag.SessionId, thisUri.GetLeftPart(UriPartial.Path)
+              )) {
+
+                //dies sorgt dafür, dass wir nun als authentifiziert gelten und direkt in die Scope-Auswahl gehen
+                sessionId = deserializedStateBag.SessionId;
+                //TODO: Sicherheitscheck, dass das hier keiner hijacken kann und es kein seitlicher einstigsvektor ist
+
+                responseType = deserializedStateBag.OriginalResponseType;
+                clientId = deserializedStateBag.OriginalClientId;
+                redirectUri = deserializedStateBag.OriginalRedirectUri;
+                state = deserializedStateBag.OriginalState;
+                rawScopePreference = deserializedStateBag.OriginalScope;
+                viewMode = deserializedStateBag.ViewMode;
+
+              }
+              else {
+                throw new Exception($"{nameof(IOAuthServiceWithDelegation.TryHandleCodeflowDelegationResult)} returned false!");
+              }
+            }
+            catch (Exception ex2){
+              string msgs = "Invalid State on return from Delegate";
+              SecLogger.LogError(ex2.Wrap(msgs));
+              //TODO: information-hiding!!!
+              string errorPage = _AuthPageBuilder.GetErrorPage(msgs, viewOpt);
+              return this.Content(errorPage, "text/html");
+            }
+
+          } // WE ARE CHECKING IF A DELEGATED AUTHORIZATION SHOULD BE STARTED
+          else if (((IOAuthServiceWithDelegation)_AuthService).CodeFlowDelegationRequired(
+            clientId, ref loginHint,
+            out string targetAuthorizeUrl, out string targetClientId, out sessionId
+          )) {
+
+            StateBag stateBag = new StateBag {
+              OriginalState = state,
+              SessionId = sessionId,
+              OriginalRedirectUri = redirectUri,
+              OriginalScope = rawScopePreference,
+              OriginalResponseType = responseType,
+              OriginalClientId = clientId,
+              ViewMode = viewMode
+            };
+
+            string stateBagJson = JsonConvert.SerializeObject(stateBag);
+            string rawStateBag = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(stateBagJson));
+
+            return this.Redirect(
+              targetAuthorizeUrl + 
+              $"?redirect_uri={HttpUtility.UrlEncode(thisUri.GetLeftPart(UriPartial.Path))}" + 
+              "&clientId={targetClientId}&response_type=code&state={rawStateBag}"
+            );
+
+          }
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+        #endregion
+
         if (string.IsNullOrWhiteSpace(responseType)) {
           string errorPage = _AuthPageBuilder.GetErrorPage("Url-param 'response_type' is missing! Please provide one ('code'/'token'/'display'/...)", viewOpt);
           return this.Content(errorPage, "text/html");
         }
 
-        //validate clientId
-        HostString apiCallerHost = this.HttpContext.Request.Host;
-        if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out var msg)) {
-          string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewOpt);
-          return this.Content(errorPage, "text/html");
-        }
 
         ScopeDescriptor[] availableScopes = null;
         string authFormTemplate;
@@ -250,6 +335,8 @@ namespace Security.AccessTokenHandling.OAuthServer {
               return this.Content(errorPage, "text/html");
             }
           }
+
+          string redirectUrl = $"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}";
 
           //credentials prüfen...
           bool logonSuccess = _AuthService.TryAuthenticate(
@@ -500,6 +587,20 @@ namespace Security.AccessTokenHandling.OAuthServer {
       Trace.TraceWarning($"Cannot identify pass-trough user identity: NOT IMPLEMENTED IN THIS VERSION!");
 #endif
       return !string.IsNullOrWhiteSpace(userName);
+    }
+
+    private class StateBag {
+
+      public string SessionId { get; set; }
+
+      public string OriginalRedirectUri { get; set; }
+      public string OriginalState { get; set; }
+      public string OriginalScope { get; set; }
+      public string OriginalResponseType { get; set; }
+      public string OriginalClientId { get; set; }
+
+      public int ViewMode { get; set; }
+
     }
 
   }

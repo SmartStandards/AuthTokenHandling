@@ -129,7 +129,7 @@ namespace Security.AccessTokenHandling {
         claimsToUse.Remove("sub");
       }
 
-      string entryUrl = this.ApplyUrlQueryParams(_EntryUrlGetter.Invoke(), claimsToUse);
+      string entryUrl = ApplyUrlQueryParams(_EntryUrlGetter.Invoke(), claimsToUse);
       string arrivalUrl = null;
       try {
         arrivalUrl = this.GetFinalRedirect(entryUrl, _DummyRedirectUrl);
@@ -157,8 +157,9 @@ namespace Security.AccessTokenHandling {
 
       try {
        
-        this.RetrieveTokenViaCode(
-          retrievedCode, this.UseHttpGet,
+        string retrivalUrl = _RetrivalUrlGetter.Invoke();
+        bool success = TryRetrieveTokenViaCode(
+          retrievedCode, _OAuthClientId, _OAuthClientSecret, this.UseHttpGet, retrivalUrl, _DummyRedirectUrl,
           out string token, out string refreshToken, out string idToken, out string retError
         );
 
@@ -188,8 +189,10 @@ namespace Security.AccessTokenHandling {
 
     }
 
-    protected void RetrieveTokenViaCode(
-      string authorizationCode, bool useHttpGet,
+    //NOTE: ist public, because this is commonly used by oauth-proxy-implementations
+    public static bool TryRetrieveTokenViaCode(
+      string authorizationCode, string oAuthClientId, string oAuthClientSecret,
+      bool useHttpGet, string retrivalUrl, string redirectUriAgain,
       out string accessToken, out string refreshToken, out string idToken,
       out string error
     ) {
@@ -199,8 +202,7 @@ namespace Security.AccessTokenHandling {
           wc.UseDefaultCredentials = true;
 
           string rawJsonResponse;   
-          string retrivalUrl = _RetrivalUrlGetter.Invoke();
-
+          
           wc.Headers.Set("Accept", "application/json");
           if (!useHttpGet) {
             wc.Headers.Set("Content-Type", "application/x-www-form-urlencoded");
@@ -208,32 +210,32 @@ namespace Security.AccessTokenHandling {
             //wc.Headers.Set("Referrer-Policy", 'origin-when-cross-origin');
             rawJsonResponse = wc.UploadString(
               retrivalUrl,
-              "client_id=" + _OAuthClientId + 
-              "&client_secret=" + _OAuthClientSecret + 
+              "client_id=" + oAuthClientId + 
+              "&client_secret=" + oAuthClientSecret + 
               "&code=" + authorizationCode +
               "&grant_type=authorization_code" + 
-              "&redirect_uri=" + _DummyRedirectUrl
+              "&redirect_uri=" + redirectUriAgain
             );
           }
           else {
             var args = new Dictionary<string, object>();
-            args["client_id"] = _OAuthClientId;
-            args["client_secret"] = _OAuthClientSecret;
+            args["client_id"] = oAuthClientId;
+            args["client_secret"] = oAuthClientSecret;
             args["code"] = authorizationCode;
             args["grant_type"] = "authorization_code";
-            args["redirect_uri"] = _DummyRedirectUrl;
-            retrivalUrl = this.ApplyUrlQueryParams(retrivalUrl, args);
+            args["redirect_uri"] = redirectUriAgain;
+            retrivalUrl = ApplyUrlQueryParams(retrivalUrl, args);
             rawJsonResponse = wc.DownloadString(retrivalUrl);
           }
 
           refreshToken = null;
           idToken = null;
-          accessToken = this.PickJsonValue("access_token", rawJsonResponse);
+          accessToken = PickJsonValue("access_token", rawJsonResponse);
           if (string.IsNullOrWhiteSpace(accessToken)) {
             accessToken = null;
-            error = this.PickJsonValue("error_description", rawJsonResponse);
+            error = PickJsonValue("error_description", rawJsonResponse);
             if (string.IsNullOrWhiteSpace(error)) {
-              error = this.PickJsonValue("error", rawJsonResponse);
+              error = PickJsonValue("error", rawJsonResponse);
             }
             if (!string.IsNullOrWhiteSpace(error)) {
               error = "No token received! Server says: " + error;
@@ -243,18 +245,21 @@ namespace Security.AccessTokenHandling {
             }
           }
           else {
-            idToken = this.PickJsonValue("id_token", rawJsonResponse);
-            refreshToken = this.PickJsonValue("refresh_token", rawJsonResponse);
+            idToken = PickJsonValue("id_token", rawJsonResponse);
+            refreshToken = PickJsonValue("refresh_token", rawJsonResponse);
           }
 
           error = null;
         }
+
+      //HACK: can be better!
+      return (error == null);
     }
 
     #region " Helpers "
 
-    private string ApplyUrlQueryParams(string baseUrl, Dictionary<string, object> queryParams) {
-      var sb = new StringBuilder(1000);
+    private static string ApplyUrlQueryParams(string baseUrl, Dictionary<string, object> queryParams) {
+      StringBuilder sb = new StringBuilder(1000);
 
       int splitterIdx = baseUrl.IndexOf('?');
       if (splitterIdx < 0) {
@@ -296,7 +301,7 @@ namespace Security.AccessTokenHandling {
 
 
     //HACK: handgedengelt, dafür brauchen wir keine lib wie newtonsoft...
-    private string PickJsonValue(string key, string rawJson) {
+    private static string PickJsonValue(string key, string rawJson) {
       int foundAt = rawJson.IndexOf("\"" + key + "\":");
       if (foundAt >= 0) {
         string startsWithvalue = rawJson.Substring(foundAt + key.Length + 3).Trim();

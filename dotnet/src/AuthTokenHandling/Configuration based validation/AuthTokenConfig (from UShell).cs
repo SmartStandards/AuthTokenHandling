@@ -26,6 +26,14 @@ namespace Security.AccessTokenHandling {
 
   public class AuthTokenConfig {
 
+    public string DisplayLabel { get; set; } = "Authentification";
+
+    /// <summary>
+    /// OPTIONAL! Can be a http-url or a data-url (base64-encoded image)
+    /// providing a PNG in 64x64 pixel size!
+    /// </summary>
+    public string DisplayIconUrl { get; set; } = null;
+
     #region " ISSUING "
 
     /// <summary>

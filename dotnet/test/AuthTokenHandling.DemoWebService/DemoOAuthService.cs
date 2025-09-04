@@ -6,12 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.ServiceModel.Channels;
 using System.SmartStandards;
 using System.Text;
 using static System.Net.WebRequestMethods;
 
-public class DemoOAuthService : IOAuthService {
+public class DemoOAuthService : IOAuthService, IOAuthServiceWithDelegation{
 
   #region " DEMO-CONFIG "
 
@@ -90,7 +91,7 @@ public class DemoOAuthService : IOAuthService {
     }
     else {
       availableScopes = Array.Empty<ScopeDescriptor>();
-      message = "Invalid or expired sessionOtp";
+      message = "Invalid or expired logon-session";
       return false;
     }
 
@@ -148,35 +149,6 @@ public class DemoOAuthService : IOAuthService {
 
   #endregion
 
-  #region " CLIENT CREDENTIAL - FLOW "
-
-  public TokenIssuingResult ValidateClientAndCreateToken(
-    string clientId, string clientSecret, string[] selectedScopes
-  ) {
-
-    TokenIssuingResult tokenResult = new TokenIssuingResult();
-
-    if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
-      tokenResult.error = "invalid_client";
-      tokenResult.error_description = "Unknown client";
-      return tokenResult;
-    }
-
-    //for security selectedScopes needs be be filtered again because some value could have been injected
-    selectedScopes = this.GetAvailableScopes("API_" + clientId, selectedScopes).ToStringArray();
-
-    //this is to keep the demo simple,
-    //in a real world scenario not a good idea...
-    string subject = "API_" + clientId;
-
-    bool success = _JwtIssuer.RequestAccessToken(
-      nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
-    );
-
-    return tokenResult;
-  }
-
-  #endregion
 
   #region " CODE - FLOW "
 
@@ -248,6 +220,38 @@ public class DemoOAuthService : IOAuthService {
 
   #endregion
 
+  #region " CLIENT CREDENTIAL - FLOW "
+
+  public TokenIssuingResult ValidateClientAndCreateToken(
+    string clientId, string clientSecret, string[] selectedScopes
+  ) {
+
+    TokenIssuingResult tokenResult = new TokenIssuingResult();
+
+    if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
+      tokenResult.error = "invalid_client";
+      tokenResult.error_description = "Unknown client";
+      return tokenResult;
+    }
+
+    //for security selectedScopes needs be be filtered again because some value could have been injected
+    selectedScopes = this.GetAvailableScopes("API_" + clientId, selectedScopes).ToStringArray();
+
+    //this is to keep the demo simple,
+    //in a real world scenario not a good idea...
+    string subject = "API_" + clientId;
+
+    bool success = _JwtIssuer.RequestAccessToken(
+      nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
+    );
+
+    return tokenResult;
+  }
+
+  #endregion
+
+  #region " REFRESH TOKEN - FLOW "
+
   public TokenIssuingResult CreateFollowUpToken(string refreshToken) {
     TokenIssuingResult tokenResult = new TokenIssuingResult();
 
@@ -256,6 +260,8 @@ public class DemoOAuthService : IOAuthService {
 
     return tokenResult;
   }
+
+  #endregion
 
   #region " Introspection (RFC7662) "
 
@@ -336,5 +342,77 @@ public class DemoOAuthService : IOAuthService {
     }
 
   }
+
+
+  #region " OAuth - Delegation (CIBA) "
+
+  private const string _ClinetIdForDelegation = "GOOGLE";
+  private const string _DelegationClientId = "fsffwef";
+  private const string _DelegationClientSecret = "fsffwef";
+  private const string _DelegationAuthUrl = "fsffwef";
+  private const string _DelegationRetrivalUrl = "fsffwef";
+
+  public bool CodeFlowDelegationRequired(
+    string clientId, ref string loginHint,
+    out string targetAuthorizeUrl, out string targetClientId, out string anonymousSessionId
+  ) {
+
+    if(clientId == _ClinetIdForDelegation) {
+
+      targetAuthorizeUrl = _DelegationAuthUrl;
+      targetClientId = _DelegationClientId;
+
+      long sid = Snowflake44.Generate();
+      anonymousSessionId = sid.ToString();
+      lock (_LoginsPerSessionId) {
+        _LoginsPerSessionId[sid] = "=>" + _ClinetIdForDelegation;
+      }
+      return true;
+    }
+    else {
+      targetAuthorizeUrl = null;
+      targetClientId = null;
+      anonymousSessionId = null;
+      return false;
+    }
+  }
+
+  public bool TryHandleCodeflowDelegationResult(string codeFromDelegate, string sessionId, string thisRedirectUri) {
+
+    if(long.TryParse(sessionId, out long sid)) {
+      lock (_LoginsPerSessionId) {
+        if(_LoginsPerSessionId.TryGetValue(sid, out string logonToCheck)){ 
+          if(logonToCheck == ("=>" + _ClinetIdForDelegation)){
+
+            bool success = OAuthBackgroundAuthenticator.TryRetrieveTokenViaCode(
+              codeFromDelegate, 
+              _DelegationClientId,
+              _DelegationClientSecret, 
+              false,
+              _DelegationRetrivalUrl,
+              thisRedirectUri, 
+              out string accessToken,
+              out string refreshToken, 
+              out string idToken, 
+              out string error
+            );
+
+            if (success) {
+
+              //TODO: wirkliche subject-identity über den entsp. introspector laden!
+              _LoginsPerSessionId[sid] = "Identiy-Of-" + _ClinetIdForDelegation;
+
+              return true;
+            }
+
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  #endregion
 
 }

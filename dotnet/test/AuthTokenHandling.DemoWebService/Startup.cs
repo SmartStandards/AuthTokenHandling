@@ -20,6 +20,8 @@ using System.Reflection;
 using System.Text;
 using System.Web.UJMW;
 
+[assembly: AssemblyMetadata("SourceContext", "AuthTokenHandling.Demo")]
+
 namespace Security {
 
   public class Startup {
