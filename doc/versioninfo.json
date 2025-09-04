@@ -1,13 +1,13 @@
 {
-  "currentVersion": "4.0.6",
-  "currentVersionWithSuffix": "4.0.6",
+  "currentVersion": "4.1.0",
+  "currentVersionWithSuffix": "4.1.0",
   "releaseType": "",
-  "previousVersion": "4.0.5",
-  "changeGrade": "fix",
+  "previousVersion": "4.0.6",
+  "changeGrade": "minor",
   "currentMajor": 4,
-  "currentMinor": 0,
-  "currentPatch": 6,
-  "versionDateInfo": "2025-09-03",
-  "versionTimeInfo": "10:35:42",
-  "versionNotes": "- Fix: malformed query-url creation\n"
+  "currentMinor": 1,
+  "currentPatch": 0,
+  "versionDateInfo": "2025-09-04",
+  "versionTimeInfo": "15:48:09",
+  "versionNotes": "- new Feature: Prepared OAuth-Delegation-Support\n"
 }

@@ -6,9 +6,15 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* **new Feature**: Prepared OAuth-Delegation-Support
+*(none)*
 
-  
+
+
+## v 4.1.0
+released **2025-09-04**, including:
+ - **new Feature**: Prepared OAuth-Delegation-Support
+
+
 
 ## v 4.0.6
 released **2025-09-03**, including:
