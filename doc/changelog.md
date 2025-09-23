@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-**breaking Change**: abstracted OAuth-Flow and more convineant customizing-hooks
+*(none)*
+
+
+
+## v 5.0.0
+released **2025-09-23**, including:
+ - **breaking Change**: abstracted OAuth-Flow and more convineant customizing-hooks
 
 
 

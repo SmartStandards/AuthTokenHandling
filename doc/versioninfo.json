@@ -1,13 +1,13 @@
 {
-  "currentVersion": "4.1.1",
-  "currentVersionWithSuffix": "4.1.1",
+  "currentVersion": "5.0.0",
+  "currentVersionWithSuffix": "5.0.0",
   "releaseType": "",
-  "previousVersion": "4.1.0",
-  "changeGrade": "fix",
-  "currentMajor": 4,
-  "currentMinor": 1,
-  "currentPatch": 1,
+  "previousVersion": "4.1.1",
+  "changeGrade": "major",
+  "currentMajor": 5,
+  "currentMinor": 0,
+  "currentPatch": 0,
   "versionDateInfo": "2025-09-23",
-  "versionTimeInfo": "07:00:42",
-  "versionNotes": "- Intergrated new Version 2.2.1 of SmartStandards.Loging.tt\n"
+  "versionTimeInfo": "12:56:36",
+  "versionNotes": "- breaking Change: abstracted OAuth-Flow and more convineant customizing-hooks\n"
 }
