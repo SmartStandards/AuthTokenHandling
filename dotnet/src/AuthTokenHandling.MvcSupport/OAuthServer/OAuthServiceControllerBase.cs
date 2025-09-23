@@ -1,13 +1,11 @@
-﻿using Logging.SmartStandards;
+﻿using Logging.SmartStandards.CopyForSecurity.AccessTokenHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,8 +14,6 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Web;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 [assembly: AssemblyMetadata("SourceContext", "AuthTokenHandling")]
 
@@ -111,12 +107,10 @@ namespace Security.AccessTokenHandling.OAuthServer {
                 rawScopePreference = deserializedStateBag.OriginalScope;
                 viewMode = deserializedStateBag.ViewMode;
 
-              }
-              else {
+              } else {
                 throw new Exception($"{nameof(IOAuthServiceWithDelegation.TryHandleCodeflowDelegationResult)} returned false!");
               }
-            }
-            catch (Exception ex2){
+            } catch (Exception ex2) {
               string msgs = "Invalid State on return from Delegate";
               SecLogger.LogError(ex2.Wrap(msgs));
               //TODO: information-hiding!!!
@@ -144,8 +138,8 @@ namespace Security.AccessTokenHandling.OAuthServer {
             string rawStateBag = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(stateBagJson));
 
             return this.Redirect(
-              targetAuthorizeUrl + 
-              $"?redirect_uri={HttpUtility.UrlEncode(thisUri.GetLeftPart(UriPartial.Path))}" + 
+              targetAuthorizeUrl +
+              $"?redirect_uri={HttpUtility.UrlEncode(thisUri.GetLeftPart(UriPartial.Path))}" +
               "&clientId={targetClientId}&response_type=code&state={rawStateBag}"
             );
 
@@ -183,8 +177,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
                 );
                 if (redirectUri.Contains("?")) {
                   redirectUri = redirectUri + "&";
-                }
-                else {
+                } else {
                   redirectUri = redirectUri + "?";
                 }
                 redirectUri = redirectUri + "code=" + code;
@@ -203,8 +196,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
           if (!string.IsNullOrWhiteSpace(errorMessageViaRoundtrip)) {
             //HACK: hier darf natürlich kein html sein!
             errorMessageViaRoundtrip = $"<p><span style=\"color: red\">{errorMessageViaRoundtrip}</span><p>";
-          }
-          else {
+          } else {
             errorMessageViaRoundtrip = "";
           }
 
@@ -213,35 +205,30 @@ namespace Security.AccessTokenHandling.OAuthServer {
               responseType, "Please confirm pass-trough credentials:",
               winUserName, state, clientId, redirectUri, rawScopePreference, viewOpt, errorMessageViaRoundtrip
             );
-          }
-          else {
+          } else {
             authFormTemplate = _AuthPageBuilder.GetAuthForm(
               responseType, "Please enter your credentials:",
               loginHint, state, clientId, redirectUri, rawScopePreference, viewOpt, errorMessageViaRoundtrip
             );
           }
 
-        }
-        else {
+        } else {
 
           string[] prefferredScopes;
           if (rawScopePreference != null) {
             prefferredScopes = rawScopePreference.Split(' ').Where((s) => !String.IsNullOrWhiteSpace(s)).ToArray();
-          }
-          else {
+          } else {
             prefferredScopes = new string[] { };
           }
 
           if (!_AuthService.TryGetAvailableScopesBySessionId(clientId, sessionId, prefferredScopes, out availableScopes, out var msg2)) {
             string errorPage = _AuthPageBuilder.GetErrorPage(msg2, viewOpt);
             return this.Content(errorPage, "text/html");
-          }
-          else {
+          } else {
             if (!string.IsNullOrWhiteSpace(errorMessageViaRoundtrip)) {
               //HACK: natürlich darf hier kein html sein
               errorMessageViaRoundtrip = $"<p><span style=\"color: red\">{errorMessageViaRoundtrip}</span><p>";
-            }
-            else {
+            } else {
               errorMessageViaRoundtrip = "";
             }
             authFormTemplate = _AuthPageBuilder.GetScopeConfirmationForm(
@@ -252,8 +239,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         }
 
         return this.Content(authFormTemplate, "text/html", Encoding.UTF8);
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex);
         string errorPage = _AuthPageBuilder.GetErrorPage("Processing Error: " + ex.Message, viewOpt);
         return this.Content(errorPage, "text/html");
@@ -324,12 +310,10 @@ namespace Security.AccessTokenHandling.OAuthServer {
             if (!this.TryGetPasstroughUserIdentity(out login) || string.IsNullOrEmpty(login)) {
               string errorPage = _AuthPageBuilder.GetErrorPage("PASS-THROUGH FAILED!", viewOpt);
               return this.Content(errorPage, "text/html");
-            }
-            else {
+            } else {
               winAuthSuccess = true;
             }
-          }
-          else {
+          } else {
             if (string.IsNullOrEmpty(login)) {
               string errorPage = _AuthPageBuilder.GetErrorPage("NO USERNAME PROVIDED!", viewOpt);
               return this.Content(errorPage, "text/html");
@@ -347,8 +331,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
           if (logonSuccess) {
             //inkl. übergabe des OTP
             return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}");
-          }
-          else {
+          } else {
             //inkl. übergabe der fehlermeldung
             return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&err={step1Msg}");
           }
@@ -361,8 +344,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
         if (redirectUri.Contains("?")) {
           redirectUri = redirectUri + "&";
-        }
-        else {
+        } else {
           redirectUri = redirectUri + "?";
         }
 
@@ -377,34 +359,28 @@ namespace Security.AccessTokenHandling.OAuthServer {
           }
 
           redirectUri = redirectUri + "code=" + code;
-        }
-        else if (responseType.Equals("token", StringComparison.InvariantCultureIgnoreCase)) {
+        } else if (responseType.Equals("token", StringComparison.InvariantCultureIgnoreCase)) {
           //token oder id_token kann gefordert sein!
 
           TokenIssuingResult tokenResult = null;
           if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out tokenResult)) {
             redirectUri = redirectUri + tokenResult.ToString();
-          }
-          else {
-            if(!string.IsNullOrWhiteSpace(tokenResult?.error)) {
+          } else {
+            if (!string.IsNullOrWhiteSpace(tokenResult?.error)) {
               redirectUri = redirectUri + "error=" + tokenResult.error;
-            }
-            else {
+            } else {
               redirectUri = redirectUri + "error=no-token";
-            }       
+            }
           }
-        }
-        else if (responseType.Equals("display", StringComparison.InvariantCultureIgnoreCase)) {
+        } else if (responseType.Equals("display", StringComparison.InvariantCultureIgnoreCase)) {
           if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out TokenIssuingResult result)) {
             string displayPage = _AuthPageBuilder.GetTokenDisplayPage(result, viewOpt);
             return this.Content(displayPage, "text/html");
-          }
-          else {
+          } else {
             string errorPage = _AuthPageBuilder.GetErrorPage("Got no Token to display...", viewOpt);
             return this.Content(errorPage, "text/html");
           }
-        }
-        else {
+        } else {
           redirectUri = redirectUri + "error=unknown-response-type";
         }
 
@@ -412,8 +388,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
           redirectUri = redirectUri + "&state=" + state;
         }
         return this.Redirect(redirectUri);
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex);
         string errorPage = _AuthPageBuilder.GetErrorPage("Processing Error: " + ex.Message, viewOpt);
         return this.Content(errorPage, "text/html");
@@ -449,8 +424,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
 
           TokenIssuingResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
           return result;
-        } 
-        else if (grantType == "client_credentials") {
+        } else if (grantType == "client_credentials") {
 
           string[] requestedScopes = Array.Empty<string>();
           if (value.TryGetValue("scope", out StringValues scopeValue)) {
@@ -461,8 +435,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
             clientId, clientSecret, requestedScopes
           );
           return result;
-        }
-        else if (grantType == "refresh_token") {
+        } else if (grantType == "refresh_token") {
 
           string refreshToken = null;
           if (value.TryGetValue("refresh_token", out StringValues refTokenValue)) {
@@ -473,15 +446,13 @@ namespace Security.AccessTokenHandling.OAuthServer {
             refreshToken
           );
           return result;
-        }
-        else {
+        } else {
           return new TokenIssuingResult {
             error = $"Grant-Type '{grantType}' not supported!",
             error_description = $"Grant-Type '{grantType}' not supported!"
           };
         }
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex);
         return new TokenIssuingResult {
           error = "Processing Error",
@@ -518,10 +489,9 @@ namespace Security.AccessTokenHandling.OAuthServer {
         args["code"] = code;
 
         return this.RetrieveToken(new FormCollection(args));
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex);
-        return new TokenIssuingResult { 
+        return new TokenIssuingResult {
           error = "Processing Error",
           error_description = ex.Message
         };
@@ -551,8 +521,7 @@ namespace Security.AccessTokenHandling.OAuthServer {
         dict["active"] = active;
 
         return dict;
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex);
         return new Dictionary<string, object>() {
           { "active", false },
@@ -569,18 +538,15 @@ namespace Security.AccessTokenHandling.OAuthServer {
           WindowsIdentity windowsUserIfIdentified = null;
           windowsUserIfIdentified = (WindowsIdentity)this.HttpContext.User.Identity!;
           userName = windowsUserIfIdentified.Name?.ToString();
-        }
-        else if (this.HttpContext.User.Identity is ClaimsIdentity) {
+        } else if (this.HttpContext.User.Identity is ClaimsIdentity) {
           ClaimsIdentity windowsUserIfIdentified = null;
           windowsUserIfIdentified = (ClaimsIdentity)this.HttpContext.User.Identity!;
           userName = windowsUserIfIdentified.Name?.ToString();
-        }
-        else {
+        } else {
           Trace.TraceWarning($"Cannot identify pass-trough user identity: Unknown identity-class");
         }
         Trace.TraceInformation($"Identified pass-trough user identity: " + userName);
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         Trace.TraceWarning($"Cannot identify pass-trough user identity: " + ex.Message);
       }
 #else

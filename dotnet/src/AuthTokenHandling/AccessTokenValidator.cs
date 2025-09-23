@@ -1,12 +1,9 @@
 ﻿using Jose;
-using Logging.SmartStandards;
+using Logging.SmartStandards.CopyForSecurity.AccessTokenHandling;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
-using System.Security.Claims;
-using System.Text;
 
 namespace Security.AccessTokenHandling {
 
@@ -40,7 +37,7 @@ namespace Security.AccessTokenHandling {
     /// <param name="httpReturnCode">will only be changed on negative outcome (401/403)</param>
     /// <param name="httpReasonPhrase">a Reason-Phrase which shall be transmitted to the client (low detail!, to reduce attack-surface)</param>
     /// <returns></returns>
-    public static bool TryValidateHttpAuthHeader (
+    public static bool TryValidateHttpAuthHeader(
       string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, ref string httpReasonPhrase
     ) {
       var noExplicitelyRequiredApiPermissions = new string[] { };
@@ -84,19 +81,16 @@ namespace Security.AccessTokenHandling {
 
       if (outcome == AccessTokenValidator.ValidationOutcome.AccessGranted) {
         return true;
-      }
-      else if (
-        outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenRequired
-      ) {
+      } else if (
+          outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenRequired
+        ) {
         httpReturnCode = 401;
         httpReasonPhrase = "Unauthorized (token required)"; //low detail - just a hint for the client
-      }
-      else {
+      } else {
         if (invalidReason.Contains("xpired")) { //<< 401 semantical more correct for expired tokens than 403)
           httpReturnCode = 401;
           httpReasonPhrase = "Unauthorized (expired)"; //low detail - just a hint for the client
-        }
-        else {
+        } else {
           httpReturnCode = 403;
           httpReasonPhrase = "Forbidden (bad token)"; //low detail - just a hint for the client
         }
@@ -144,14 +138,14 @@ namespace Security.AccessTokenHandling {
 
       if (_IntrospectorSelector == null) {
         throw new Exception(
-          $"The {nameof(AccessTokenValidator)} can be used only when {nameof(AccessTokenValidator)}.{nameof(ConfigureTokenValidation)}(...) has been called before!"       
+          $"The {nameof(AccessTokenValidator)} can be used only when {nameof(AccessTokenValidator)}.{nameof(ConfigureTokenValidation)}(...) has been called before!"
         );
       }
-    
+
       ValidationOutcome outcome;
- 
+
       bool tokenRequired = _RequirementsProvider.IsAuthtokenRequired(
-        contractType, targetContractMethod, 
+        contractType, targetContractMethod,
         out string authTokenSourceIdentifier, out string[] requiredApiPermissionsFromProvider
       );
 
@@ -174,13 +168,11 @@ namespace Security.AccessTokenHandling {
           }
 
           invalidReason = string.Empty;
-        }
-        else {
+        } else {
           outcome = ValidationOutcome.AccessDeniedTokenRequired;
           invalidReason = "No Token provided";
         }
-      }
-      else {
+      } else {
 
         if (rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
           rawToken = rawToken.Substring(7);
@@ -203,11 +195,9 @@ namespace Security.AccessTokenHandling {
 
         if (isActive) {
           outcome = ValidationOutcome.AccessGranted;
-        }
-        else if (unkownIssuer) {
+        } else if (unkownIssuer) {
           outcome = ValidationOutcome.AccessDeniedTokenFromBadOrigin;
-        }
-        else {
+        } else {
           outcome = ValidationOutcome.AccessDeniedTokenInvalid;
         }
 
@@ -226,14 +216,14 @@ namespace Security.AccessTokenHandling {
       }
 
       //evaluate scope based api permissions
-      if (outcome == ValidationOutcome.AccessGranted) { 
+      if (outcome == ValidationOutcome.AccessGranted) {
         foreach (string requiredScope in requiredScopes) {
           if (!permittedScopes.Where((s) => s.Equals(requiredScope, StringComparison.CurrentCultureIgnoreCase)).Any()) {
             outcome = ValidationOutcome.AccessDeniedMissingPrivileges;
             invalidReason = "Required scope not present";
             break;
           }
-        }    
+        }
       }
 
       //default logging
@@ -243,8 +233,7 @@ namespace Security.AccessTokenHandling {
           if (rawToken.Length < 16) {
             //short tokens are fully masked
             tokenContentProbe = new string('*', rawToken.Length);
-          }
-          else {
+          } else {
             //longer tokens: only show the last 3 chars
             tokenContentProbe = "...**********" + rawToken.Substring(rawToken.Length - 3);
           }
@@ -253,10 +242,10 @@ namespace Security.AccessTokenHandling {
           2078854485086216369L, 73001,
           "Negative outcome when validating Auth-Token '{tokenContentProbe}': {tokenInactiveReason}",
           tokenContentProbe, invalidReason
-        );   
+        );
       }
 
-      if(_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
+      if (_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
         _RawTokenExposalMethod.Invoke(rawToken, targetContractMethod, subject, permittedScopes);
       }
 
@@ -317,7 +306,7 @@ namespace Security.AccessTokenHandling {
           permittedScopes = result.PermittedScopes;
           subject = result.Subject;
           fromCache = true;
-          
+
           return;
         }
 
@@ -342,14 +331,12 @@ namespace Security.AccessTokenHandling {
               //...with the goal to read the issuer BEFORE introspecting/validating the token
               return jwtContent.iss;
               //this needs to be done sometimes, to select issuer dedicated-introspectors 
-            }
-            catch {
+            } catch {
               return null;
             }
           }
         );
-      }
-      catch (Exception ex){
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex.Wrap(73004, "Introspector selection hook has thrown an Exception!"));
         unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
         isActive = false;
@@ -370,8 +357,7 @@ namespace Security.AccessTokenHandling {
           out isActive,
           out extractedClaims
         );
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex.Wrap(73005, "Introspector has thrown an Exception!"));
         isActive = false;
         inactiveReason = "Introspection failed (IS-EXP)";
@@ -398,8 +384,7 @@ namespace Security.AccessTokenHandling {
         if (_PermittedScopesVisitorMethod != null) {
           try {
             _PermittedScopesVisitorMethod.Invoke(subject, scopes);
-          }
-          catch (Exception ex) {
+          } catch (Exception ex) {
             DevLogger.LogCritical(ex.Wrap(73006, "ScopeVisitor has thrown an Exception!"));
             isActive = false;
             inactiveReason = "Introspection failed (SV-EXP)";
@@ -409,26 +394,22 @@ namespace Security.AccessTokenHandling {
         permittedScopes = scopes.ToArray();
         inactiveReason = null;
 
-      }
-      else {
+      } else {
 
         inactiveReason = "No details provided";
 
-        if (extractedClaims != null ) {
+        if (extractedClaims != null) {
           try {
             if (extractedClaims.ContainsKey("inactive_reason") && extractedClaims["inactive_reason"] != null) {
               //explicitely delivered detail (but not standard)
               inactiveReason = extractedClaims["inactive_reason"].ToString();
-            }
-            else if (extractedClaims.ContainsKey("error_description") && extractedClaims["error_description"] != null) {
+            } else if (extractedClaims.ContainsKey("error_description") && extractedClaims["error_description"] != null) {
               //part of the standard, but different semantic (means, the the introspection itself failed)
               inactiveReason = extractedClaims["error_description"].ToString();
-            }
-            else if (extractedClaims.ContainsKey("error") && extractedClaims["error"] != null) {
+            } else if (extractedClaims.ContainsKey("error") && extractedClaims["error"] != null) {
               //part of the standard, but different semantic (means, the the introspection itself failed)
               inactiveReason = extractedClaims["error"].ToString();
-            }
-            else if (extractedClaims.ContainsKey("exp")){
+            } else if (extractedClaims.ContainsKey("exp")) {
               //last fallback, if no details are present: check for expiration by our own
               object expClaim = extractedClaims["exp"];
               if (expClaim != null) {
@@ -439,8 +420,7 @@ namespace Security.AccessTokenHandling {
                 }
               }
             }
-          }
-          catch { 
+          } catch {
           }
         }
 

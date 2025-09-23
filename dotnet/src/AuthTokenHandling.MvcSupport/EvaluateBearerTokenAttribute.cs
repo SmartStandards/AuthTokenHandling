@@ -1,14 +1,12 @@
 #if !NET46
 
-using Logging.SmartStandards;
-using Microsoft.AspNetCore.Http;
+using Logging.SmartStandards.CopyForSecurity.AccessTokenHandling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Security.AccessTokenHandling {
 
@@ -22,16 +20,15 @@ namespace Security.AccessTokenHandling {
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
-      
+
       try {
 
         string rawToken = null;
-        if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var extractedAuthHeader)) {  
+        if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var extractedAuthHeader)) {
           rawToken = extractedAuthHeader.ToString();
           if (String.IsNullOrWhiteSpace(rawToken)) {
             rawToken = null;
-          }
-          else if (rawToken.StartsWith("Bearer ",StringComparison.CurrentCultureIgnoreCase)) {
+          } else if (rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
             rawToken = rawToken.Substring(7);
           }
         }
@@ -41,7 +38,7 @@ namespace Security.AccessTokenHandling {
         string apiCaller = context.HttpContext.Connection.RemoteIpAddress.ToString();
         MethodInfo calledContractMethod = GetMethodInfoFromContext(context, out Type contractType);
 
-        if(AccessTokenValidator.TryValidateHttpAuthHeader(
+        if (AccessTokenValidator.TryValidateHttpAuthHeader(
           rawToken, contractType, calledContractMethod, apiCaller,
           ref httpReturnCode, ref httpReasonPhrase,
           _RequiredApiPermissions
@@ -50,16 +47,14 @@ namespace Security.AccessTokenHandling {
           //continue with the api call...
           await next();
 
-        }
-        else {
+        } else {
           context.Result = new ContentResult() {
             StatusCode = httpReturnCode,
             Content = httpReasonPhrase
           };
         }
 
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         DevLogger.LogCritical(ex);
         context.Result = new ContentResult() {
           StatusCode = 500,

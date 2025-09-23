@@ -1,8 +1,7 @@
 ﻿using Jose;
-using Logging.SmartStandards;
+using Logging.SmartStandards.CopyForSecurity.AccessTokenHandling;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace Security.AccessTokenHandling {
@@ -46,11 +45,10 @@ namespace Security.AccessTokenHandling {
       try {
         //this method should implicit check signature and throw if invalid
         string decodedToken = JWT.Decode(rawJwt, jsonWebKey);
-        if (!string.IsNullOrWhiteSpace(decodedToken)){
+        if (!string.IsNullOrWhiteSpace(decodedToken)) {
           return true;
         }
-      }
-      catch (Exception ex){
+      } catch (Exception ex) {
         SecLogger.LogTrace($"JWT signature verification failed (Decode-Error): {ex.Message}");
       }
       return false;
@@ -65,26 +63,22 @@ namespace Security.AccessTokenHandling {
       if (_JwtSignatureValidationMethod != null) {
         if (_JwtSignatureValidationMethod.Invoke(rawToken)) {
           isActive = true;
-        }
-        else {
+        } else {
           isActive = false;
           claims["inactive_reason"] = $"Signature verification failed";
           return;
         }
-      }
-      else if (string.IsNullOrWhiteSpace(rawToken)) {
+      } else if (string.IsNullOrWhiteSpace(rawToken)) {
         isActive = false;
         return;
-      }
-      else {
+      } else {
         isActive = true; //no signature validation method configured - assume valid
       }
 
       Dictionary<string, object> jwtContent;
       if (string.IsNullOrWhiteSpace(rawToken)) {
         jwtContent = new Dictionary<string, object>();
-      }
-      else {
+      } else {
         jwtContent = JWT.Payload<Dictionary<string, object>>(rawToken);
       }
 
