@@ -1,6 +1,7 @@
 #if !NET46
 
 using Logging.SmartStandards;
+using Logging.SmartStandards.CopyForAuthTokenHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;

@@ -69,14 +69,20 @@ namespace AuthTokenHandling.TestApp {
       txtCurrentIdToken = new System.Windows.Forms.TextBox();
       label14 = new System.Windows.Forms.Label();
       label15 = new System.Windows.Forms.Label();
+      btnCredentialDialogTest = new System.Windows.Forms.Button();
+      btnDemoCefTest = new System.Windows.Forms.Button();
+      btnGoogleExtTest = new System.Windows.Forms.Button();
+      tabPage5 = new System.Windows.Forms.TabPage();
       tabControl1.SuspendLayout();
       tabPage1.SuspendLayout();
       tabPage2.SuspendLayout();
+      tabPage5.SuspendLayout();
       this.SuspendLayout();
       // 
       // tabControl1
       // 
       tabControl1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      tabControl1.Controls.Add(tabPage5);
       tabControl1.Controls.Add(tabPage1);
       tabControl1.Controls.Add(tabPage2);
       tabControl1.Controls.Add(tabPage3);
@@ -117,7 +123,7 @@ namespace AuthTokenHandling.TestApp {
       tabPage1.Controls.Add(comboBox1);
       tabPage1.Location = new System.Drawing.Point(4, 24);
       tabPage1.Name = "tabPage1";
-      tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      tabPage1.Padding = new System.Windows.Forms.Padding(3);
       tabPage1.Size = new System.Drawing.Size(721, 497);
       tabPage1.TabIndex = 0;
       tabPage1.Text = "Request Token (from OAuth Svc)";
@@ -175,7 +181,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtRedirectUrl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtRedirectUrl.BackColor = System.Drawing.SystemColors.Window;
-      txtRedirectUrl.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtRedirectUrl.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtRedirectUrl.Location = new System.Drawing.Point(263, 111);
       txtRedirectUrl.Name = "txtRedirectUrl";
       txtRedirectUrl.Size = new System.Drawing.Size(417, 20);
@@ -186,7 +192,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtClientSecret.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtClientSecret.BackColor = System.Drawing.SystemColors.Window;
-      txtClientSecret.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtClientSecret.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtClientSecret.Location = new System.Drawing.Point(263, 304);
       txtClientSecret.Name = "txtClientSecret";
       txtClientSecret.Size = new System.Drawing.Size(417, 20);
@@ -198,7 +204,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtRetrievalCode.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtRetrievalCode.BackColor = System.Drawing.SystemColors.Window;
-      txtRetrievalCode.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtRetrievalCode.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtRetrievalCode.Location = new System.Drawing.Point(263, 387);
       txtRetrievalCode.Name = "txtRetrievalCode";
       txtRetrievalCode.Size = new System.Drawing.Size(417, 20);
@@ -208,7 +214,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtLoginHint.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtLoginHint.BackColor = System.Drawing.SystemColors.Window;
-      txtLoginHint.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtLoginHint.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtLoginHint.Location = new System.Drawing.Point(263, 330);
       txtLoginHint.Name = "txtLoginHint";
       txtLoginHint.Size = new System.Drawing.Size(417, 20);
@@ -219,7 +225,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtClientId.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtClientId.BackColor = System.Drawing.SystemColors.Window;
-      txtClientId.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtClientId.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtClientId.Location = new System.Drawing.Point(263, 278);
       txtClientId.Name = "txtClientId";
       txtClientId.Size = new System.Drawing.Size(417, 20);
@@ -230,7 +236,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtScopeToRequest.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtScopeToRequest.BackColor = System.Drawing.SystemColors.Window;
-      txtScopeToRequest.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtScopeToRequest.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtScopeToRequest.Location = new System.Drawing.Point(263, 189);
       txtScopeToRequest.Multiline = true;
       txtScopeToRequest.Name = "txtScopeToRequest";
@@ -242,7 +248,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtState.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtState.BackColor = System.Drawing.SystemColors.Window;
-      txtState.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtState.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtState.Location = new System.Drawing.Point(263, 163);
       txtState.Name = "txtState";
       txtState.Size = new System.Drawing.Size(417, 20);
@@ -253,7 +259,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtGrantType.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtGrantType.BackColor = System.Drawing.SystemColors.Window;
-      txtGrantType.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtGrantType.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtGrantType.Location = new System.Drawing.Point(263, 137);
       txtGrantType.Name = "txtGrantType";
       txtGrantType.Size = new System.Drawing.Size(417, 20);
@@ -264,7 +270,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtRetrievalUrl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtRetrievalUrl.BackColor = System.Drawing.SystemColors.Window;
-      txtRetrievalUrl.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtRetrievalUrl.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtRetrievalUrl.Location = new System.Drawing.Point(159, 361);
       txtRetrievalUrl.Name = "txtRetrievalUrl";
       txtRetrievalUrl.Size = new System.Drawing.Size(364, 20);
@@ -275,7 +281,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtAuthorizeUrl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtAuthorizeUrl.BackColor = System.Drawing.SystemColors.Window;
-      txtAuthorizeUrl.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtAuthorizeUrl.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtAuthorizeUrl.Location = new System.Drawing.Point(159, 85);
       txtAuthorizeUrl.Name = "txtAuthorizeUrl";
       txtAuthorizeUrl.Size = new System.Drawing.Size(368, 20);
@@ -392,7 +398,7 @@ namespace AuthTokenHandling.TestApp {
       tabPage2.Controls.Add(txtIntrospectionUrl);
       tabPage2.Location = new System.Drawing.Point(4, 24);
       tabPage2.Name = "tabPage2";
-      tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+      tabPage2.Padding = new System.Windows.Forms.Padding(3);
       tabPage2.Size = new System.Drawing.Size(721, 497);
       tabPage2.TabIndex = 1;
       tabPage2.Text = "Introspect Token (via OAuth Svc)";
@@ -413,7 +419,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtIntrospectionUrl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       txtIntrospectionUrl.BackColor = System.Drawing.SystemColors.Window;
-      txtIntrospectionUrl.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtIntrospectionUrl.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtIntrospectionUrl.Location = new System.Drawing.Point(25, 28);
       txtIntrospectionUrl.Name = "txtIntrospectionUrl";
       txtIntrospectionUrl.Size = new System.Drawing.Size(543, 20);
@@ -483,7 +489,7 @@ namespace AuthTokenHandling.TestApp {
       // txtTokenContent
       // 
       txtTokenContent.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-      txtTokenContent.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+      txtTokenContent.Font = new System.Drawing.Font("Consolas", 8.25F);
       txtTokenContent.Location = new System.Drawing.Point(747, 72);
       txtTokenContent.Multiline = true;
       txtTokenContent.Name = "txtTokenContent";
@@ -506,7 +512,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       txtTokenState.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
       txtTokenState.BackColor = System.Drawing.SystemColors.Window;
-      txtTokenState.Font = new System.Drawing.Font("Consolas", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+      txtTokenState.Font = new System.Drawing.Font("Consolas", 11.25F, System.Drawing.FontStyle.Bold);
       txtTokenState.Location = new System.Drawing.Point(747, 682);
       txtTokenState.Name = "txtTokenState";
       txtTokenState.ReadOnly = true;
@@ -550,6 +556,49 @@ namespace AuthTokenHandling.TestApp {
       label15.TabIndex = 4;
       label15.Text = "ID-Token";
       // 
+      // btnCredentialDialogTest
+      // 
+      btnCredentialDialogTest.Location = new System.Drawing.Point(46, 40);
+      btnCredentialDialogTest.Name = "btnCredentialDialogTest";
+      btnCredentialDialogTest.Size = new System.Drawing.Size(279, 46);
+      btnCredentialDialogTest.TabIndex = 5;
+      btnCredentialDialogTest.Text = "LocalJWT mit CredentialDialog";
+      btnCredentialDialogTest.UseVisualStyleBackColor = true;
+      btnCredentialDialogTest.Click += this.btnCredentialDialogTest_Click;
+      // 
+      // btnDemoCefTest
+      // 
+      btnDemoCefTest.Location = new System.Drawing.Point(46, 92);
+      btnDemoCefTest.Name = "btnDemoCefTest";
+      btnDemoCefTest.Size = new System.Drawing.Size(279, 46);
+      btnDemoCefTest.TabIndex = 6;
+      btnDemoCefTest.Text = "CodeFlow auf DemoService mit CEF";
+      btnDemoCefTest.UseVisualStyleBackColor = true;
+      btnDemoCefTest.Click += this.btnDemoCefTest_Click;
+      // 
+      // btnGoogleExtTest
+      // 
+      btnGoogleExtTest.Location = new System.Drawing.Point(46, 144);
+      btnGoogleExtTest.Name = "btnGoogleExtTest";
+      btnGoogleExtTest.Size = new System.Drawing.Size(279, 45);
+      btnGoogleExtTest.TabIndex = 6;
+      btnGoogleExtTest.Text = "CodeFlow auf Google mit ext. Browser";
+      btnGoogleExtTest.UseVisualStyleBackColor = true;
+      btnGoogleExtTest.Click += this.btnGoogleExtTest_Click;
+      // 
+      // tabPage5
+      // 
+      tabPage5.Controls.Add(btnGoogleExtTest);
+      tabPage5.Controls.Add(btnCredentialDialogTest);
+      tabPage5.Controls.Add(btnDemoCefTest);
+      tabPage5.Location = new System.Drawing.Point(4, 24);
+      tabPage5.Name = "tabPage5";
+      tabPage5.Padding = new System.Windows.Forms.Padding(3);
+      tabPage5.Size = new System.Drawing.Size(721, 497);
+      tabPage5.TabIndex = 4;
+      tabPage5.Text = "OOB Providers";
+      tabPage5.UseVisualStyleBackColor = true;
+      // 
       // FormMain
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -577,6 +626,7 @@ namespace AuthTokenHandling.TestApp {
       tabPage1.PerformLayout();
       tabPage2.ResumeLayout(false);
       tabPage2.PerformLayout();
+      tabPage5.ResumeLayout(false);
       this.ResumeLayout(false);
       this.PerformLayout();
     }
@@ -627,6 +677,10 @@ namespace AuthTokenHandling.TestApp {
     private System.Windows.Forms.TextBox txtCurrentIdToken;
     private System.Windows.Forms.Label label14;
     private System.Windows.Forms.Label label15;
+    private System.Windows.Forms.Button btnCredentialDialogTest;
+    private System.Windows.Forms.TabPage tabPage5;
+    private System.Windows.Forms.Button btnGoogleExtTest;
+    private System.Windows.Forms.Button btnDemoCefTest;
   }
 }
 

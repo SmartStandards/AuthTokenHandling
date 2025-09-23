@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Security.AccessTokenHandling.OAuthServer {
+namespace Security.AccessTokenHandling.OAuth.Server {
 
   public interface IAuthPageBuilder {
 

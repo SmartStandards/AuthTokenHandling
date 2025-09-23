@@ -1,6 +1,8 @@
 ﻿using CefSharp.DevTools.DOM;
 using Newtonsoft.Json;
 using Security.AccessTokenHandling;
+using Security.AccessTokenHandling.OAuth;
+using Security.AccessTokenHandling.OAuth.OobProviders;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,6 +13,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using static Security.AccessTokenHandling.OAuth.Server.DemoOAuthService;
 
 namespace AuthTokenHandling.TestApp {
 
@@ -101,7 +105,7 @@ namespace AuthTokenHandling.TestApp {
           txtClientId.Text, txtClientSecret.Text, txtAuthorizeUrl.Text, txtRetrievalUrl.Text
         );
 
-        if(txtGrantType.Text == "code") {
+        if (txtGrantType.Text == "code") {
           txtRetrievalCode.Text = "";
 
           client.TryBrowserAuthViaCodeGrand(
@@ -218,16 +222,65 @@ namespace AuthTokenHandling.TestApp {
     }
 
     private void button1_Click(object sender, EventArgs e) {
-
     }
 
     private void FormMain_Load(object sender, EventArgs e) {
-
     }
 
     private void txtIntrospectionUrl_TextChanged(object sender, EventArgs e) {
+    }
+
+    private void btnCredentialDialogTest_Click(object sender, EventArgs e) {
+     
+      InteractiveCredentialDialogIssuer iss = new InteractiveCredentialDialogIssuer(
+         (promtFor) => {
+           promtFor("login", "Username");
+           promtFor("pwd", "Password", isHiddenInput: true, forFactoryOnly: true);
+         },
+         (userInput) => new LocalJwtIssuer( // HERE A CRAZY SAMPLE, WHERE THE PWD IS USED AS SIGNING KEY!!!
+           Encoding.Default.GetBytes("some_salt_" + userInput["pwd"] + "_some_salt"), 60, true, "DemoApp"
+         ),
+         this,
+         (claims) => {
+           claims.TryMapRequestedClaim("login", "sub");
+           claims.SetValueToUse("aud", $"{claims.ClaimsToUse["sub"]}'s PC");
+         }     
+       );
+
+      iss.EnableRegistryPersistation();
+
+      Dictionary<string, object> claimsToRequest = new Dictionary<string, object>();
+      iss.TryRequestAccessToken(claimsToRequest, out TokenIssuingResult result);
+
 
     }
 
+    private void btnDemoCefTest_Click(object sender, EventArgs e) {
+
+
+      var oauthProvider = new GenericOAuthOperationsProvider();
+      oauthProvider.Setup(
+        "Demo-Module",
+        "http://localhost:55202/oauth2/authorize",
+        "http://localhost:55202/oauth2/token",
+        "http://localhost:55202/oauth2/introspect",
+        supportsIframe: true
+      );
+
+      IAccessTokenIssuer cefIssuer = new EmbeddedBrowserOAuthIssuer(
+        _OurDemoOAuthClientId, _OurDemoOAuthClientSecret,
+        oauthProvider, this
+      );
+
+      Dictionary<string, object> claimsToRequest = new Dictionary<string, object>();
+      claimsToRequest["login_hint"] = "U_001";
+      cefIssuer.TryRequestAccessToken(claimsToRequest, out TokenIssuingResult result);
+
+    }
+
+    private void btnGoogleExtTest_Click(object sender, EventArgs e) {
+      //TODO: implement
+    }
   }
+
 }

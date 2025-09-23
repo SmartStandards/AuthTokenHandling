@@ -1,5 +1,6 @@
 ﻿using Jose;
 using Logging.SmartStandards;
+using Logging.SmartStandards.CopyForAuthTokenHandling;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,7 +52,7 @@ namespace Security.AccessTokenHandling {
         }
       }
       catch (Exception ex){
-        SecLogger.LogTrace($"JWT signature verification failed (Decode-Error): {ex.Message}");
+        SecLogger.LogTrace(2079844661535458508L,73002,$"JWT signature verification failed (Decode-Error): {ex.Message}");
       }
       return false;
     }
@@ -95,7 +96,7 @@ namespace Security.AccessTokenHandling {
         if (DateTime.UtcNow > expirationTimeUtc) {
           isActive = false;
           claims = new Dictionary<string, object>();
-          claims["inactive_reason"] = $"Expired (at {expirationTimeUtc.ToString("u")})";
+          claims["inactive_reason"] = $"Expired (at {expirationTimeUtc.ToLocalTime().ToString("u")})";
           return;
         }
       }
@@ -107,7 +108,7 @@ namespace Security.AccessTokenHandling {
         if (DateTime.UtcNow < notBeforeTimeUtc) {
           isActive = false;
           claims = new Dictionary<string, object>();
-          claims["inactive_reason"] = $"Valid in future (at {notBeforeTimeUtc.ToString("u")})";
+          claims["inactive_reason"] = $"Valid in future (at {notBeforeTimeUtc.ToLocalTime().ToString("u")})";
           return;
         }
       }

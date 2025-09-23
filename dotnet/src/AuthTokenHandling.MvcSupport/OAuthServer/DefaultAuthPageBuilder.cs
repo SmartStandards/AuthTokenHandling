@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using static System.Net.WebRequestMethods;
 
-namespace Security.AccessTokenHandling.OAuthServer {
+namespace Security.AccessTokenHandling.OAuth.Server {
 
   public class DefaultAuthPageBuilder : IAuthPageBuilder {
 

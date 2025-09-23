@@ -1,28 +1,19 @@
-﻿using Security.AccessTokenHandling.OAuthServer;
+﻿using Security.AccessTokenHandling.OAuth;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
+
+[assembly: InternalsVisibleTo("SmartStandards.AuthTokenHandling.WinFormsClient")]
 
 namespace Security.AccessTokenHandling {
 
-  /// <summary></summary>
-  /// <param name="requestedClaims"> Not more than a 'whish', comming from the caller which requested a token.</param>
-  /// <param name="claimsToUse"> That claims, which will be included in the JWT.</param>
-  /// <param name="mergeRequestedClaims">
-  /// Set this to true (opt-in), to approve all entries which are left within 'requestedClaims' and
-  /// let the issuer copy them over the claimsToUse ('requestedClaims' will win!). 
-  /// This is a convenience, which allows you just to cleanup the 'requestedClaims' and lay back!
-  /// SPECIAL BEHAVIOUR: ('scope'-expressions will automatically concatinated).
-  /// </param>
-  public delegate void ClaimCustomizerDelegate(
-     Dictionary<string, object> requestedClaims,
-     Dictionary<string, object> claimsToUse,
-     ref bool mergeRequestedClaims
-  );
-
   public interface IAccessTokenIssuer {
 
-    bool TryRequestAccessToken(out TokenIssuingResult accessToken);
+    bool TryRequestAccessToken(out TokenIssuingResult result);
 
     bool TryRequestAccessToken(
       Dictionary<String, object> claimsToRequest, out TokenIssuingResult result
@@ -32,17 +23,17 @@ namespace Security.AccessTokenHandling {
 
   public static class AccessTokenIssuerExtensions {
 
-    [Obsolete("Use overload with 'Dictionary<string, OBJECT>'")]
-    public static bool TryRequestAccessToken(
-      this IAccessTokenIssuer issuer,
-      Dictionary<string, string> claimsToRequest, out TokenIssuingResult result
-    ) {
-      Dictionary<string, object> mappedDict = new Dictionary<string, object>();
-      foreach (var claim in claimsToRequest) {
-        mappedDict[claim.Key] = claim.Value;
-      }
-      return issuer.TryRequestAccessToken(mappedDict, out result);
-    }
+    //[Obsolete("Use overload with 'Dictionary<string, OBJECT>'")]
+    //public static bool TryRequestAccessToken(
+    //  this IAccessTokenIssuer issuer,
+    //  Dictionary<string, string> claimsToRequest, out TokenIssuingResult result
+    //) {
+    //  Dictionary<string, object> mappedDict = new Dictionary<string, object>();
+    //  foreach (var claim in claimsToRequest) {
+    //    mappedDict[claim.Key] = claim.Value;
+    //  }
+    //  return issuer.TryRequestAccessToken(mappedDict, out result);
+    //}
 
     public static bool RequestAccessToken(
       this IAccessTokenIssuer issuer,

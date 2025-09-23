@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
@@ -73,7 +73,15 @@
   <Import Project="..\AuthTokenHandling.WinFormsClient\AuthTokenHandling.WinFormsClient.projitems" Label="Shared" />
 
   <ItemGroup>
-    <Compile Include="..\AuthTokenHandling.net8.0\SmartStandards.Logging.cs" Link="SmartStandards.Logging.cs" />
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\AuthForm.cs" Link="AuthForm.cs" />
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\AuthForm.Designer.cs" Link="AuthForm.Designer.cs" />
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\CredentialDialog.cs" Link="CredentialDialog.cs" />
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\CredentialDialog.Designer.cs" Link="CredentialDialog.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\AuthForm.resx" Link="AuthForm.resx" />
+    <EmbeddedResource Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\CredentialDialog.resx" Link="CredentialDialog.resx" />
   </ItemGroup>
 
   <ItemGroup>

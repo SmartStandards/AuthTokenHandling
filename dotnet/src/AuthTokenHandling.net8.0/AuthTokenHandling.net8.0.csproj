@@ -47,6 +47,7 @@
     <None Update="SmartStandards.Logging.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SmartStandards.Logging.cs</LastGenOutput>
+      <CustomToolNamespace>AuthTokenHandling</CustomToolNamespace>
     </None>
   </ItemGroup>
 

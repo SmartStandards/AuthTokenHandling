@@ -11,9 +11,13 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\ControllerRegistrar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EvaluateBearerTokenAttribute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EvaluateBearerTokenAttribute.Net4Dummy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\DefaultAuthPageBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Post.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Retrieval.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.StateBag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Introspect_RFC7662.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\IAuthPageBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuthServiceControllerBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Entry.cs" />
   </ItemGroup>
 </Project>

@@ -40,9 +40,13 @@
   </Target>
 
   <ItemGroup>
+    <Compile Remove="Logs\**" />
     <Compile Remove="Util\**" />
+    <Content Remove="Logs\**" />
     <Content Remove="Util\**" />
+    <EmbeddedResource Remove="Logs\**" />
     <EmbeddedResource Remove="Util\**" />
+    <None Remove="Logs\**" />
     <None Remove="Util\**" />
   </ItemGroup>
 
@@ -73,6 +77,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.6.0" />
+    <PackageReference Include="UJMW.DynamicClient" Version="5.0.1" />
     <PackageReference Include="UJMW.DynamicController" Version="5.0.1" />
   </ItemGroup>
 

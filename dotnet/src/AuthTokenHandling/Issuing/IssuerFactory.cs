@@ -1,5 +1,6 @@
 ﻿using Jose;
-using Security.AccessTokenHandling.OAuthServer;
+using Security.AccessTokenHandling;
+using Security.AccessTokenHandling.OAuth;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,10 +42,10 @@ namespace Security.AccessTokenHandling {
           Encoding.ASCII.GetBytes(config.JwtSelfSignKey),
           (JwsAlgorithm) Enum.Parse(typeof(JwsAlgorithm), config.JwtSelfSignAlg, true),
           config.JwtExpMinutes,
-          (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
+          (claimApproval) => {
             if (convertedClaims != null) {
               foreach (var configuredClaim in convertedClaims) {
-                claimsToUse[configuredClaim.Key] = configuredClaim.Value;
+                claimApproval.SetValueToUse(configuredClaim.Key, configuredClaim.Value);
               }
             }
           }
@@ -60,10 +61,10 @@ namespace Security.AccessTokenHandling {
         return new LocalJwtIssuer(
           Encoding.ASCII.GetBytes(config.JwtValidationKey),
           config.JwtExpMinutes,
-          (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
+          (claimApproval) => {
             if (convertedClaims != null) {
               foreach (var configuredClaim in convertedClaims) {
-                claimsToUse[configuredClaim.Key] = configuredClaim.Value;
+                claimApproval.SetValueToUse(configuredClaim.Key, configuredClaim.Value);
               }
             }
           }
@@ -135,16 +136,57 @@ namespace Security.AccessTokenHandling {
 
     private class DummyIssuer : IAccessTokenIssuer {
 
-      public DummyIssuer() {
+      Action<ClaimApprovalContext> _ClaimApprovalHandler;
+
+      public DummyIssuer(Action<ClaimApprovalContext> claimApprovalHandler = null) {
+        _ClaimApprovalHandler = claimApprovalHandler;
+        if(_ClaimApprovalHandler == null) {
+          _ClaimApprovalHandler = (ctx) => { 
+          };
+        }
       }
 
       public bool TryRequestAccessToken(out TokenIssuingResult result) {
+        Dictionary<string, object> claimsToUse = ClaimApprovalContext.ProcessRequestedClaims(new Dictionary<string, object>(), _ClaimApprovalHandler);
+        object raw;
         result = new TokenIssuingResult();
+        if (claimsToUse.TryGetValue("access_token", out raw)) {
+          if (!string.IsNullOrWhiteSpace(raw as string)) {
+            result.access_token = raw as string;
+          }
+        }
+        if (claimsToUse.TryGetValue("id_token", out raw)) {
+          if (!string.IsNullOrWhiteSpace(raw as string)) {
+            result.id_token = raw as string;
+          }
+        }
+        if (claimsToUse.TryGetValue("refresh_token", out raw)) {
+          if (!string.IsNullOrWhiteSpace(raw as string)) {
+            result.refresh_token = raw as string;
+          }
+        }
         return true;
       }
 
       public bool TryRequestAccessToken(Dictionary<string, object> claimsToRequest, out TokenIssuingResult result) {
+        Dictionary<string, object> claimsToUse = ClaimApprovalContext.ProcessRequestedClaims(claimsToRequest, _ClaimApprovalHandler);
+        object raw;
         result = new TokenIssuingResult();
+        if(claimsToUse.TryGetValue("access_token", out raw)) {
+          if(!string.IsNullOrWhiteSpace(raw as string)) {
+            result.access_token = raw as string;
+          }
+        }
+        if (claimsToUse.TryGetValue("id_token", out raw)) {
+          if (!string.IsNullOrWhiteSpace(raw as string)) {
+            result.id_token = raw as string;
+          }
+        }
+        if (claimsToUse.TryGetValue("refresh_token", out raw)) {
+          if (!string.IsNullOrWhiteSpace(raw as string)) {
+            result.refresh_token = raw as string;
+          }
+        }
         return true;
       }
 

@@ -1,4 +1,4 @@
-﻿using Security.AccessTokenHandling.OAuthServer;
+﻿using Security.AccessTokenHandling.OAuth;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,9 +13,10 @@ namespace Security.AccessTokenHandling {
   /// A common usecase is when having passtrough Windows-Authentication,
   /// or another self-issued api PAT token to be used when requesting a user-token via oauth.
   /// </summary>
+  [Obsolete("Please use one of these instead: 'EmbeddedBrowserOAuthIssuer' (also supports hidden mode, but part of the winforms package) / 'ExternalBrowserOAuthIssuer' / 'ClientCredentialOAuthIssuer' (better for non interactive)")]
   public class OAuthBackgroundAuthenticator : IAccessTokenIssuer {
 
-    private ClaimCustomizerDelegate _ClaimCustomizer = null;
+    private Action<ClaimApprovalContext> _ClaimApprovalHandler = null;
 
     private Func<string> _EntryUrlGetter;
     private Func<string> _RetrivalUrlGetter;
@@ -31,24 +32,29 @@ namespace Security.AccessTokenHandling {
 
     public OAuthBackgroundAuthenticator(
       string oAuthClientId, string oAuthClientSecret, string dummyRedirectUrl,
-      string entryUrl, string retrivalUrl,
-      ClaimCustomizerDelegate claimCustomizer = null
+      string entryUrl, string retrivalUrl, 
+      Action<ClaimApprovalContext> claimApprovalHandler = null
     ) :
-      this(oAuthClientId, oAuthClientSecret, dummyRedirectUrl, () => entryUrl, () => retrivalUrl, null, claimCustomizer) {
+      this(
+        oAuthClientId, oAuthClientSecret, dummyRedirectUrl, () => entryUrl, () => retrivalUrl, null, claimApprovalHandler
+      ) {
     }
 
     public OAuthBackgroundAuthenticator(
       string oAuthClientId, string oAuthClientSecret, string dummyRedirectUrl,
       string entryUrl, string retrivalUrl, string authorizationHeader,
-      ClaimCustomizerDelegate claimCustomizer = null
+      Action<ClaimApprovalContext> claimApprovalHandler = null
     ) :
-      this(oAuthClientId, oAuthClientSecret, dummyRedirectUrl, () => entryUrl, () => retrivalUrl, () => authorizationHeader, claimCustomizer) {
+      this(
+        oAuthClientId, oAuthClientSecret, dummyRedirectUrl,
+        () => entryUrl, () => retrivalUrl, () => authorizationHeader, claimApprovalHandler
+      ) {
     }
 
     public OAuthBackgroundAuthenticator(
       string oAuthClientId, string oAuthClientSecret, string dummyRedirectUrl,
       Func<string> entryUrlGetter, Func<string> retrivalUrlGetter, Func<string> authorizationHeaderGetter = null,
-      ClaimCustomizerDelegate claimCustomizer = null
+      Action<ClaimApprovalContext> claimApprovalHandler = null
     ) {
 
       _OAuthClientId = oAuthClientId;
@@ -56,7 +62,7 @@ namespace Security.AccessTokenHandling {
       _EntryUrlGetter = entryUrlGetter;
       _RetrivalUrlGetter = retrivalUrlGetter;
       _AuthorizationHeaderGetter = authorizationHeaderGetter;
-      _ClaimCustomizer = claimCustomizer;
+      _ClaimApprovalHandler = claimApprovalHandler;
       _DummyRedirectUrl = dummyRedirectUrl;
 
       if (entryUrlGetter is null) {
@@ -76,43 +82,12 @@ namespace Security.AccessTokenHandling {
     }
 
     public bool TryRequestAccessToken(Dictionary<string, object> claimsToRequest, out TokenIssuingResult result) {
-      result = new TokenIssuingResult();  
-      if (claimsToRequest == null) {
-        claimsToRequest = new Dictionary<string, object>();
-      }
-      var claimsToUse = new Dictionary<string, object>();
-      if (_ClaimCustomizer != null) {
-        bool merge = false;
-        _ClaimCustomizer.Invoke(claimsToRequest, claimsToUse, ref merge);
-        if (merge) {
-          if (claimsToUse.Count == 0) {
-            claimsToUse = claimsToRequest;
-          }
-          else {
-            foreach (var customClaim in claimsToRequest) {
-              object value = customClaim.Value;
-              //special case: scope's needs to be merged!
-              if (customClaim.Key == "scope" && customClaim.Value != null && claimsToUse.ContainsKey("scope")) {
-                var scopesToUse = claimsToUse["scope"].ToString().Split(' ');
-                var customScopes = customClaim.Value.ToString().Split(' ');
-                value = string.Join(" ", scopesToUse.Union(customScopes).Where((s) => !string.IsNullOrWhiteSpace(s)).Distinct());
-              }
-              if (value == null) {
-                if (claimsToUse.ContainsKey(customClaim.Key)) {
-                  claimsToUse.Remove(customClaim.Key);
-                }
-              }
-              else {
-                claimsToUse[customClaim.Key] = value;
-              }
-            }
-          }
-        }
-      }
-      else {
-        //passtrough
-        claimsToUse = claimsToRequest;
-      }
+      result = new TokenIssuingResult();
+
+      Dictionary<string, object> claimsToUse = ClaimApprovalContext.ProcessRequestedClaims(
+        claimsToRequest,
+        _ClaimApprovalHandler ?? ((c) => c.TakeOverAllRequestedClaims())
+      );
 
       //prepare urls
 
@@ -166,6 +141,8 @@ namespace Security.AccessTokenHandling {
         if (!string.IsNullOrWhiteSpace(token)) {
           result.token_type = "Bearer";
           result.access_token = token;
+          result.refresh_token = refreshToken;
+          result.id_token = idToken;
           return true;
         }
         else { 

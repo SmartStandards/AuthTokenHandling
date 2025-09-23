@@ -9,27 +9,13 @@
     <Import_RootNamespace>System</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AuthForm\AuthForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)AuthForm\CredentialDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)AuthForm\AuthForm.Designer.cs">
-      <DependentUpon>AuthForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)AuthForm\CredentialDialog.Designer.cs">
-      <DependentUpon>CredentialDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Issuing\OAuthInteractiveAuthenticator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)OAuthTokenRequestor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthForm\ProviderIconHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\CredentialDialogIssuer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\EmbeddedBrowserOAuthIssuer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\[legacy]\OAuthInteractiveAuthenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issuing\[legacy]\OAuthTokenRequestor.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)AuthForm\AuthForm.resx">
-      <DependentUpon>AuthForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)AuthForm\CredentialDialog.resx">
-      <DependentUpon>CredentialDialog.cs</DependentUpon>
-    </EmbeddedResource>
+    <Folder Include="$(MSBuildThisFileDirectory)Issuing\[legacy]\" />
   </ItemGroup>
 </Project>

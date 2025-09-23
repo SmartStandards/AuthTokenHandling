@@ -1,5 +1,6 @@
 ﻿using Jose;
-using Security.AccessTokenHandling.OAuthServer;
+using Security.AccessTokenHandling.OAuth;
+using Security.AccessTokenHandling.OAuth.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,71 +10,56 @@ namespace Security.AccessTokenHandling {
 
   public class LocalJwtIssuer : IAccessTokenIssuer {
 
-    private ClaimCustomizerDelegate _ClaimCustomizer = null;
+    private Action<ClaimApprovalContext> _ClaimApprovalHandler = null;
     private Func<object,string> _EncodingMethod = null;
     private int _ExpMinutes = 10;
 
-    public LocalJwtIssuer(byte[] signKey, int expMinutes, bool passtroughAllRequestedClaims = false, string enforcedIssuer = null) {
-      _ClaimCustomizer = (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
-        mergeRequestedClaims = passtroughAllRequestedClaims;
-        if (!passtroughAllRequestedClaims) {
-          //peserve at least the minimum required claims!
-          if (requestedClaims.ContainsKey("aud")) {
-            //shuld be preserved!
-            claimsToUse["aud"] = requestedClaims["aud"];
-          }
-          if (requestedClaims.ContainsKey("sub")) {
-            //shuld be preserved!
-            claimsToUse["sub"] = requestedClaims["sub"];
-          }
-          if (requestedClaims.ContainsKey("iss")) {
-            //shuld be preserved!
-            claimsToUse["iss"] = requestedClaims["iss"];
-          }
+    public LocalJwtIssuer(
+      byte[] signKey, int expMinutes, bool passtroughAllRequestedClaims = false, string enforcedIssuer = null
+    ) {
+
+      _ClaimApprovalHandler = (ClaimApprovalContext ctx) => {
+        if (passtroughAllRequestedClaims) {
+          ctx.TakeOverAllRequestedClaims();
+        }
+        else {
+          ctx.TakeOverRequestedClaims("aud", "sub", "iss");
         }
         if (!string.IsNullOrWhiteSpace(enforcedIssuer)) {
-          requestedClaims["iss"] = enforcedIssuer;
-          claimsToUse["iss"] = enforcedIssuer;
+          ctx.SetValueToUse("iss", enforcedIssuer);
         }
       };
+
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, JwsAlgorithm.HS256);
     }
+
     public LocalJwtIssuer(byte[] signKey, JwsAlgorithm signAlg, int expMinutes, bool passtroughAllRequestedClaims = false, string enforcedIssuer = null) {
-      _ClaimCustomizer = (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
-        mergeRequestedClaims = passtroughAllRequestedClaims;
-        if (!passtroughAllRequestedClaims) {
-          //peserve at least the minimum required claims!
-          if (requestedClaims.ContainsKey("aud")) {
-            //shuld be preserved!
-            claimsToUse["aud"] = requestedClaims["aud"];
-          }
-          if (requestedClaims.ContainsKey("sub")) {
-            //shuld be preserved!
-            claimsToUse["sub"] = requestedClaims["sub"];
-          }
-          if (requestedClaims.ContainsKey("iss")) {
-            //shuld be preserved!
-            claimsToUse["iss"] = requestedClaims["iss"];
-          }
+
+      _ClaimApprovalHandler = (ClaimApprovalContext ctx) => {
+        if (passtroughAllRequestedClaims) {
+          ctx.TakeOverAllRequestedClaims();
+        }
+        else {
+          ctx.TakeOverRequestedClaims("aud", "sub", "iss");
         }
         if (!string.IsNullOrWhiteSpace(enforcedIssuer)) {
-          requestedClaims["iss"] = enforcedIssuer;
-          claimsToUse["iss"] = enforcedIssuer;
+          ctx.SetValueToUse("iss", enforcedIssuer);
         }
       };
+
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, signAlg);
     }
 
-    public LocalJwtIssuer(byte[] signKey, int expMinutes, ClaimCustomizerDelegate claimCustomizer) {
-      _ClaimCustomizer = claimCustomizer;
+    public LocalJwtIssuer(byte[] signKey, int expMinutes, Action<ClaimApprovalContext> claimApprovalHandler) {
+      _ClaimApprovalHandler = claimApprovalHandler;
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, JwsAlgorithm.HS256);
     }
 
-    public LocalJwtIssuer(byte[] signKey, JwsAlgorithm signAlg, int expMinutes, ClaimCustomizerDelegate claimCustomizer) {
-      _ClaimCustomizer = claimCustomizer;
+    public LocalJwtIssuer(byte[] signKey, JwsAlgorithm signAlg, int expMinutes, Action<ClaimApprovalContext> claimApprovalHandler) {
+      _ClaimApprovalHandler = claimApprovalHandler;
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, signAlg);
     }
@@ -81,37 +67,49 @@ namespace Security.AccessTokenHandling {
   #region " Convenience-Constructors with JWK-Structure "
 
     public LocalJwtIssuer(Jwk signKey, int expMinutes, bool passtroughAllRequestedClaims = false, string enforcedIssuer = null) {
-      _ClaimCustomizer = (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
-        mergeRequestedClaims = passtroughAllRequestedClaims;
+     
+      _ClaimApprovalHandler = (ClaimApprovalContext ctx) => {
+        if (passtroughAllRequestedClaims) {
+          ctx.TakeOverAllRequestedClaims();
+        }
+        else {
+          ctx.TakeOverRequestedClaims("aud", "sub", "iss");
+        }
         if (!string.IsNullOrWhiteSpace(enforcedIssuer)) {
-          requestedClaims["iss"] = enforcedIssuer;
-          claimsToUse["iss"] = enforcedIssuer;
+          ctx.SetValueToUse("iss", enforcedIssuer);
         }
       };
+
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, JwsAlgorithm.HS256);
     }
 
     public LocalJwtIssuer(Jwk signKey, JwsAlgorithm signAlg, int expMinutes, bool passtroughAllRequestedClaims = false, string enforcedIssuer = null) {
-      _ClaimCustomizer = (Dictionary<string, object> requestedClaims, Dictionary<string, object> claimsToUse, ref bool mergeRequestedClaims) => {
-        mergeRequestedClaims = passtroughAllRequestedClaims;
+    
+      _ClaimApprovalHandler = (ClaimApprovalContext ctx) => {
+        if (passtroughAllRequestedClaims) {
+          ctx.TakeOverAllRequestedClaims();
+        }
+        else {
+          ctx.TakeOverRequestedClaims("aud", "sub", "iss");
+        }
         if (!string.IsNullOrWhiteSpace(enforcedIssuer)) {
-          requestedClaims["iss"] = enforcedIssuer;
-          claimsToUse["iss"] = enforcedIssuer;
+          ctx.SetValueToUse("iss", enforcedIssuer);
         }
       };
+
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, signAlg);
     }
 
-    public LocalJwtIssuer(Jwk signKey, int expMinutes, ClaimCustomizerDelegate claimCustomizer) {
-      _ClaimCustomizer = claimCustomizer;
+    public LocalJwtIssuer(Jwk signKey, int expMinutes, Action<ClaimApprovalContext> claimApprovalHandler) {
+      _ClaimApprovalHandler = claimApprovalHandler;
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, JwsAlgorithm.HS256);
     }
 
-    public LocalJwtIssuer(Jwk signKey, JwsAlgorithm signAlg, int expMinutes, ClaimCustomizerDelegate claimCustomizer) {
-      _ClaimCustomizer = claimCustomizer;
+    public LocalJwtIssuer(Jwk signKey, JwsAlgorithm signAlg, int expMinutes, Action<ClaimApprovalContext> claimApprovalHandler) {
+      _ClaimApprovalHandler = claimApprovalHandler;
       _ExpMinutes = expMinutes;
       _EncodingMethod = (payload) => JWT.Encode(payload, signKey, signAlg);
     }
@@ -123,39 +121,8 @@ namespace Security.AccessTokenHandling {
   #endregion
 
     public bool TryRequestAccessToken(Dictionary<string, object> claimsToRequest, out TokenIssuingResult result) {
-      var claimsToUse = new Dictionary<string, object>();
 
-      if (_ClaimCustomizer != null) {
-        if (claimsToRequest == null) {
-          claimsToRequest = new Dictionary<string, object>();
-        }
-        bool merge = false;
-        _ClaimCustomizer.Invoke(claimsToRequest, claimsToUse, ref merge);
-        if (merge) {
-          if (claimsToUse.Count == 0) {
-            claimsToUse = claimsToRequest;
-          }
-          else {
-            foreach (var customClaim in claimsToRequest) {
-              object value = customClaim.Value;
-              //special case: scope's needs to be merged!
-              if(customClaim.Key == "scope" && customClaim.Value != null && claimsToUse.ContainsKey("scope")) {
-                var scopesToUse = claimsToUse["scope"].ToString().Split(' ');
-                var customScopes = customClaim.Value.ToString().Split(' ');
-                value = string.Join(" ", scopesToUse.Union(customScopes).Where((s) => !string.IsNullOrWhiteSpace(s)).Distinct());
-              } 
-              if(value == null) {
-                if (claimsToUse.ContainsKey(customClaim.Key)) {
-                  claimsToUse.Remove(customClaim.Key);
-                }
-              }
-              else {
-                claimsToUse[customClaim.Key] = value;
-              }
-            }
-          }
-        }
-      }
+      Dictionary<string, object> claimsToUse = ClaimApprovalContext.ProcessRequestedClaims(claimsToRequest, _ClaimApprovalHandler);
 
       claimsToUse["iat"] = CalculateUnixTimestamp(DateTime.UtcNow);
       claimsToUse["exp"] = CalculateUnixTimestamp(DateTime.UtcNow.AddMinutes(_ExpMinutes));

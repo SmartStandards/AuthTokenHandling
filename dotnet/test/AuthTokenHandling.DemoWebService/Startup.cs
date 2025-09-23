@@ -1,6 +1,5 @@
 using DistributedDataFlow;
 using Logging.SmartStandards;
-using Logging.SmartStandards;
 using Logging.SmartStandards.AspSupport;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -11,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Security.AccessTokenHandling;
-using Security.AccessTokenHandling.OAuthServer;
+using Security.AccessTokenHandling.OAuth.Server;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -278,7 +277,7 @@ namespace Security {
           c.InjectStylesheet(baseUrl + "swagger-ui/custom.css");
 
 
-          c.OAuthClientId(DemoOAuthService._MyOAuthClientId);
+          c.OAuthClientId(DemoOAuthService._OurDemoOAuthClientId);
           c.OAuthScopes("write");
           c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> {
             ["login_hint"] = "U_001",

@@ -10,9 +10,9 @@ using System.Text;
 using Jose;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Security.AccessTokenHandling;
-using Security.AccessTokenHandling.OAuthServer;
+using Security.AccessTokenHandling.OAuth;
+using Security.AccessTokenHandling.OAuth.Server;
 using static Security.AccessTokenHandling.AccessTokenValidator;
-
 
 [assembly: AssemblyMetadata("SourceContext", "AuthTokenHandling")]
 

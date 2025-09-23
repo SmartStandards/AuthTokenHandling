@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Security.AccessTokenHandling.OAuthServer;
+using Security.AccessTokenHandling.OAuth.Server;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

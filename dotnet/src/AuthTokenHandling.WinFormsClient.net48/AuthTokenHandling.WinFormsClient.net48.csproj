@@ -97,17 +97,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\AuthTokenHandling.net8.0\SmartStandards.Logging.cs">
-      <Link>SmartStandards.Logging.cs</Link>
-    </Compile>
-    <Compile Include="..\AuthTokenHandling.WinFormsClient\OAuthTokenRequestor.cs">
-      <Link>OAuthTokenRequestor.cs</Link>
-    </Compile>
-    <Compile Include="AuthForm.cs">
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\AuthForm.cs">
+      <Link>AuthForm.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AuthForm.designer.cs">
-      <DependentUpon>AuthForm.cs</DependentUpon>
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\AuthForm.Designer.cs">
+      <Link>AuthForm.Designer.cs</Link>
+    </Compile>
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\CredentialDialog.cs">
+      <Link>CredentialDialog.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\CredentialDialog.Designer.cs">
+      <Link>CredentialDialog.Designer.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -116,8 +118,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AuthForm.resx">
-      <DependentUpon>AuthForm.cs</DependentUpon>
+    <EmbeddedResource Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\AuthForm.resx">
+      <Link>AuthForm.resx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AuthTokenHandling.WinFormsClient.net8.0\AuthForm\CredentialDialog.resx">
+      <Link>CredentialDialog.resx</Link>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

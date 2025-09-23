@@ -1,5 +1,6 @@
 ﻿using Jose;
 using Logging.SmartStandards;
+using Logging.SmartStandards.CopyForAuthTokenHandling;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -435,7 +436,7 @@ namespace Security.AccessTokenHandling {
                 long exp = Convert.ToInt64(expClaim);
                 DateTime expirationTimeUtc = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc).AddSeconds(exp);
                 if (DateTime.UtcNow > expirationTimeUtc) {
-                  inactiveReason = $"Expired (at {expirationTimeUtc.ToString("u")})";
+                  inactiveReason = $"Expired (at {expirationTimeUtc.ToLocalTime().ToString("u")})";
                 }
               }
             }
