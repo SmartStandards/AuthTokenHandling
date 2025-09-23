@@ -1,13 +1,13 @@
 {
-  "currentVersion": "4.1.0",
-  "currentVersionWithSuffix": "4.1.0",
+  "currentVersion": "4.1.1",
+  "currentVersionWithSuffix": "4.1.1",
   "releaseType": "",
-  "previousVersion": "4.0.6",
-  "changeGrade": "minor",
+  "previousVersion": "4.1.0",
+  "changeGrade": "fix",
   "currentMajor": 4,
   "currentMinor": 1,
-  "currentPatch": 0,
-  "versionDateInfo": "2025-09-04",
-  "versionTimeInfo": "15:48:09",
-  "versionNotes": "- new Feature: Prepared OAuth-Delegation-Support\n"
+  "currentPatch": 1,
+  "versionDateInfo": "2025-09-23",
+  "versionTimeInfo": "07:00:42",
+  "versionNotes": "- Intergrated new Version 2.2.1 of SmartStandards.Loging.tt\n"
 }
