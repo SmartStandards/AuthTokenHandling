@@ -41,7 +41,7 @@ namespace Security.AccessTokenHandling {
     /// <param name="httpReturnCode">will only be changed on negative outcome (401/403)</param>
     /// <param name="httpReasonPhrase">a Reason-Phrase which shall be transmitted to the client (low detail!, to reduce attack-surface)</param>
     /// <returns></returns>
-    public static bool TryValidateHttpAuthHeader (
+    public static bool TryValidateHttpAuthHeader(
       string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine, ref int httpReturnCode, ref string httpReasonPhrase
     ) {
       var noExplicitelyRequiredApiPermissions = new string[] { };
@@ -145,14 +145,14 @@ namespace Security.AccessTokenHandling {
 
       if (_IntrospectorSelector == null) {
         throw new Exception(
-          $"The {nameof(AccessTokenValidator)} can be used only when {nameof(AccessTokenValidator)}.{nameof(ConfigureTokenValidation)}(...) has been called before!"       
+          $"The {nameof(AccessTokenValidator)} can be used only when {nameof(AccessTokenValidator)}.{nameof(ConfigureTokenValidation)}(...) has been called before!"
         );
       }
-    
+
       ValidationOutcome outcome;
- 
+
       bool tokenRequired = _RequirementsProvider.IsAuthtokenRequired(
-        contractType, targetContractMethod, 
+        contractType, targetContractMethod,
         out string authTokenSourceIdentifier, out string[] requiredApiPermissionsFromProvider
       );
 
@@ -227,14 +227,14 @@ namespace Security.AccessTokenHandling {
       }
 
       //evaluate scope based api permissions
-      if (outcome == ValidationOutcome.AccessGranted) { 
+      if (outcome == ValidationOutcome.AccessGranted) {
         foreach (string requiredScope in requiredScopes) {
           if (!permittedScopes.Where((s) => s.Equals(requiredScope, StringComparison.CurrentCultureIgnoreCase)).Any()) {
             outcome = ValidationOutcome.AccessDeniedMissingPrivileges;
             invalidReason = "Required scope not present";
             break;
           }
-        }    
+        }
       }
 
       //default logging
@@ -254,10 +254,10 @@ namespace Security.AccessTokenHandling {
           2078854485086216369L, 73001,
           "Negative outcome when validating Auth-Token '{tokenContentProbe}': {tokenInactiveReason}",
           tokenContentProbe, invalidReason
-        );   
+        );
       }
 
-      if(_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
+      if (_RawTokenExposalMethod != null && outcome == ValidationOutcome.AccessGranted) {
         _RawTokenExposalMethod.Invoke(rawToken, targetContractMethod, subject, permittedScopes);
       }
 
@@ -318,7 +318,7 @@ namespace Security.AccessTokenHandling {
           permittedScopes = result.PermittedScopes;
           subject = result.Subject;
           fromCache = true;
-          
+
           return;
         }
 
@@ -350,7 +350,7 @@ namespace Security.AccessTokenHandling {
           }
         );
       }
-      catch (Exception ex){
+      catch (Exception ex) {
         DevLogger.LogCritical(ex.Wrap(73004, "Introspector selection hook has thrown an Exception!"));
         unknownIssuer = true; //explicit documented semantic, when null was returned by the IntrospectorSelector
         isActive = false;
@@ -415,7 +415,7 @@ namespace Security.AccessTokenHandling {
 
         inactiveReason = "No details provided";
 
-        if (extractedClaims != null ) {
+        if (extractedClaims != null) {
           try {
             if (extractedClaims.ContainsKey("inactive_reason") && extractedClaims["inactive_reason"] != null) {
               //explicitely delivered detail (but not standard)
@@ -441,7 +441,7 @@ namespace Security.AccessTokenHandling {
               }
             }
           }
-          catch { 
+          catch {
           }
         }
 

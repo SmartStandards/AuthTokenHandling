@@ -23,16 +23,16 @@ namespace Security.AccessTokenHandling {
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
-      
+
       try {
 
         string rawToken = null;
-        if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var extractedAuthHeader)) {  
+        if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var extractedAuthHeader)) {
           rawToken = extractedAuthHeader.ToString();
           if (String.IsNullOrWhiteSpace(rawToken)) {
             rawToken = null;
           }
-          else if (rawToken.StartsWith("Bearer ",StringComparison.CurrentCultureIgnoreCase)) {
+          else if (rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
             rawToken = rawToken.Substring(7);
           }
         }
@@ -42,7 +42,7 @@ namespace Security.AccessTokenHandling {
         string apiCaller = context.HttpContext.Connection.RemoteIpAddress.ToString();
         MethodInfo calledContractMethod = GetMethodInfoFromContext(context, out Type contractType);
 
-        if(AccessTokenValidator.TryValidateHttpAuthHeader(
+        if (AccessTokenValidator.TryValidateHttpAuthHeader(
           rawToken, contractType, calledContractMethod, apiCaller,
           ref httpReturnCode, ref httpReasonPhrase,
           _RequiredApiPermissions

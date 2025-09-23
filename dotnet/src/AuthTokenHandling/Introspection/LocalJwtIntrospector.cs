@@ -47,12 +47,12 @@ namespace Security.AccessTokenHandling {
       try {
         //this method should implicit check signature and throw if invalid
         string decodedToken = JWT.Decode(rawJwt, jsonWebKey);
-        if (!string.IsNullOrWhiteSpace(decodedToken)){
+        if (!string.IsNullOrWhiteSpace(decodedToken)) {
           return true;
         }
       }
-      catch (Exception ex){
-        SecLogger.LogTrace(2079844661535458508L,73002,$"JWT signature verification failed (Decode-Error): {ex.Message}");
+      catch (Exception ex) {
+        SecLogger.LogTrace(2079844661535458508L, 73002, $"JWT signature verification failed (Decode-Error): {ex.Message}");
       }
       return false;
     }

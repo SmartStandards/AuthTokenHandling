@@ -10,6 +10,12 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 4.1.1
+released **2025-09-23**, including:
+ - Intergrated new Version 2.2.1 of SmartStandards.Loging.tt
+
+
+
 ## v 4.1.0
 released **2025-09-04**, including:
  - **new Feature**: Prepared OAuth-Delegation-Support
