@@ -1,5 +1,6 @@
 ﻿using Logging.SmartStandards;
 using Logging.SmartStandards.CopyForAuthTokenHandling;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +40,32 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     // AUTHORIZE STEP #1 - BROWSER LANDING (HTTP-GET)                                                //
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    //[Route("authorize2")]
+    //[Authorize()]
+    //[HttpGet(), Produces("text/html")]
+    //public ActionResult GetLogonPage2(
+    //  [FromQuery(Name = "response_type")] string responseType,
+    //  [FromQuery(Name = "client_id")] string clientId,
+    //  [FromQuery(Name = "redirect_uri")] string redirectUri,
+    //  [FromQuery(Name = "state")] string state,
+    //  [FromQuery(Name = "scope")] string rawScopePreference,
+    //  [FromQuery(Name = "login_hint")] string loginHint,
+    //  [FromQuery(Name = "err")] string errorMessagePassedViaQueryString,
+    //  [FromQuery(Name = "otp")] string sessionId,
+    //  [FromQuery(Name = "view_mode")] int viewMode,
+    //  [FromQuery(Name = "code")] string codeFromDelegate //NUR WENN EIN DELEGATE DAZWISCHEN HING
+    //) {
+
+    //  TryGetPasstroughUserIdentity(out string userName);
+
+    //  var x = User.Identity;
+
+    //  return this.Content($"User: '{userName}'", "text/html");
+
+    //}
+
     [Route("authorize")]
+    [Authorize()]
     [HttpGet(), Produces("text/html")]
     public ActionResult GetLogonPage(
       [FromQuery(Name = "response_type")] string responseType,
@@ -74,7 +100,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         #region " IOAuthServiceWithDelegation "
 
         //this is an addition extended feature to support delegation to another oauth server
-        if (_AuthService is IOAuthServiceWithDelegation) {
+        if (_AuthService is IOAuthServiceWithDelegation && String.IsNullOrWhiteSpace(sessionId)) {
 
           // WE ARE JUST RETURNING FROM THE DELEGATED AUTHORIZATION  
           if (!string.IsNullOrWhiteSpace(codeFromDelegate)) {

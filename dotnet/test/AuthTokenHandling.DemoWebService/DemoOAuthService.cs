@@ -42,16 +42,17 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       out string sessionId, out string message
     ) {
 
-      if (!this.ValidateUser(login)) {
-        message = "Wrong credentials";
-        sessionId = null;
-        return false;
-      }
-
       if (noPasswordNeeded) {
         message = "Pass-trough authentication successful";
       }
       else {
+
+        if (!this.ValidateUser(login)) {
+          message = "Wrong credentials";
+          sessionId = null;
+          return false;
+        }
+
         if (this.ValidatePassword(login, password)) {
           message = "Password authentication successful";
         }
