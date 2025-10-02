@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Fix non Working Windows-Pass-Trough Authentication
+*(none)*
+
+
+
+## v 5.0.1
+released **2025-10-02**, including:
+ - Fix non Working Windows-Pass-Trough Authentication
 
 
 
