@@ -1,13 +1,13 @@
 {
-  "currentVersion": "5.0.1",
-  "currentVersionWithSuffix": "5.0.1",
+  "currentVersion": "5.0.2",
+  "currentVersionWithSuffix": "5.0.2",
   "releaseType": "",
-  "previousVersion": "5.0.0",
+  "previousVersion": "5.0.1",
   "changeGrade": "fix",
   "currentMajor": 5,
   "currentMinor": 0,
-  "currentPatch": 1,
-  "versionDateInfo": "2025-10-02",
-  "versionTimeInfo": "15:05:20",
-  "versionNotes": "- Fix non Working Windows-Pass-Trough Authentication\n"
+  "currentPatch": 2,
+  "versionDateInfo": "2025-11-27",
+  "versionTimeInfo": "12:04:58",
+  "versionNotes": "- Fixed small OAuth-Delegation issues\n- Optimized configurative setup for OAuthOperationsProvider\n"
 }
