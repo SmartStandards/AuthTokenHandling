@@ -1,29 +1,26 @@
-﻿using Security.AccessTokenHandling;
+﻿using Newtonsoft.Json;
+using Security.AccessTokenHandling;
 using Security.AccessTokenHandling.OAuth.OobProviders;
 using Security.AccessTokenHandling.OAuth.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Security.AccessTokenHandling.OAuth {
 
-  /*
-    useful links:
-    https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type
-    https://developer.okta.com/blog/2019/05/01/is-the-oauth-implicit-flow-dead
-  */
-
   public interface IOAuthOperationsProvider {
 
     #region " Metadata & Config "
 
-    /// <summary>
-    /// Allows adjustment of any additial settings, required by a specific implementation!
-    /// </summary>
-    Dictionary<string, string> Configuration { get; }
+    Func<IOAuthOperationsProvider, HttpClient> HttpClientFactory{ get; set; }
+
+    void SetConfigurationValue(string key, string value);
+    bool TryGetConfigurationValue(string key, out string value);
 
     string ProviderInvariantName { get; }
 
@@ -173,6 +170,98 @@ namespace Security.AccessTokenHandling.OAuth {
 
   }
 
+  public static class OAuthOperationsProviderCommonSetupHelper {
+
+    public const string ProviderDisplayTitle = "provider_display_title";
+    public const string AuthorizationEndpoint = "authorization_endpoint";
+    public const string TokenEndpoint = "token_endpoint";
+    public const string IntrospectionEndpoint = "introspection_endpoint";
+    public const string IframeAllowed = "iframe_allowed";
+    public const string AutoAddOfflineAccess = "auto_add_offline_access";
+    public const string IntrospectionAuth = "introspection_auth";
+
+    public static void ApplyCommonConfigurationValues(
+      this IOAuthOperationsProvider provider,
+      string providerDisplayTitle,
+      string authEndpointUrl,
+      string tokenEndpointUrlstring,
+      string introspectionEndpointUrl,
+      bool supportsIframe = false, bool requestIdToken = true,
+      IDictionary<string, string> additionalSettings = null
+    ) {
+
+      if (!string.IsNullOrWhiteSpace(introspectionEndpointUrl)) {
+        //prepare default
+        provider.SetConfigurationValue(IntrospectionAuth, "none");
+      }
+
+      if(additionalSettings != null) {
+        foreach (KeyValuePair<string, string> kvp in additionalSettings) {
+          provider.SetConfigurationValue(kvp.Key, kvp.Value);
+        }
+      }
+
+      provider.SetConfigurationValue(ProviderDisplayTitle, providerDisplayTitle);
+      provider.SetConfigurationValue(AuthorizationEndpoint, authEndpointUrl);
+      provider.SetConfigurationValue(TokenEndpoint, authEndpointUrl);
+      provider.SetConfigurationValue(IntrospectionEndpoint, introspectionEndpointUrl);
+      provider.SetConfigurationValue(IframeAllowed,supportsIframe.ToString());
+      provider.SetConfigurationValue(AutoAddOfflineAccess, requestIdToken.ToString());
+
+    }
+
+    public static void ApplyConfigurationValuesFromAuthTokenConfig (
+      this IOAuthOperationsProvider provider, AuthTokenConfig config
+    ) {
+      config.ApplyToOAuthOperationsProvider(provider);
+    }
+
+    public static void ApplyToOAuthOperationsProvider(
+      this AuthTokenConfig config, IOAuthOperationsProvider provider
+    ) {
+
+      if (config.IssueMode == WellknownIssuingModes.OAUTH_CIBA_CODEGRAND) {
+      }
+      else if (config.IssueMode == WellknownIssuingModes.OAUTH_CIBA_CODEGRAND_HTTPGETONLY) {
+        provider.SetConfigurationValue("http_get", "true");
+      }
+      else {
+        throw new NotSupportedException("The given issue mode is not supported by OAuthOperationsProvider: " + config.IssueMode);
+      }
+
+      provider.SetConfigurationValue("authorization_endpoint", config.AuthEndpointUrl);
+
+      if (config.AuthEndpointRejectsIframe) {
+        provider.SetConfigurationValue("iframe_allowed", "false");
+      }
+      else {
+        provider.SetConfigurationValue("iframe_allowed", "true");
+      }
+
+    }
+
+    internal static HttpClient DefaultHttpClientFactory(IOAuthOperationsProvider provider) {
+
+      HttpClientHandler handler = new HttpClientHandler();
+
+      if(provider.TryGetConfigurationValue("retrieve_with_default_credentials", out string value)) {
+        if(bool.TryParse(value, out bool enableDefaultCredentials) && enableDefaultCredentials) {
+          handler.Credentials = CredentialCache.DefaultCredentials;
+          handler.UseDefaultCredentials = true;
+          handler.PreAuthenticate = true;
+        }
+      }
+      //handler.Credentials = new NetworkCredential("user", "pwd", "domain");
+
+      handler.AllowAutoRedirect = true;
+
+      HttpClient client = new HttpClient(handler);
+
+      return client;
+    }
+
+  }
+
   public static class ForIOAuthOperationsProvider_Extensions {
 
     /// <summary> </summary>
@@ -230,34 +319,6 @@ namespace Security.AccessTokenHandling.OAuth {
         clientId, null,
         out result
       );
-
-    }
-
-  }
-
-  public static class ExtensionsForIOAuthOperationsProvider {
-
-    public static void ApplyToOAuthOperationsProvider(
-      this AuthTokenConfig config, GenericOAuthOperationsProvider provider
-    ) {
-
-      if(config.IssueMode == WellknownIssuingModes.OAUTH_CIBA_CODEGRAND) {
-      }
-      else if (config.IssueMode == WellknownIssuingModes.OAUTH_CIBA_CODEGRAND_HTTPGETONLY) {
-         provider.Configuration["http_get"] = "true";
-      }
-      else {
-        throw new NotSupportedException("The given issue mode is not supported by OAuthOperationsProvider: " + config.IssueMode);
-      }
-
-      provider.Configuration["authorization_endpoint"] = config.AuthEndpointUrl;
-
-      if (config.AuthEndpointRejectsIframe) {
-        provider.Configuration["iframe_allowed"] = "false";
-      }
-      else {
-        provider.Configuration["iframe_allowed"] = "true";
-      }
 
     }
 

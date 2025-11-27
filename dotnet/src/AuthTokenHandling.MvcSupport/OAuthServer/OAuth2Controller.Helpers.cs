@@ -42,6 +42,28 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
   internal static class UrlHelperExtension {
 
+
+    public static string SetQueryParam(this string url, string name, string value, bool urlEncode = false) {
+      if (urlEncode || value.Contains("&")) {
+        value = HttpUtility.UrlEncode(value);
+      }
+      if (url.Contains("?")) {
+        int idx = url.IndexOf("?");
+        string[] kvps = url.Substring(idx + 1).Split('&');
+        for(int i=0; i<kvps.Length; i++) {
+          string kvp = kvps[i];
+          if (kvp.StartsWith($"{name}=")) {
+            kvps[i] = $"{name}={value}";
+            return $"{url.Substring(0, idx + 1)}{string.Join("&", kvps)}";
+          }
+        }
+        return $"{url}&{name}={value}";
+      }
+      else {
+        return $"{url}?{name}={value}";
+      }
+    }
+
     public static string AppendQueryParam(this string url, string name, string value, bool urlEncode = false) {
       if (urlEncode) {
         value = HttpUtility.UrlEncode(value);

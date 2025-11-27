@@ -37,7 +37,17 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
     private const string _GitHubIconUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAFiVJREFUeF7tXQ2QJdVV3gCbdXZmduZ19+03M6wisqUIhBgtUQMJBcRoXC0jxvyo5Q8UYH60YkyhSTbBiJUYjGXUkDKJMWhhUgHCTyjID5DSiBpDlRAI7kbjSpW1kKIW1pQC+5Osft955zTn3en33+/Nz+uv6pu+fU/3ueeec+693f36vdlSo0aNGjVq1KhRo0aNGjVq1KhRo8ZmwXNnZ2ebjUbjLPC8LMt2N7PsldheAl6qvETqFhd38xgey3N4bktFjQ2B+fn5FME7N0/TK5ay7P3NED6Xh7AXPIjykWae/99SsylcVlpZ6iHnMTw2z7KDPFd0ZNmfUSeTg21oczXWHDt3zoQQzkOA9oCfRsAeZRAZ0JWlpWcDq8EtoyRFCX1yLJsu1CMhHkU7d6K9twUkBKyYaRlTY1L4tpAkL0UAPoBgfFWChQCtaMAkSEoLppWtPmavY0yP0ZJCjocNtIU20baWiTUqB9bp74aj347R9xADwIAXo9IFp4y95EshyLZTwLvJJRnUDtj3EG2krWp2jVEBZ74Yo+x68GlO636U29YHpmzbVY7gttHJhf3KUV4mYR/2n8ZF5fW0XbtRY1A00/QCjPbb6WwLfOF0kPUWCF8eRl4EUQO5igPKqbeYFdAH9kW7VaMXMGp+AI681Tsxpjm5EweR+wAW+15GDiknrQ+Q38q+aTdrxJibmwtw0vvgvMMyjaojPc2p6tDW1nFQudXFWytXKecshu1h9pF91W7XILBevhoXWvv9iLcACi2Yrq5KuQ+cpw9gLPP1g8ilj+grLhZfo92fXjRnZ3M45zq736ajjOYwz3HIBz2+Cjn7SuZ5/lez8IG6Y7qQpumFGIX75AJPHWOO8o4zjlteEDNDab2xQjmfJdAH9IW6ZTqA6e83EYhjfsr3AerEccmtnlsGiEuGP3accvXBMfpE3bOpsQ0O+LAFXhxiTlGH+HJxzBjlRb2j7Otxxb5j5XJbEkL4C/qo5apNBlz5Zuj0XfGUbw7x+1Y3bnlbHQIi1P34+LHKVcYkCFl2F32lbtscWFhY+E509H57ft6L5qBOrFLOsgWg2PcycoJyuS6Ar+gzdd/GBjpyKjq3r/jwBIy3Ru4bY4eNQ2518dbKayXnTECf0Xfqxo0JGfkMPjvkOinUAAktWK5uknKzLaa3OZb5+nHI1WdMgo05E+Aetymf3NnI9wHpQDrCOCn5oMdPUq4Xhg/Rl+rWjYEQwhw6dW887Xv6zpvcb2OOW14QiVpab5ygnLbSh0iAe+lTde/6B7L2E8xedmAQWqc7cVxyq+eWAfD36etBzncf6FN17/oGOnC1vJ2jxkuntFyQndRy0Wnbd+VJyIt6R9nX44p9x7WQy4dJIfy+unl9IiTJxX7kt3VIt55eLg9D0Ekhy6rHn2fHW50vDyNvq4PDhbofHz+s3Nqxhz2+X23sph/1poc+VnevL+Bq9btg6EGfAJ7WqVLiHJz7RJ5lN2GtuwHT3d/i+AOs969+GbvqAgeRs2zOL/a9jBxC7oON/hxgn9i3DH1E+Ylh9FMftgfpa3X7usEJ6NTnxUBvuCM71NYpR7nQybJ3qC4BOtngK1Wofxd0P+wd2kmPyfqV++O8zNcPKjc7aTPsfxf7gL4sarcE7Cv7XHa+0ctMzq34Cr6GmhNa2tYB0KE3+XV/CB7LFxefp+pWYeeWLTN5mv40sv9OHm+JZueXOaqXPJZ1qu9XbskJX3watr58586dHV8Xx1X92Tjnm15PL/1eLgmWpr+l6tYWaZqeDqP+xxtYSp3iYkowQ/gyVJ3U0tgdaO8COpnnmdM9y2ywYwtiFPGiyl9vkPE6HTPWzX07HjZ9lrapmb1wUjPLHuRLpLE+vx9T5OpHzAL/S9+rvrUDDLmDo1/WKTUyphjfQU7nhTT9kKrrG1hPX8HEYRAZuMJRKEtQtJ7twsZDcPh/YHsftneDt6L+b7D/EZLlwDrKWsfw2EO0T/RporS1A7KeNtAWNatvoM/yqWjsD9Md1xuLtnEubLxD1a0NONWJY5yB3tCyclzH8+GM16nKQTHbTNOroecZDcY3wa+CN0P/VQjMzyU7dpzTaDS+HccO8iBljuckSXIOdWDKvgptfBIOp+5j7v0+3pYN9YAGfX69+S72Tz/7pCQBYqAqJ45tcMjDMsqcUUZvcDc5z9dv1QyN0Gi8EA59bVhY+D7sjvPbOdsWFxefL22FwK+FDQ32ucwf5iskVyHrJNdZ4GGom/w7BMi8K+IMtrJnYbCr80T9cTiTgZsq4O7gBQjicfWBBFSo+0W9sURO6ixwhaqdDHDxMY/Me6SfBDB2kqNTh1em8KtUK2n6Pej7EfWBUMpKX+4m55axYExU9fiBjPs1Br8wUA1pMzpimVyNfxozwGmqemqAPu9CUJ8xn5h/jN5PveS8/mFMVPXYsQ23PPJgJjZqGMIJ3+r2DGCzAn0+m30XH5gvdGtlz25yWQYQE6gd/7UArzpLg69TVEd2k2fZ+ap+arC0uHh+7Acf4DJ2lTMJJnFHgCn7TrnlQqNGGiDrlKvz7CZnMmVJcomqnxqwz/EySlpA43pjJ7nMAoiNqh8P+OQJgTxsBsRbT1/XTS6GJ8m12sTUAFP2tTaQYv8Msy91iM1Ynw7C6D3x6I+NKIyJ2EkuzxH4WzzN5qw2s+nBvmK07i3zh/mKM+agchlMiJE2UzlOgvL7bdryDfttzG5yqWslwJF8HX7EOS6wr0iAo+YDIZdIt0y2ycg+5JoA96OJvj5XGQgZv7ef521XrZ5ldZ6d5Gr05drM1IB9tsFkwaU/ZF99Y+WB5LizyBYWqv8dAih+ix/9ReNK1pXVG8vk1BeG+CBoswB9/6D3qaf3U79ybnVAvVWbqA6YsuSFj9iQYSkdz7KvTfQJ1jpD4NvT8IH51QJpZc9+5ZIArRdGqkM+O8t3/J+MP79uo05BHRnJaWhIkp/VJqYW9EFZApSxXzljxZhpE6MjazRexos13wi3RtnnOhTVG2O5ZGmW3avqpx70BX1ivor969mXHLoYM1U/OvI8f4dlqTcg3nr6urgsCbCGn2OvN9AX9Iv5yftrmH0dYG3vWI4EjN7bfAL4xowm63SM1Ummh/BvUFv/EPOzeC59IrfE5qtoyVzlyy5y8XGW3aa6R8ZWNLbPlgBrLC77Os9YzrdpkJ3XqO4aCvjmGglc5LOCXELdMtpNzljhOmAf1G5taR8BS4uLp0DxU2zQaAb0qvP0ckx5F6n6GookSV5ifjJfWdmC26+cWyTAU4ydqh8ei1n2IlPqGygad3Vl9UaRMzOz7PFN9wsYFYD/nwC+OdjJj1Y/iJyxU/XDA6P1F/z6Pwp1/f9HVV0jAhLgi+brsgDbth85mSJ2qnp4hDS90hvlG2ijTkEdCbkmwMdUdY0ImLY/3m2wdfU/6OXUkzYaV6rq4RGy7L1xVvpysc91KKo3mlxf3X6vqq4RAb75o9jXMSnrR05fM3aqenhgWvrLsqy0xvzW09dZmUbxmYKqrhEBvr6qLAGG2acexk5VDw8ouSlOAN+Yb7TbMayTW8A8v0pV14ggCQAfif+iJTX2ZS+5JsBNqnp4QMlnqKxo2DVS1nBML9cEqGeADoCv5Ymr91lBLrEa9H7kmgCfUdXDA+vIPfFbQB2NUJYFn6RRIYR3quoaERDAq4sZwNH7s8y3ZXK9BrhHVQ8PKLnbEiBuxAwwWn0nuWR3CO9T1TUiYMT+qSWA92FZuazOlzUB7lbVw0NmgHha4nRkWytHMjEokuu09NequkaEZpZdP+LvLBSU2baKGQD3pndQWVkjRguw3y+Tq1GfU9U1IshsW1UCYAZg7FT18IAS+cm3sgBbYG2km9wf5+WiJ8sehNrqX1rc+NiK2fErPgEK/7l9k/WSawKM/tNyCNyH/DVA3LAxri/bJ9HJJ9KZmRVVX0ORzMycjIA9WXzqWjKg2thDLoMNsVP1wwMBe3dpVnJU+31HOa5ErjqO679creGQLS6+2Hws/lP6/UHkjFmWJO9W9cMDSt4o2aSNxLTGCzIzGXxNgFhOXbgVfIOqr6HA0vgbdgfg/WUB9ewlJzUB3qjqhwdfWjSlvlFvRMz4eE9dTkZ/QrXJQJ/4mdb7MK7z7CSXgVbFS7f8nRw0Ir9kQfoGWfa0+l5yZPtjjUZjQZuYetAX8M9j8VtXq/wWlXvIjzN22sTwyPO8ien8UFujtr67qT6WyfFlcsrQ0TxJfkabmHpgpF7sg18F4fdDjJ02MRJORNAeKJuejEVg3X43OXXh4vKTqn/qgRnxlm7+HZTUBX8/ANUntloYEcimj3kDLZgWWBvpJvfHdZJj/3BW/5t1fuWevxXU9pX7wkeOg8glAap88Qaj9U1xAsTsZFCnfV4MTvP3Ag0I1IdLH/+WDKg2dpEzVohZdf+HkPeoq4LIUe33HeW4HnI95lhYXHy+NjN14O8awg/HzK/mF9tv85Ur9yNnzLSZ0cGr1DyEA9aQ56o6ZiaDrwnQTS6ZGsIX0MRzWi1NFZ7Dvtu9v6f3VyzrKW/59EDld1kI2M2ytmhD3oiYZkyZjPRyXQp+V5uZGqDP79RnIoU/yjiI3PzJWGkz1SHXXwaNG/S0+kHkWj6OC8JXa1ObHlifX2O3fd4vcdnYr5yUWXUcvxy6Y8eO0zC1PC2N6/QuWysbdb84rg+5lp/BuvWT2tymBZ9/oK+Hq77vJ/n1fcYIsdqlzVULZO49ZVesFly/P6icmYvy4RDCr2hzmw4I/K+CR7SvlVNGfwijvwTSCUiA4ndt2KAFlqOYjA3qW6775phm6332cf7q96Qxg/7/Mfvngx/337bDyrn+53k+vt9b2h7CEjrS/g+PlGUG+XI3eVyvFzL3bYYvkYYkeSn68i8+8MKSAdHGAeXUj9H/BGOkTY8HmAXkiyIc0WUBJGmQbHkcyyEc5VacoI5Ydb7u+3NZxpJwfbOKDzUmDNh9LgJygwXH+ma0fvv9UeSSAFV8EaQX8kbjR9Bg8Tv33hjhs5n5LRj0h6HROBf3pGelaXoh9t8K+d/Zbw2Vnm9UPeY8OPMO3imszM+nasq6Az98QeB/GX/uMtu5jen7WaGcL9q8UE0ZLxDI1W8KO6pBRxH4M/WUApjWX4574NchoPvtPrjD+W114ky2GcLXce7HkQyXNpFYULlmvzSyvLy8nb+fyBdcYNctoPzfRH+h7PtTxirkbBMxqfaXwboBnd5t2U0DjN4wjnI4ZG+SJN+rp7VGSJY9yHURu1sRyNt9EvjzjWX6eY4kYAjHoGMv9N7Ih0mYZX4et5Lnw77KP2SSfxXTaPw4dF+2lGXXoO07sQ7vp120hTb5W7syu+NyFXKW2T7smugt9IlwwD9pEApjhG4t1xH7OLLzMj2P4G/az8DglzVmZ89CQnxK9Og5bfpYdvur5FonAVByHwn2S62mqgNmLvknGUJNQGtvLUkbMAi+CBOr+ei3X3A0mAN8MGzfGyhGZtlHcVoxXeNW78s4jj8Vx1ukB2NndtJXVmdlBgbO+JNWC9UDfbi2qi9uVEX6rdKfhBsEcEjri6M6UmPjGBipB+WLoWnK99TlX542m81TMXW/hGVM3afj2OLHk+0WR863Ol8uk9OOLPvaOH91HMvZDiTYfkvWtvbd1jhuuSR8ln1WzZs8MI2/AEbJx5lmYGyw39dfCHuPni5AUvwilwPWSzK54/35Mb2cZTqDF2OqdmyAnfKWNNvsypIB0cZR5S0eYwzUtLUBp1wfuCI46ICvs3qSAdfT+XWoWxg8+awhy/6+0BWfr/ui2+1LHc6BHU9u3759vA9BAMwCJ6Pt/zY7rE++bPvjlI97uesb/C/fCNx/yhRMQ5m5DE4cMCUDDMP34tTtPB+3it+BJYD/CPkE7CzgvL2cKez4+PyCTj91YvTfTn2TAPor/7vYghHT2zkOuQySEB6h79WktQVuvXbbLZA32nfEaB3gVKqnC3bt2rWNzwjShYWLcNwXmATddJiM25Xl5Yn+7gBsb/spF7OnjFXKfRmD5qfUnPUBOEX+B44ZaAZ7Wr0mwH4+SNHTObXulMzGhRwzu4n7eswkX2edOFu3MakPM8o/T3ItRFuvtLZ9v+Jy3O9R5aRe+H1ATVk/aPIfOUf/UkamaZ2qC2JfOoLjcPvyKj1dgI5dFnCncMopp8gngcnc3BmouxzXCTfzARICvQ9tPIDtl6QuhF9H4pwhJ08Qy1n2IkuASVJ9+wD6PdQ/rB475J8h5vk3fBKQFny/z2NwG/gPeuoqYDm4CMceQLA/olVb07m50xfn53ejvMgKjMTvX87zT2G2+D3uTwrZygrvfopvS02C6tNvwGdnqxnrEwjKq/yHPUKdCco6xSdsemobkOWn4Zh7kACft6UCo//uk1vr/e/IMWl6JY55CrPE+7k/KSwtLZ2BfhVv85JW5tZoslHlLNNX8O3GeG0OAdljs4DvRLwvdSE8hY719Qozloyf4DN/P+3vwEqhxYmh2WicCbuL5x+lLEn4Ng4gl4GSZW/X5jcGsEb/uT029YG34MusgK0myqE8SeSp4EZAWQJYv/y+rxtWLrfEIXxQm95Q4Hvvn+BVq3VGyMxm8DUBSH2GcAR1nNpnWqevXzSbzTNhb8cZwPolfSthv3J92HMDmtyw35vgP5u80W4P407bvtQhCWSqC+ErvC7AOj/2p3rDIr4GsP6UcVi5Pja/Ec1t+N9T4o8fFUngyc57so5JoInwOGaE20KSvAVr/sWNRuM8fiYPPg/7PxwajR/LkuRSXD+8R44LYTyvQpcAbfErXav+iWZc9v0aRO6CP/p//FgnYBJ8lNcEvtOyDPilwOq0bMkgS0Tr2KMglwqR+4dDCMrEvmOIJeCHpP0xUHyUZdehmU0T/AJIgj8oAuo67cvd6rpxki+OIgHOKbNhFFoiw0dtn5ZuOqCDl2MEH2ZnGWQjnVCUdYT3I+dWymuUALF9Vu9lveTqiyO49qn+K13rEVi3z4cD/n3VHYKjd1AZvVzKCIqqHzuYbGyzK22Z6kSVqw/4L3QvUPXTAV7lY627sVgS4JC2wOp+wQ5yc+haJ4C3xfbb7HNlo4z8LLsJA2JZVU8fQpq+FsF8UhIBTjHHrQp4zLVMgB7XAN7OMrneER3CIHi9qpxu8BYO1wat38nTRCC9Iz1juZTXKAG8PWX0cvZPRn0IN2PUT/3vI60C1sVX4P7/YY6QVR8o6X5HLi39oKoZOzolQFw2Muhybx/Cv7KPqqZGKUKYw4zwZoySR9qWBUz5Utap3+q4ZT3OmczXooBeS4DRAg87/wuBfzMu9OZVRY1emF9ZSeG43wYlESwZjBZ4c3QzTS/UU8eOPM/5/cg2ezzF3lbgH1nKsj2V/i//acOOHTsSXizBmV8y55qjJQkY/BCOYVSeqqeMHWwLbR71D7Qs6GrPfeAbaLueUqMCnJAnyY/ykTKc+6g4HITzj2dJ8jY9ZmJAm3vYtrPjMdh2HZKV33uc7Ne0pg1zc7hMSJKL4fDL+MGQVk8cbJtPNmkLZoVcq2vUqFGjRo0aNWrUqFGjRo0aNWrUWG/YsuX/AS7AwsmqwyJKAAAAAElFTkSuQmCC";
 
-    public Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+    private Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+
+    public void SetConfigurationValue(string key, string value) {
+      if (value == null) {
+        value = string.Empty;
+      }
+      this.Configuration[key] = value;
+    }
+    public bool TryGetConfigurationValue(string key, out string value) {
+      return this.Configuration.TryGetValue(key, out value);
+    }
 
     public string ProviderInvariantName {
       get {
@@ -79,10 +89,19 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
     #endregion
 
-    private readonly HttpClient _HttpClient;
+    #region " HttpClient (Lazy) "
 
-    public GitHubOAuthOperationsProvider()
-      : this(new HttpClient()) {
+    public Func<IOAuthOperationsProvider, HttpClient> HttpClientFactory { get; set; }
+
+    private HttpClient _HttpClient = null;
+
+    private HttpClient HttpClient {
+      get {
+        if (_HttpClient == null) {
+          _HttpClient = HttpClientFactory != null ? HttpClientFactory.Invoke(this) : OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory(this);
+        }
+        return _HttpClient;
+      }
     }
 
     public void Dispose() {
@@ -91,13 +110,15 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       }
     }
 
-    public GitHubOAuthOperationsProvider(HttpClient httpClient) {
+    #endregion
 
-      if (httpClient == null) {
-        throw new ArgumentNullException(nameof(httpClient));
-      }
+    public GitHubOAuthOperationsProvider()
+      : this(OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory) {
+    }
 
-      this._HttpClient = httpClient;
+
+    public GitHubOAuthOperationsProvider(Func<IOAuthOperationsProvider, HttpClient> httpClientFactory) {
+      this.HttpClientFactory = httpClientFactory;
 
       this.Configuration = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
       this.Configuration["authorization_endpoint"] = _GitHubAuthorizeEndpoint;
@@ -107,6 +128,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       this.Configuration["nonce"] = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
       // Optional überschreibbar:
       // this.Configuration["api_version"] = "2022-11-28";
+
     }
 
     #region " Entry-URL generation "

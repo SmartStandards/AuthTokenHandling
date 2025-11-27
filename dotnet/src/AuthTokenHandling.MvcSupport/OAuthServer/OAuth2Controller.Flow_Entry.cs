@@ -40,30 +40,6 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     // AUTHORIZE STEP #1 - BROWSER LANDING (HTTP-GET)                                                //
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //[Route("authorize2")]
-    //[Authorize()]
-    //[HttpGet(), Produces("text/html")]
-    //public ActionResult GetLogonPage2(
-    //  [FromQuery(Name = "response_type")] string responseType,
-    //  [FromQuery(Name = "client_id")] string clientId,
-    //  [FromQuery(Name = "redirect_uri")] string redirectUri,
-    //  [FromQuery(Name = "state")] string state,
-    //  [FromQuery(Name = "scope")] string rawScopePreference,
-    //  [FromQuery(Name = "login_hint")] string loginHint,
-    //  [FromQuery(Name = "err")] string errorMessagePassedViaQueryString,
-    //  [FromQuery(Name = "otp")] string sessionId,
-    //  [FromQuery(Name = "view_mode")] int viewMode,
-    //  [FromQuery(Name = "code")] string codeFromDelegate //NUR WENN EIN DELEGATE DAZWISCHEN HING
-    //) {
-
-    //  TryGetPasstroughUserIdentity(out string userName);
-
-    //  var x = User.Identity;
-
-    //  return this.Content($"User: '{userName}'", "text/html");
-
-    //}
-
     [Route("authorize")]
     [Authorize()]
     [HttpGet(), Produces("text/html")]
@@ -81,19 +57,25 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     ) {
 
       Uri thisUri = new Uri(HttpContext.Request.GetDisplayUrl());
+      HostString apiCallerHost = this.HttpContext.Request.Host;
 
       AuthPageViewModeOptions viewOpt = new AuthPageViewModeOptions();
       viewOpt.LowSpaceEmbedded = (viewMode == 2);
 
       try {
 
-        //VALIDATE clientId first...
-        HostString apiCallerHost = this.HttpContext.Request.Host;
-        if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
-          string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewOpt);
-          return this.Content(errorPage, "text/html");
+        if (string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(codeFromDelegate)) {
+          // the only exception where clientId can be empty is when we are
+          // returning from a delegated authorization -> will be done later (after decoding state)
         }
-
+        else {
+          //normally VALIDATE clientId first...
+          if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
+            string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewOpt);
+            return this.Content(errorPage, "text/html");
+          }
+        }
+  
         ///////////////////////////////////////////////////////////////////////////////////////////////////
 
         //ROUNDTRIP - DELEGATION TO ANOTHER OAUTH SERVER ???
@@ -109,13 +91,17 @@ namespace Security.AccessTokenHandling.OAuth.Server {
               //STATE muss dann auch da sein!
               string stateBagJson = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(state));
               StateBag deserializedStateBag = JsonConvert.DeserializeObject<StateBag>(stateBagJson);
+
+              if(string.IsNullOrWhiteSpace(clientId)) {
+                clientId = deserializedStateBag.OriginalClientId;
+              }
+
               if (((IOAuthServiceWithDelegation)_AuthService).TryHandleCodeflowDelegationResult(
                 codeFromDelegate, deserializedStateBag.SessionId, thisUri.GetLeftPart(UriPartial.Path)
               )) {
 
-                //dies sorgt dafür, dass wir nun als authentifiziert gelten und direkt in die Scope-Auswahl gehen
+                //This ensures that we are now considered authenticated and go directly to the scope selection
                 sessionId = deserializedStateBag.SessionId;
-                //TODO: Sicherheitscheck, dass das hier keiner hijacken kann und es kein seitlicher einstigsvektor ist
 
                 responseType = deserializedStateBag.OriginalResponseType;
                 clientId = deserializedStateBag.OriginalClientId;
@@ -123,6 +109,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
                 state = deserializedStateBag.OriginalState;
                 rawScopePreference = deserializedStateBag.OriginalScope;
                 viewMode = deserializedStateBag.ViewMode;
+        
+                if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
+                  string errorPage = _AuthPageBuilder.GetErrorPage(msg, viewOpt);
+                  return this.Content(errorPage, "text/html");
+                }
 
               }
               else {
@@ -143,6 +134,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             out string targetAuthorizeUrl, out string targetClientId, out sessionId
           )) {
 
+
             StateBag stateBag = new StateBag {
               OriginalState = state,
               SessionId = sessionId,
@@ -154,13 +146,19 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             };
 
             string stateBagJson = JsonConvert.SerializeObject(stateBag);
-            string rawStateBag = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(stateBagJson));
+            string b64StateBag = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(stateBagJson));
 
-            return this.Redirect(
-              targetAuthorizeUrl + 
-              $"?redirect_uri={HttpUtility.UrlEncode(thisUri.GetLeftPart(UriPartial.Path))}" + 
-              "&clientId={targetClientId}&response_type=code&state={rawStateBag}"
+
+            targetAuthorizeUrl = (
+              targetAuthorizeUrl.
+              SetQueryParam("response_type", "code"). //hardcoded for the "delegation"-feature
+              SetQueryParam("client_id", targetClientId).
+              SetQueryParam("redirect_uri", thisUri.GetLeftPart(UriPartial.Path), true).
+              SetQueryParam("state", b64StateBag)
             );
+
+            SecLogger.LogTrace(2083109404818208602L, 0, $"Delegating OAuth-Code-Flow to '{targetAuthorizeUrl}'");
+            return this.Redirect(targetAuthorizeUrl);
 
           }
         }

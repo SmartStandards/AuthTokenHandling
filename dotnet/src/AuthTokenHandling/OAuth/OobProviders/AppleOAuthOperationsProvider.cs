@@ -31,7 +31,17 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
     private const string _AppleIconUrl = "data:image/png;base64,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";
 
-    public Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+    private Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+
+    public void SetConfigurationValue(string key, string value) {
+      if (value == null) {
+        value = string.Empty;
+      }
+      this.Configuration[key] = value;
+    }
+    public bool TryGetConfigurationValue(string key, out string value) {
+      return this.Configuration.TryGetValue(key, out value);
+    }
 
     public string ProviderInvariantName {
       get {
@@ -73,7 +83,20 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
     #endregion
 
-    private readonly HttpClient _HttpClient;
+    #region " HttpClient (Lazy) "
+
+    public Func<IOAuthOperationsProvider, HttpClient> HttpClientFactory { get; set; }
+
+    private HttpClient _HttpClient = null;
+
+    private HttpClient HttpClient {
+      get {
+        if (_HttpClient == null) {
+          _HttpClient = HttpClientFactory != null ? HttpClientFactory.Invoke(this) : OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory(this);
+        }
+        return _HttpClient;
+      }
+    }
 
     public void Dispose() {
       if (_HttpClient != null) {
@@ -81,17 +104,14 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       }
     }
 
+    #endregion
+
     public AppleOAuthOperationsProvider()
-      : this(new HttpClient()) {
+      : this(OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory) {
     }
 
-    public AppleOAuthOperationsProvider(HttpClient httpClient) {
-
-      if (httpClient == null) {
-        throw new ArgumentNullException(nameof(httpClient));
-      }
-
-      this._HttpClient = httpClient;
+    public AppleOAuthOperationsProvider(Func<IOAuthOperationsProvider, HttpClient> httpClientFactory) {
+      this.HttpClientFactory = httpClientFactory;
 
       this.Configuration = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
       this.Configuration["authorization_endpoint"] = _AppleAuthorizeEndpoint;

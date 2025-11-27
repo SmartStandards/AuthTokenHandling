@@ -9,21 +9,30 @@ using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net.WebSockets;
 
 namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
   public class GenericOAuthOperationsProvider : IOAuthOperationsProvider, IDisposable {
 
-    private const string _DefaultAuthEndpoint = "https://auth.example.com/oauth/authorize";
-    private const string _DefaultTokenEndpoint = "https://auth.example.com/oauth/token";
-    private const string _DefaultIntrospectionEndpoint = "https://auth.example.com/oauth/introspect"; // RFC 7662
-    private const string _DefaultUserInfoEndpoint = ""; // optional (OIDC)
-
     #region " Matadata & Config "
 
     private const string _DefaultIconUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAACRRJREFUeF7tnFuMG+UZhkNpK1ApCGhz0RapqjhIRai0vWgFF5VAAVEf93RFw6FSV4CIqiigJNpdj8f2eA/OkrR3lbipWlX0AEQka3vXe6CEZBMKUoUitRQpUkuBQKCAlAsIFcP3jb9ZJetZz3qO/8TvI73yZOef73fmfefwz8FbAAAAAAAAAAAA0DOjv3n5S6nJw1ePaCtXyJ9AP5A3lgazxtJTmcrCa5lS4/1Maf6tbGXhaNZYLuTKz14nzcDFRmr80A1k/MrQvmMmKz+5YuaMJTNXXTYHpo+Yw0+cMPPV5f+l9flHZBFwsfBT7fCtZPRbQ7OrJm3xpKaj8pPL5tDscZqen5RFQdKxzDeW3hmcOWJm9EaH6etFhwMrBLQnmJISIKn0ar6tbJlDsIoQJBmv5ttCCBKMX/NtIQQJJCjzbSEECSJo820hBAkgLPNtIQQKE7b5thACBYnKfFsIgUJEbb4thEABgjF/48vCbkIIYsSf+Q3rBhDfEBqg5QdrR02rjocwIAQx4Nf8wZkXzXRp/nS61DTSleYQGT+aKc83B6ZfMLOVlsMy3YUQRIhf89mobGXxpbsc7vvnyguPcThyxqLDst2FEERAUObfueeZa6VkB+lifedgDSFQjijMt0EIFCNK820QAkWIw3wbhCBmfJlP7Xl4l/Novg1CEBP+tnx+tu952vJbr6e1574mJT2DEESMX/NZPJxLFev3SknfIAQREYT57Ys5jXM5rfFtKRsICEHIsGFk3tt+zGfJ1bxzKa31HSkdGAhBiGT0ZmuYn8n3Yb4tPgFMleo/l9KBghCEQFqv38k3ZjJl73fnzhe/9ZM1Wv9JVQ59U7oIFIQgYNJ640leKU4rzJNoL8Ingllj8WRWO/gN6SZQEIIAoZO2lwem/+q4sjyLQsC3fBECxfmJtvJFMutfPHZ3WlG+lIAQ8HlPWp/r5xCYl9Ah4NWBqYD3ALZUDwGNWoafoJPfYv1hKdd/ZIqNv7BJTisoEEUVAj7v8PBQCb+VnC23zg5o9W9Juf4iU6r/LNCTQCdFEQK9+djAzAvUX6+jmYb1+wT0qUup/mJ49tjl6VLjdesiEK0M55UUgCIIQUZvzltDWqf+u4gfSaPvd4JKXNKu1GdktLk7rF/tqC7TCkluCOi7P8AXohz77qJcdYlOBpuns48f/KqU6j9S2tx9fDKY5BBkS41sew/Q22EgZ1AASs0P7tKa10ip/iRVrN8/MPV8YkNAJ4Ma13Xss4t470d7gFMj2skvS6n+Jakh2KY9vTVTab2Zt763Q39dNFQ7xnuAg1IKJC0EqT2Hr85VWsd5KOjl+/J3oD3AkJQDTFJCwObTsqvD1lC2x+/JfVuXhBurIyN/ulRKAhvVQ+DX/MHpI/R/W3w3VVq4QUqC9agaAr/m89ifhn9nUhOHfyglwUaoFgKYHzI7duy4UibXiCMEuXKz4z1CftoY5odIoVDQp6amXtM0reO5vihD0L65s/jvTKk+mq+2bsxozevTxYXtucriP9pX+2B+4JDpe6anp81arWaWSqVTpJtk1hpRhoAv0LSHds1zNE7/hO9X5KlvntfRvptgvju2+WS6SdPm/v37zWKx+CpNd1wdiywEIr7N277V6+G5RZjvznrzq9WqWalUzuq6nqLZjnfIog6BJ8F8dzYyn6bvkCYbonQIYL47vZg/MTFx+/j4+M3yzzWUDAHMd6cX88fGxm6jeR+Xy+U3aX58o4PNCOa748H8D7gNDQ95mVPKhgDmu+PF/MnJSastS5ZVLwQw3x0yzbP5NCS0xNPKhQDmu0Nm+TZfyRDAfHfIpMDMt8XzYg8BzHeHzAncfFvcJrYQwHx3yJTQzLfFbSMPAcx3h8wI3XxbvExkIYD57pAJkZlvi5c9LwTXS/k1AgkBzHeHVn7k5tviGnwrmab5imHHSxa+QgDz3aGV7mg+GR26+Szul/un6TLVdHzJwlMIYL47Kpg/MzPD02PtXjbGDkH7JQ6XEJD5/CAIzO9Cksy34XcR85PLn7XfSnYwnlWet37Fg8x/G+ZvQBLNt7lHn9uWq66c5JczhvYdNfnlVH4MjH+zaGjfanvLN5bnU+OH8Ny+E2Gbz/XYXO7DSTzPq/k2P975x8tpC9+eNZaeylYW/s6/VUBb/t+yldaT+criPdIMrCdM83Vdt2790vRLpDHSL2i50fWimg/RZ166CQS8obsJaKWHuuXLff9p0zT78xczVCZs87ktfa5ICaASYZvP4vrU/j4pA1QhCvNZvAydA2yTUkAFejGf5ns2nyUBuFvKgbjp1fxyufyhV/NZCIBCRG0+CwFQhDjMZyEAChCX+SwEIGbCNp9qWRd6NtKBAwe4Vlq6AFESpvm0VVtjfJp+l7RAyzxHn4fWi/qbo3k/kG5AVNBKD9V82bX/mtpvlTJAFcI0n8W1yfzfSwmgEmGbz1s/LfMptf+ulAGqELb5LKrH7U/v2rXrK1IKqEAU5rM4APT531qthgCoQlTmsyQA/Jj2FVISxEmU5rMQAIWI2nwWAqAIcZjPQgAUoFAo7OanZ23zDcMI1HwZ6jmK61CbMwhATJD5I2w+m8Fm8SeZf2ZiYuJH0mSNXs1n4/n6vdT+iJb5kD4vEM3jv/8To4AYoBX/BTLhFTaJPi2xWaR3xsfHvyfNLLyYz21pr/IHmr6dltm6d+/er9Pe5QLx3+lwcy2e8I0BWvlXkt6jLf4C8/j4z2bTvNukXc+7fQnVr6yOgJqQSVc5BYBNlmPze6Rf8mcv5nM92urfoPaXSVdARTgAZNiZ9QFgsdl8OLCP4Zs1n8WjCfr8s3QDVKVbAPxIAvBb6QaoSsgB+J10A1QFAehzOAB0bO84CfQrBCAh7N69m/cA7yMAfcrIyMiltAc4KUO+wIQAJAgy6uHZ2VlrqHe+iX4kv8rxtHQBVIf2AjN0GPg//4YeXwXky7jrTd2s+IYS16Gaj0p5kATIuFsoBBqZ/wqbyFtxr2GwlysUCp5/kwcoABn5fVJPYbDb0TTMv5jYTBh4FAHz+wCnMLAMwzhL5u+UZqAf4DDQlj9Ke4MH6YSv4yfYAQAAAAAAAAAAAAAAAAAAAACBsWXL5/TVBFPdsFweAAAAAElFTkSuQmCC";
 
-    public Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+    private Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+
+    public void SetConfigurationValue(string key, string value) {
+      if(value == null) {
+        value = string.Empty;
+      }    
+      this.Configuration[key] = value;  
+      if (_ClientInvalidatingSettingNames.Contains(key)) {
+        this.Dispose();
+      }
+    }
+    public bool TryGetConfigurationValue(string key, out string value) {
+      return this.Configuration.TryGetValue(key, out value);
+    }
 
     public string ProviderInvariantName {
       get { return "generic"; }
@@ -58,23 +67,44 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
     /// </param>
     public bool HasCapability(string capabilityName) {
 
-      if (this.Configuration.TryGetValue(capabilityName, out string configuredValue) && !string.IsNullOrWhiteSpace(configuredValue)) {
+      if (capabilityName == "introspection") {
+        if(this.TryGetConfigurationValue("introspection_endpoint", out string introspectionEndpoint)) {
+          if (!String.IsNullOrWhiteSpace(introspectionEndpoint)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      if (this.Configuration.TryGetValue("supports_" + capabilityName, out string configuredValue) && !string.IsNullOrWhiteSpace(configuredValue)) {
         if (configuredValue.Equals("true", StringComparison.CurrentCultureIgnoreCase) || configuredValue == "1") {
           return true;
         }
-      }
-      ;
+      };
 
-      return _SupportedCapabilities.Contains(capabilityName);
+      return false;
     }
-
-    private static string[] _SupportedCapabilities = {
-      "introspection", "refresh_token" , "id_token"
-    };
 
     #endregion
 
-    private readonly HttpClient _HttpClient;
+    #region " HttpClient (Lazy) "
+
+    public Func<IOAuthOperationsProvider, HttpClient> HttpClientFactory { get; set; }
+
+    private HttpClient _HttpClient = null;
+
+    private HttpClient HttpClient {
+      get {
+        if (_HttpClient == null) {
+          _HttpClient = HttpClientFactory != null ? HttpClientFactory.Invoke(this) : OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory(this);
+        }
+        return _HttpClient;
+      }
+    }
+
+    private static string[] _ClientInvalidatingSettingNames = {
+      "retrieve_with_default_credentials"
+    };
 
     public void Dispose() {
       if (_HttpClient != null) {
@@ -82,41 +112,27 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       }
     }
 
+    #endregion
+
     public GenericOAuthOperationsProvider()
-      : this(new HttpClient()) {
+      : this(OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory) {
     }
 
-    public void Setup(
-      string providerDisplayTitle, string authEndpointUrl, string tokenEndpointUrlstring, string introspectionEndpointUrl,
-      bool supportsIframe = false, bool requestIdToken = true
-    ) {
-
-      this.Configuration["provider_display_title"] = providerDisplayTitle;
-      this.Configuration["authorization_endpoint"] = authEndpointUrl;
-      this.Configuration["token_endpoint"] = authEndpointUrl;
-      this.Configuration["introspection_endpoint"] = introspectionEndpointUrl;
-      this.Configuration["iframe_allowed"] = supportsIframe.ToString();
-      this.Configuration["auto_add_offline_access"] = requestIdToken.ToString();
-      this.Configuration["introspection_auth"] = "none";
-
-    }
-
-    public GenericOAuthOperationsProvider(HttpClient httpClient) {
-
-      //if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
-
-      _HttpClient = httpClient;
+    public GenericOAuthOperationsProvider(Func<IOAuthOperationsProvider,HttpClient> httpClientFactory) {
+      this.HttpClientFactory = httpClientFactory;
 
       // Sinnvolle, generische Defaults (alles überschreibbar):
       var cfg = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-      cfg["authorization_endpoint"] = _DefaultAuthEndpoint;
+      cfg["authorization_endpoint"] = "";
       cfg["provider_display_title"] = "Generic OAuth 2.0";
-      cfg["token_endpoint"] = _DefaultTokenEndpoint;
+      cfg["token_endpoint"] = "";
+      cfg["supports_refresh_token"] = "true";
+      cfg["supports_id_token"] = "false";
       // Unterstützt sowohl "introspection_endpoint" (neu) als auch "tokeninfo_endpoint" (Kompatibilität)
-      cfg["introspection_endpoint"] = _DefaultIntrospectionEndpoint;
-      cfg["tokeninfo_endpoint"] = _DefaultIntrospectionEndpoint;
-      cfg["userinfo_endpoint"] = _DefaultUserInfoEndpoint;
+      cfg["introspection_endpoint"] = "";
+      cfg["tokeninfo_endpoint"] = "";
+      cfg["userinfo_endpoint"] = "";
       // Auth-Methode am Introspection-Endpoint: "basic" (default) oder "body"
       cfg["introspection_auth"] = "basic";
       // OIDC: falls true und id_token gewünscht, wird "openid" + nonce ergänzt (bei Implicit ggf. id_token angefordert)
@@ -127,6 +143,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       // Nonce für OIDC
       cfg["nonce"] = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
       cfg["iframe_allowed"] = "false";
+      cfg["retrieve_with_default_credentials"] = "false";
 
       // Optional: separate Client-Creds für Introspection (falls vom AS gefordert)
       // cfg["introspection_client_id"] = "";
@@ -160,7 +177,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       string scopeJoined = String.Join(" ", lst);
 
       var url = new StringBuilder();
-      url.Append(this.GetConfig("authorization_endpoint", _DefaultAuthEndpoint));
+      url.Append(this.GetConfig("authorization_endpoint", string.Empty));
       url.Append("?response_type=code");
       url.Append("&client_id=").Append(Uri.EscapeDataString(clientId));
       url.Append("&redirect_uri=").Append(Uri.EscapeDataString(redirectUri));
@@ -206,7 +223,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       string scopeJoined = String.Join(" ", scopes.Where(s => !String.IsNullOrWhiteSpace(s)));
 
       var url = new StringBuilder();
-      url.Append(this.GetConfig("authorization_endpoint", _DefaultAuthEndpoint));
+      url.Append(this.GetConfig("authorization_endpoint", string.Empty));
 
       if (requestIdToken && IsTrue(this.GetConfig("oidc_enabled", "true"))) {
         url.Append("?response_type=id_token%20token");
@@ -363,7 +380,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         form["scope"] = ccScope;
       }
 
-      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", _DefaultTokenEndpoint));
+      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
       req.Content = new FormUrlEncodedContent(form);
       ApplyBasicAuth(req, clientId, clientSecret); // Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
 
@@ -386,7 +403,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         ["refresh_token"] = refreshToken
       };
 
-      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", _DefaultTokenEndpoint));
+      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
       req.Content = new FormUrlEncodedContent(form);
       ApplyBasicAuth(req, clientId, clientSecret);
 
@@ -581,7 +598,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         ["redirect_uri"] = redirectUri
       };
 
-      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", _DefaultTokenEndpoint));
+      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
       req.Content = new FormUrlEncodedContent(form);
       ApplyBasicAuth(req, clientId, clientSecret);
 
@@ -643,7 +660,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       tokenInfo = null;
 
       // Erlaubt sowohl "introspection_endpoint" als auch (abwärtskompatibel) "tokeninfo_endpoint"
-      string ep = this.GetConfig("introspection_endpoint", this.GetConfig("tokeninfo_endpoint", _DefaultIntrospectionEndpoint));
+      string ep = this.GetConfig("introspection_endpoint", this.GetConfig("tokeninfo_endpoint", string.Empty));
       if (String.IsNullOrWhiteSpace(ep)) return false;
 
       // Optional abweichende Client-Creds für Introspection
@@ -716,7 +733,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
     private bool TryCallUserInfo(string accessToken, out UserInfoResponse userinfo) {
       userinfo = null;
 
-      string ep = this.GetConfig("userinfo_endpoint", _DefaultUserInfoEndpoint);
+      string ep = this.GetConfig("userinfo_endpoint", string.Empty);
       if (String.IsNullOrWhiteSpace(ep)) return false;
 
       var req = new HttpRequestMessage(HttpMethod.Get, ep);

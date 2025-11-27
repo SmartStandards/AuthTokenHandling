@@ -32,7 +32,20 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
     private const string _MsIconUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAACmdJREFUeF7tnXuMXFUdx39AiVoUEQGRaspDYywoRdQYiRI0KBChYsQ/TDAxGDQqmLa7c+/M7O6UgoIm9RFrtBXxkRhDo1R5JK1SV0wsSmofu3PvnZ3udrt9a99V20Jox+/vzJ3X2em2d2dfZ/v9Jt/ce3dm7sw9v8/9nXPuJr8jFEVRFEVRFEVR1LRQrnuGZPpmSS7/+vgv1LSTBrktf7lkwveJF94tmagd22XiB38UPyxI5+ARyRRuj99NOakVpfMQ4LeKH90oqfAz2LaZIHvhn0yQ/eCQpAslyW0ryUO74V3Y316Srq3Y31kSv++O+EzUlFWudK65k9uj90sq/1nxgnYE9ycINu7kQgHHh02QuzTICHAlyJ2DJcluLpnX/AgOa07jWCFgBpgiKpXOkXTxUvTLcxGwT8d38o8RrFXYD7E9hNfiO/kMgzySCcAkye95k6SCa03D+9GD4kU/RKCfQ1DyON4/pkEeyQRgHJVbN1Paeq9BI9+C4H4JgfsOtivR8Oux3QOfkK6hWpAX7UCQEYxs/9gGeSQTgFYVp2wz+Ao+hwbNwL9C4/4NHsLg67h0bEGAMdDSwZcGWRu8A0HWu3wigjySCcAZKjf4WsluvUq8/MfQaF+GlyC4z+IuDrB/oJayKyNs7GvgM8VyIzdr/KlgAmBJH4ik83PMtChdmI8gL0dDdcOD8HHpRFAX6d1cn7LHuF+eSJ+VADzw9wtx8W+OjxqVjlZLx8DJxqmUI3fzaDztAJi/9nVIx7MwJ74Bdy/u4uA+XGgOd+dPka51lL0eo+ldeO3p+BON8oNeWYQRt4t382jsHAC5nTMlu2W2pKIPm0GXl1+IwP4AAXsKF/QPSSNVe+F/zIVpejbpOu6XKwOwh/fqxb8Qn7FRfvBP855mjTUdPeUA0OfW6Z634C6eK5noTgQWc+TgewjMUwjuS9huxw8/Zvrd+nmyBlqnVJqqTZ+MQdmp0rXOqf1gTfyNjSIAE6BlpfMlF10hqfwHxS/cgwGUj7v2cfyg5xGAArYHhz0IMXevBngg7otbGHQRgJrHFYAFhUvE671evMI8NGwb7mD9D9QafHER2yMmkNrf1v9zYjyedtkmADW3DMD9685HwN6OwdZHELAvwo/CK3HijUjd+0wQ6592DQtykx813iYANbcEQAYpPDuwGUH+n3mypWm6/mmXPtKcCk+7bBOAmlsDILhdFu+Z3Lt5NCYANbcEQDq81aRzPUmzk09VE4CaCYAlApBABMB9EwBLBCCBCID7JgCWCEACEQD3TQAsEYAEIgDumwBYIgAJRADcNwGwRAASiAC4bwJgiQAkEAFw3wTAEgFIIALgvgmAJQKQQATAfRMASwQggQiA+yYAlghAAhEA900ALBGABCIA7psAWCIACUQA3DcBsEQAEogAuG8CYIkAJBABcN8EwBIBSCAC4L4JgCUCkEAEwH23DED5w+UTJbJ+puI+nKPexZq1/lDV/eUy61UPwFtq1kLOCqRt/Y31/uaBknj5tfFVNMoPInlk7/DPDPNQc2ttQwXMbCvGsRbOGuadjTYl5esdV1ZrsJbUqzg+XtzE1ddPY33vY4fR1oV5cQskULZwmzz87/JF6sU3a/yKTbDqrIGuAKBVxLzg1TofQyCOgtCjpuyrLnikS6V44QFYF1qAg3/h79uxvxXbIbw+hL/1Y18XSIptFkvS7SZ4Y9VdQzgOlsdX0Sg/+A1+b+P76+0Fm+AN8Nph9oMXAdZf8b7nYa2HuAZ//zOsq3M9je0zxqn8s3jvb/G3J2OvgH8N/wzX84Skgp+brRf8yKwk4gdL0UZLcawVUx/Da9829kNdgOIRuKvBpjZyPo3tAnx+4YhOwx397YjlVXELJFB6/aWSGbhTvN6yNSNoPX2vUHN78HFJ994imfBDkqqzFnP2+q4HCHMlFb1H2qN3Ve1FV8rCYLZ4G67E8RWycONlpnysfl9u8CKz3Iq6PXoDXrug7N0XyAPF10iuNMPULqw3RVEURVFjq1zxQtOfaz/eEVyLMcB1zZ2fY1bPylZcvEb8vqsls2GW6ePVWj1ct1pgWlfzqLf+LZe/2PT5zazLvHgDbxz2WbP+XvwdWs9Yv7s9eKcpYO33XB1fBTVq+eEnzAxAR/JecAIj0CYOTuJ9r8LHcfxy1bqalh/+1zJG/OF+fGaf5f14/154Z1N74Q68R2cH1mcxa6ieG7OK8ne/YpaD0ZF6M+mIu3NwNbarzg6Hq8rXW/hA3AIJpADo9C+rc3Z7Lm+7bm7fdI5fOcb8/lS2p5K2h32m7rz136vzXy//l/gqGqWl7L91oDx3Pxv80I6SuV4/uitugQTik0D3rbHT6+Wj4FgEIIEIgPsmAJYIQAIRAPdNACwRgAQiAO6bAFgiAAlEANw3AbBEABKIALhvAmCJACQQAXDfBMASAUggAuC+CYAlApBABMB9EwBLBCCBCID7JgCWCEACEQD3TQAsEYAEIgDumwBYIgAJRADcNwGwRAASiAC4bwJgiQAkEAFw3wTAEgFIIALgvgmAJQKQQATAfRMASwQggQiA+24JAD9/m6m3o3V4XIKAANTcWgbovUmyA3txkpPmJJUCx1r4WItHaeEmLcpUqQfc7AdMhglAzS0BUCqdI/PzF0u6OAe+FUG+X8pFjJ/E/ovYbsPxMVOxSxu9UqFa97XrMNW7+iY+exCAmlsC4HTKrZsp2WA2MsBNkoo+j8bNAojHAYdW0y6IFxw0mcFkD4Vj9ymyR5Mf3ooJQM3jCsBIWlE6T3L9l5Wrdoafgr8uaS2HHv4eQVgH78T+cQOCQmFq4Gv22FbLHqPtWghAzZMGwOmkZWj9/Dsw07hZ/MK9+IE5BOeXcLd4+SJ+/CHTfSgQla5FF2GoZo8RuhYCUPOUBWAk6RoAbYOXS0fxBnQj8xC0B3Ex30f3shIZAdkj2gW/YlYRUSgqgFTGHov3jFAplAC4L5M9NsfZI7gXwe7C/hO44DXiRX3SOaSrkJwqA2wyWaVZY01HT0sARlKue4bM3zBLFp5iiZR0sLa6pk9l3R0z7kA2aWXcMVV91gFwOmlpeZ21pDFrSRe6kBEw7ghfQFczgO0RMzPRrqQKR9yt6FRXF79yDQ4CcIbS9YhSm95myqr7wT3IFClAsRxejbFHgMbcX25MDEKrD8TqB6XjNKVt1QRgDJQrnSu5wiVm8Su/7w4A8TWAsQSg/A77L6Ghd2D7cnlK22RQOpldCwGYAOmKJrpCiRd8FCB8Ae7C/i8QgG4EvYj9wwYAkz1iOEz2QGC0axnPp6UEYJKlU1odd/jRjQDjbgRlAQK+FPvPYb8HcOzF/gkTJAOHPi2N4ag872glcxCAKS6z9lF4nQmQX/gqxh7oWvR5R7gegd/dCIeVOc5kUEoAHNY3Bi+Sjr53S6b3kwj0VzDm+C6A+AOCulG8aF85uHXdio459OFY/YCUAExT6QpqbT3vBRh3SSpoAxjLEPA1CLhOZ49WB6T6VPTRg4BhNGsGUe5Jp7PmP7ThzehO7kOmWILu4pnRrRpGURRFURRFUdR0lcj/ARCXHWTu2eLwAAAAAElFTkSuQmCC";
 
-    public Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+    private Dictionary<string, string> Configuration { get; } = new Dictionary<string, string>();
+
+    public void SetConfigurationValue(string key, string value) {
+      if (value == null) {
+        value = string.Empty;
+      }
+      this.Configuration[key] = value;
+      if (_ClientInvalidatingSettingNames.Contains(key)) {
+        this.Dispose();
+      }
+    }
+    public bool TryGetConfigurationValue(string key, out string value) {
+      return this.Configuration.TryGetValue(key, out value);
+    }
 
     public string ProviderInvariantName {
       get { return "microsoft"; }
@@ -69,21 +82,39 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
     #endregion
 
-    private readonly HttpClient _HttpClient;
+    #region " HttpClient (Lazy) "
+
+    public Func<IOAuthOperationsProvider, HttpClient> HttpClientFactory { get; set; }
+
+    private HttpClient _HttpClient = null;
+
+    private HttpClient HttpClient {
+      get {
+        if (_HttpClient == null) {
+          _HttpClient = HttpClientFactory != null ? HttpClientFactory.Invoke(this) : OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory(this);
+        }
+        return _HttpClient;
+      }
+    }
+
+    private static string[] _ClientInvalidatingSettingNames = {
+      "retrieve_with_default_credentials"
+    };
 
     public void Dispose() {
-      if(_HttpClient != null) {
+      if (_HttpClient != null) {
         _HttpClient.Dispose();
       }
     }
 
+    #endregion
+    
     public MicrosoftOAuthOperationsProvider()
-      : this(new HttpClient()) {
+      : this(OAuthOperationsProviderCommonSetupHelper.DefaultHttpClientFactory) {
     }
 
-    public MicrosoftOAuthOperationsProvider(HttpClient httpClient) {
-      if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
-      this._HttpClient = httpClient;
+    public MicrosoftOAuthOperationsProvider(Func<IOAuthOperationsProvider, HttpClient> httpClientFactory) {
+      this.HttpClientFactory = httpClientFactory;
 
       var cfg = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
       cfg["tenant"] = _MsTenantDefault;

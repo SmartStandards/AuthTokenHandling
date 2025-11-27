@@ -257,9 +257,8 @@ namespace AuthTokenHandling.TestApp {
 
     private void btnDemoCefTest_Click(object sender, EventArgs e) {
 
-
       var oauthProvider = new GenericOAuthOperationsProvider();
-      oauthProvider.Setup(
+      oauthProvider.ApplyCommonConfigurationValues(
         "Demo-Module",
         "http://localhost:55202/oauth2/authorize",
         "http://localhost:55202/oauth2/token",
