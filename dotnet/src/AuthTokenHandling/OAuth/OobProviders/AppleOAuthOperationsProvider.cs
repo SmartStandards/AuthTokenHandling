@@ -576,8 +576,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       string body = null;
 
       try {
-        resp = this._HttpClient.SendAsync(request).Result;
-        body = resp.Content.ReadAsStringAsync().Result;
+        resp = this.HttpClient.SendAsync(request).GetAwaiter().GetResult();
+        body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
       }
       catch (Exception ex) {
         result.error = "http_error";

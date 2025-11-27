@@ -508,8 +508,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       string body = null;
 
       try {
-        resp = this._HttpClient.SendAsync(request).Result;
-        body = resp.Content.ReadAsStringAsync().Result;
+        resp = this.HttpClient.SendAsync(request).GetAwaiter().GetResult();
+        body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
       }
       catch (Exception ex) {
         result.error = "http_error";
@@ -595,8 +595,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
       try {
-        var resp = this._HttpClient.SendAsync(req).Result;
-        var body = resp.Content.ReadAsStringAsync().Result;
+        var resp = this.HttpClient.SendAsync(req).GetAwaiter().GetResult();
+        var body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         if (resp.StatusCode == HttpStatusCode.OK) {
           var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
           userinfo = JsonSerializer.Deserialize<UserInfoResponse>(body, options) ?? new UserInfoResponse();
@@ -610,8 +610,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       reqMe.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
       try {
-        var resp = this._HttpClient.SendAsync(reqMe).Result;
-        var body = resp.Content.ReadAsStringAsync().Result;
+        var resp = this.HttpClient.SendAsync(reqMe).GetAwaiter().GetResult();
+        var body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         if (resp.StatusCode != HttpStatusCode.OK) return false;
 
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };

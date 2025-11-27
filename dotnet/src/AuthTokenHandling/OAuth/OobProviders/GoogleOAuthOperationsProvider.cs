@@ -686,8 +686,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       string body = null;
 
       try {
-        resp = this._HttpClient.SendAsync(request).Result;
-        body = resp.Content.ReadAsStringAsync().Result;
+        resp = this.HttpClient.SendAsync(request).GetAwaiter().GetResult();
+        body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
       }
       catch (Exception ex) {
         result.error = "http_error";
@@ -757,8 +757,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url);
 
       try {
-        HttpResponseMessage resp = this._HttpClient.SendAsync(req).Result;
-        string body = resp.Content.ReadAsStringAsync().Result;
+        HttpResponseMessage resp = this.HttpClient.SendAsync(req).GetAwaiter().GetResult();
+        string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
         if (resp.StatusCode != HttpStatusCode.OK) {
           return false;
@@ -782,8 +782,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
       try {
-        HttpResponseMessage resp = this._HttpClient.SendAsync(req).Result;
-        string body = resp.Content.ReadAsStringAsync().Result;
+        HttpResponseMessage resp = this.HttpClient.SendAsync(req).GetAwaiter().GetResult();
+        string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
         if (resp.StatusCode != HttpStatusCode.OK) {
           return false;
