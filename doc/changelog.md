@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* GenericOAuthOperationsProvider now also support body-credentials when retriving tokens by code
+*(none)*
+
+
+
+## v 5.0.4
+released **2025-12-17**, including:
+ - GenericOAuthOperationsProvider now also support body-credentials when retriving tokens by code
 
 
 

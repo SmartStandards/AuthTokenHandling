@@ -1,13 +1,13 @@
 {
-  "currentVersion": "5.0.2",
-  "currentVersionWithSuffix": "5.0.2",
+  "currentVersion": "5.0.4",
+  "currentVersionWithSuffix": "5.0.4",
   "releaseType": "",
-  "previousVersion": "5.0.1",
+  "previousVersion": "5.0.3",
   "changeGrade": "fix",
   "currentMajor": 5,
   "currentMinor": 0,
-  "currentPatch": 2,
-  "versionDateInfo": "2025-11-27",
-  "versionTimeInfo": "12:04:58",
-  "versionNotes": "- Fixed small OAuth-Delegation issues\n- Optimized configurative setup for OAuthOperationsProvider\n"
+  "currentPatch": 4,
+  "versionDateInfo": "2025-12-17",
+  "versionTimeInfo": "08:48:20",
+  "versionNotes": "- GenericOAuthOperationsProvider now also support body-credentials when retriving tokens by code\n"
 }
