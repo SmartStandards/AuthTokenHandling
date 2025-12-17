@@ -184,7 +184,7 @@ namespace Security.AccessTokenHandling.OAuth {
       this IOAuthOperationsProvider provider,
       string providerDisplayTitle,
       string authEndpointUrl,
-      string tokenEndpointUrlstring,
+      string tokenEndpointUrl,
       string introspectionEndpointUrl,
       bool supportsIframe = false, bool requestIdToken = true,
       IDictionary<string, string> additionalSettings = null
@@ -203,7 +203,7 @@ namespace Security.AccessTokenHandling.OAuth {
 
       provider.SetConfigurationValue(ProviderDisplayTitle, providerDisplayTitle);
       provider.SetConfigurationValue(AuthorizationEndpoint, authEndpointUrl);
-      provider.SetConfigurationValue(TokenEndpoint, authEndpointUrl);
+      provider.SetConfigurationValue(TokenEndpoint, tokenEndpointUrl);
       provider.SetConfigurationValue(IntrospectionEndpoint, introspectionEndpointUrl);
       provider.SetConfigurationValue(IframeAllowed,supportsIframe.ToString());
       provider.SetConfigurationValue(AutoAddOfflineAccess, requestIdToken.ToString());

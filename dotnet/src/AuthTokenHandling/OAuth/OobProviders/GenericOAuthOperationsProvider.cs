@@ -10,6 +10,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.WebSockets;
+using Logging.SmartStandards.CopyForAuthTokenHandling;
 
 namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
@@ -401,7 +402,10 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         form["scope"] = ccScope;
       }
 
-      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
+      string tokenEndpointUrl = this.GetConfig("token_endpoint", string.Empty);
+      SecLogger.LogTrace($"Retrieving token from '{tokenEndpointUrl}'");
+
+      HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, tokenEndpointUrl);
 
       bool basicAuth = true; // Default
       if (this.TryGetConfigurationValue("client_credentials_via_basicauth", out string settingValue)) {
@@ -444,8 +448,10 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         ["refresh_token"] = refreshToken
       };
 
-      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
-      req.Content = new FormUrlEncodedContent(form);
+      string tokenEndpointUrl = this.GetConfig("token_endpoint", string.Empty);
+      SecLogger.LogTrace($"Retrieving token from '{tokenEndpointUrl}'");
+
+      HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, tokenEndpointUrl);
 
       if (this.ClientCredentialsViaBasicAuth) {
         ApplyBasicAuth(req, clientId, clientSecret); //Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
@@ -454,6 +460,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         form["client_id"] = clientId;
         form["client_secret"] = clientSecret;
       }
+      req.Content = new FormUrlEncodedContent(form);
 
       return this.SendTokenRequest(req, out result);
     }
@@ -646,8 +653,10 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         ["redirect_uri"] = redirectUri
       };
 
-      var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
-      req.Content = new FormUrlEncodedContent(form);
+      string tokenEndpointUrl = this.GetConfig("token_endpoint", string.Empty);
+      SecLogger.LogTrace($"Retrieving token from '{tokenEndpointUrl}'");
+
+      HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, tokenEndpointUrl);
 
       if (this.ClientCredentialsViaBasicAuth) {
         ApplyBasicAuth(req, clientId, clientSecret); //Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
@@ -656,6 +665,9 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         form["client_id"] = clientId;
         form["client_secret"] = clientSecret;
       }
+
+      req.Content = new FormUrlEncodedContent(form);
+      //req.Headers.Add("content-type", "application/x-www-form-urlencoded");
 
       return this.SendTokenRequest(req, out result);
     }
@@ -695,6 +707,7 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       catch (Exception ex) {
         result.error = "parse_error";
         result.error_description = "Failed to parse token response: " + ex.Message;
+        SecLogger.LogError(result.error_description + " - body: " + body);
         return false;
       }
 
