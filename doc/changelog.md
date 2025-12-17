@@ -6,7 +6,13 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* Fixed retrival-url for GenericOauthOperationsProvider
+*(none)*
+
+
+
+## v 5.0.5
+released **2025-12-17**, including:
+ - Fixed retrival-url for GenericOauthOperationsProvider
 
 
 

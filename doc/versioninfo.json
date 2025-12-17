@@ -1,13 +1,13 @@
 {
-  "currentVersion": "5.0.4",
-  "currentVersionWithSuffix": "5.0.4",
+  "currentVersion": "5.0.5",
+  "currentVersionWithSuffix": "5.0.5",
   "releaseType": "",
-  "previousVersion": "5.0.3",
+  "previousVersion": "5.0.4",
   "changeGrade": "fix",
   "currentMajor": 5,
   "currentMinor": 0,
-  "currentPatch": 4,
+  "currentPatch": 5,
   "versionDateInfo": "2025-12-17",
-  "versionTimeInfo": "08:48:20",
-  "versionNotes": "- GenericOAuthOperationsProvider now also support body-credentials when retriving tokens by code\n"
+  "versionTimeInfo": "15:37:29",
+  "versionNotes": "- Fixed retrival-url for GenericOauthOperationsProvider\n"
 }
