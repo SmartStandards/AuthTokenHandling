@@ -56,6 +56,15 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       }
     }
 
+    private bool ClientCredentialsViaBasicAuth {
+      get {
+        if (this.TryGetConfigurationValue("client_credentials_via_basicauth", out string settingValue)) {
+          return IsTrue(settingValue);
+        }
+        return false;
+      }
+    }
+
     /// <summary></summary>
     /// <param name="capabilityName">
     /// Wellknown capabilities are:
@@ -351,9 +360,21 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
     ) {
       result = new TokenIssuingResult();
 
-      if (String.IsNullOrWhiteSpace(code)) { result.error = "invalid_argument"; result.error_description = "code must not be empty."; return false; }
-      if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) { result.error = "missing_client_credentials"; result.error_description = "clientId and clientSecret are required."; return false; }
-      if (String.IsNullOrWhiteSpace(redirectUriAgain)) { result.error = "missing_redirect_uri"; result.error_description = "redirectUriAgain must be provided and exactly match the authorization request."; return false; }
+      if (String.IsNullOrWhiteSpace(code)) {
+        result.error = "invalid_argument";
+        result.error_description = "code must not be empty.";
+        return false; 
+      }
+      if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) {
+        result.error = "missing_client_credentials";
+        result.error_description = "clientId and clientSecret are required."; 
+        return false; 
+      }
+      if (String.IsNullOrWhiteSpace(redirectUriAgain)) {
+        result.error = "missing_redirect_uri"; 
+        result.error_description = "redirectUriAgain must be provided and exactly match the authorization request."; 
+        return false;
+      }
 
       return this.ExchangeCodeForTokens(code, redirectUriAgain, clientId, clientSecret, out result);
     }
@@ -381,8 +402,20 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       }
 
       var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
+
+      bool basicAuth = true; // Default
+      if (this.TryGetConfigurationValue("client_credentials_via_basicauth", out string settingValue)) {
+        basicAuth = IsTrue(settingValue);
+      }
+
+      if (this.ClientCredentialsViaBasicAuth) {
+        ApplyBasicAuth(req, clientId, clientSecret); //Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
+      }
+      else {
+        form["client_id"] = clientId;
+        form["client_secret"] = clientSecret;
+      }
       req.Content = new FormUrlEncodedContent(form);
-      ApplyBasicAuth(req, clientId, clientSecret); // Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
 
       return this.SendTokenRequest(req, out result);
     }
@@ -395,8 +428,16 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
     ) {
       result = new TokenIssuingResult();
 
-      if (String.IsNullOrWhiteSpace(refreshToken)) { result.error = "invalid_argument"; result.error_description = "refreshToken must not be empty."; return false; }
-      if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) { result.error = "missing_client_credentials"; result.error_description = "clientId and clientSecret are required."; return false; }
+      if (String.IsNullOrWhiteSpace(refreshToken)) {
+        result.error = "invalid_argument";
+        result.error_description = "refreshToken must not be empty.";
+        return false; 
+      }
+      if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) { 
+        result.error = "missing_client_credentials";
+        result.error_description = "clientId and clientSecret are required.";
+        return false; 
+      }
 
       var form = new Dictionary<string, string>(StringComparer.Ordinal) {
         ["grant_type"] = "refresh_token",
@@ -405,7 +446,14 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
       var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
       req.Content = new FormUrlEncodedContent(form);
-      ApplyBasicAuth(req, clientId, clientSecret);
+
+      if (this.ClientCredentialsViaBasicAuth) {
+        ApplyBasicAuth(req, clientId, clientSecret); //Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
+      }
+      else {
+        form["client_id"] = clientId;
+        form["client_secret"] = clientSecret;
+      }
 
       return this.SendTokenRequest(req, out result);
     }
@@ -581,8 +629,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
     }
 
     private static void ApplyBasicAuth(HttpRequestMessage req, string clientId, string clientSecret) {
-      var raw = $"{clientId}:{clientSecret}";
-      var b64 = Convert.ToBase64String(Encoding.ASCII.GetBytes(raw));
+      string raw = $"{clientId}:{clientSecret}";
+      string b64 = Convert.ToBase64String(Encoding.ASCII.GetBytes(raw));
       req.Headers.Authorization = new AuthenticationHeaderValue("Basic", b64);
     }
 
@@ -600,7 +648,14 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
       var req = new HttpRequestMessage(HttpMethod.Post, this.GetConfig("token_endpoint", string.Empty));
       req.Content = new FormUrlEncodedContent(form);
-      ApplyBasicAuth(req, clientId, clientSecret);
+
+      if (this.ClientCredentialsViaBasicAuth) {
+        ApplyBasicAuth(req, clientId, clientSecret); //Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
+      }
+      else {
+        form["client_id"] = clientId;
+        form["client_secret"] = clientSecret;
+      }
 
       return this.SendTokenRequest(req, out result);
     }
@@ -683,19 +738,30 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
       // Standard: Client-Auth via Basic; alternativ via Body (für AS, die es so verlangen)
       string authMode = this.GetConfig("introspection_auth", "basic");
-      if (String.Equals(authMode, "basic", StringComparison.OrdinalIgnoreCase) && !String.IsNullOrWhiteSpace(clientId)) {
-        ApplyBasicAuth(req, clientId, clientSecret ?? "");
-      }
-      else if (String.Equals(authMode, "body", StringComparison.OrdinalIgnoreCase) && !String.IsNullOrWhiteSpace(clientId)) {
-        // client_id/secret zusätzlich in den Body – hierfür Content neu setzen
-        var bodyForm = new Dictionary<string, string>(form, StringComparer.Ordinal) {
-          ["client_id"] = clientId,
-          ["client_secret"] = clientSecret ?? ""
-        };
-        req.Content = new FormUrlEncodedContent(bodyForm);
+      if (string.IsNullOrWhiteSpace(authMode)) {
+        if (this.ClientCredentialsViaBasicAuth) {
+          authMode = "basic";
+        }
+        else {
+          authMode = "body";
+        }
+
       }
 
+      if (authMode == "basic") {
+        ApplyBasicAuth(req, clientId, clientSecret); //Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
+      }
+      else if (authMode == "body") {
+        form["client_id"] = clientId;
+        form["client_secret"] = clientSecret;
+      }
+      //else { //authMode == "none"
+      //}
+
+      req.Content = new FormUrlEncodedContent(form);
+
       try {
+
         var resp = this.HttpClient.SendAsync(req).GetAwaiter().GetResult();
         var body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
