@@ -10,6 +10,10 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 5.0.3
+
+
+
 ## v 5.0.2
 released **2025-11-27**, including:
  - Fixed small OAuth-Delegation issues
