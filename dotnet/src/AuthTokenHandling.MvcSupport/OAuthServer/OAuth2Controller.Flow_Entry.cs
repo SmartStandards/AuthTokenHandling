@@ -19,6 +19,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
   [ApiController]
   [ApiExplorerSettings(GroupName = "OAuth")]
   [Route("oauth2")]
+  [AllowAnonymous()]
   internal partial class OAuth2Controller : ControllerBase {
 
     private readonly ILogger<OAuth2Controller> _Logger;
@@ -40,8 +41,31 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     // AUTHORIZE STEP #1 - BROWSER LANDING (HTTP-GET)                                                //
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    [Route("authorize")]
+
+    [Route("authorize/sso")]
     [Authorize()]
+    [HttpGet(), Produces("text/html")]
+    public ActionResult GetLogonPageSso(
+      [FromQuery(Name = "response_type")] string responseType,
+      [FromQuery(Name = "client_id")] string clientId,
+      [FromQuery(Name = "redirect_uri")] string redirectUri,
+      [FromQuery(Name = "state")] string state,
+      [FromQuery(Name = "scope")] string rawScopePreference,
+      [FromQuery(Name = "login_hint")] string loginHint,
+      [FromQuery(Name = "err")] string errorMessagePassedViaQueryString,
+      [FromQuery(Name = "otp")] string sessionId,
+      [FromQuery(Name = "view_mode")] int viewMode,
+      [FromQuery(Name = "code")] string codeFromDelegate //NUR WENN EIN DELEGATE DAZWISCHEN HING
+    ) {
+
+      return GetLogonPage(
+        responseType, clientId, redirectUri, state, rawScopePreference, loginHint,
+        errorMessagePassedViaQueryString, sessionId, viewMode, codeFromDelegate
+      );
+
+    }
+
+    [Route("authorize")]
     [HttpGet(), Produces("text/html")]
     public ActionResult GetLogonPage(
       [FromQuery(Name = "response_type")] string responseType,
@@ -186,6 +210,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           string winUserName = null;
 
           if (loginHint == "pass-trough" || loginHint == "WINAUTH") {
+
+            //Authorize-Attribut über der methode nötig!!!
+            if (!Request.GetDisplayUrl().Contains("sso")) {
+              this.Redirect("sso?" + Request.QueryString);
+            }
+
             loginHint = string.Empty;
 
             if (this.TryGetPasstroughUserIdentity(out winUserName)) {
@@ -262,6 +292,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
               responseType, "Please enter your credentials:",
               loginHint, state, clientId, redirectUri, rawScopePreference, viewOpt, errorMessagePassedViaQueryString
             );
+
+            authFormTemplate = authFormTemplate.Replace(
+              "</body>", $"<a href=\"sso?{Request.QueryString}\">Use SSO (pass-trough)</a></body>"
+            );
+
           }
 
         }
