@@ -1,5 +1,6 @@
 ﻿using Logging.SmartStandards;
 using Logging.SmartStandards.CopyForAuthTokenHandling;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -14,9 +15,23 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     // AUTHORIZE STEP #2 - FORM SUBMIT (HTTP-POST)                                                   //
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    [Route("sso/authorize")] //Step2 - POST
+    [HttpPost(), Produces("text/html")]
+    [Consumes("application/x-www-form-urlencoded")]
+    [Authorize(Policy = "WindowsOnly")]
+    public ActionResult PostLogonFormSso([FromForm] IFormCollection value) {
+
+      if (!this.TryGetPasstroughUserIdentity(out string winUserName)) {
+        return Challenge("Negotiate");
+      }
+
+      return this.PostLogonForm(value);
+    }
+
     [Route("authorize")] //Step2 - POST
     [HttpPost(), Produces("text/html")]
     [Consumes("application/x-www-form-urlencoded")]
+    [AllowAnonymous]
     public ActionResult PostLogonForm([FromForm] IFormCollection value) {
 
       string login = null;

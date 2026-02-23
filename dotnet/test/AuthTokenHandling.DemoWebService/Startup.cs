@@ -2,6 +2,8 @@ using DistributedDataFlow;
 using Logging.SmartStandards;
 using Logging.SmartStandards.AspSupport;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -81,6 +83,14 @@ namespace Security {
 
 
 
+      services.AddAuthentication().AddNegotiate();
+      services.AddAuthorization(options =>
+      {
+        options.AddPolicy("WindowsOnly", policy => {
+          policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
+          policy.RequireAuthenticatedUser();
+        });
+      });
 
 
 
@@ -198,7 +208,7 @@ namespace Security {
           new OpenApiInfo {
             Title = "OAuth",
             Version = "2",
-            Description = $"[**DEMO-PASS-TROUGH**]({baseUrl}oauth2/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=WINAUTH&client_id=11aa22bb33cc) | [**DEMO-LOGON**]({baseUrl}oauth2/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=U_001&client_id=11aa22bb33cc) *(pwd: **U_001!**)*"
+            Description = $"[**DEMO-PASS-TROUGH**]({baseUrl}oauth2/sso/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=WINAUTH&client_id=11aa22bb33cc) | [**DEMO-LOGON**]({baseUrl}oauth2/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=U_001&client_id=11aa22bb33cc) *(pwd: **U_001!**)*"
             //Contact = new OpenApiContact {
             //  Name = "",
             //  Email = "",
