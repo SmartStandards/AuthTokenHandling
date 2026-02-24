@@ -303,8 +303,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
             //SSO VORSCHLAG (nur ein Angebot in From eines links)
             if (!Request.GetDisplayUrl().Contains("sso")) {
+              //authFormTemplate = authFormTemplate.Replace(
+              //   "</body>", $"<a href=\"sso/authorize{Request.QueryString}\">Use Single-Sign-On (pass-trough)</a></body>"
+              //);
+
               authFormTemplate = authFormTemplate.Replace(
-                 "</body>", $"<a href=\"sso/authorize{Request.QueryString}\">Use Single-Sign-On (pass-trough)</a></body>"
+                 "</form>", $"<p><a href=\"sso/authorize{Request.QueryString}\">Go to Single-Sign-On Page (pass-trough)</a></p></form>"
               );
             }
 

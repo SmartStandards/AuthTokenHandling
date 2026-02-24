@@ -81,16 +81,15 @@ namespace Security {
       services.AddOAuthServerController();
 
 
-
-
-      services.AddAuthentication().AddNegotiate();
-      services.AddAuthorization(options =>
-      {
-        options.AddPolicy("WindowsOnly", policy => {
-          policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
-          policy.RequireAuthenticatedUser();
+      if (_Configuration.GetValue<bool>("EnableWindowsAuth")) {
+        services.AddAuthentication().AddNegotiate();
+        services.AddAuthorization(options => {
+          options.AddPolicy("WindowsOnly", policy => {
+            policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
+            policy.RequireAuthenticatedUser();
+          });
         });
-      });
+      }
 
 
 
