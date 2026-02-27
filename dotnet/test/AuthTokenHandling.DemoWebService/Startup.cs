@@ -169,7 +169,7 @@ namespace Security {
             Type = SecuritySchemeType.OAuth2,
             Flows = new OpenApiOAuthFlows {
               Implicit = new OpenApiOAuthFlow {
-                AuthorizationUrl = new Uri("http://localhost:55202" + baseUrl + "oauth2/authorize"), // deine Auth-URL
+                AuthorizationUrl = new Uri("http://localhost:55882" + baseUrl + "oauth2/authorize"), // deine Auth-URL
                 Scopes = new Dictionary<string, string>
                 {
                     { "write", "Schreibrechte anfordern" }
