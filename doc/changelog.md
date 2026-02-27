@@ -4,9 +4,9 @@ This files contains a version history including all changes relevant for semanti
 *(it is automatically maintained using the ['KornSW-VersioningUtil'](https://github.com/KornSW/VersioningUtil))*
 
 
-## Upcoming Changes
-
-* Fixed retrival-url for GenericOauthOperationsProvider
+## Upcoming Changes (5.0.5-testsso)
+released **2026-02-27**, including:
+ - Fixed retrival-url for GenericOauthOperationsProvider
 
 
 
