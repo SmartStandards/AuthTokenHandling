@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Security.AccessTokenHandling.OAuth {
 
+  [DebuggerDisplay("{Expression}")]
   public class ScopeDescriptor {
     public string Expression { get; set; }
     public string Label { get; set; }

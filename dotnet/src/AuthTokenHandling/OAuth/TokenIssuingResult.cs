@@ -34,6 +34,11 @@ namespace Security.AccessTokenHandling.OAuth {
 
     #region  " ToString (Url-Serialization) "
 
+    /// <summary>
+    /// Returns an URL-encoded string representation of the token result,
+    /// suitable for appending to a redirect URI. (has no leading ? or &)
+    /// </summary>
+    /// <returns></returns>
     public override string ToString() {
       StringBuilder sb = new StringBuilder(300);
       sb.Append("access_token=");
