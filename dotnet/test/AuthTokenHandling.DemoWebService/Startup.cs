@@ -5,7 +5,9 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -307,38 +309,37 @@ namespace Security {
           .AllowAnyMethod()
           .AllowAnyHeader()
       );
+
+      //TWS:
       app.UseStatusCodePages(async (StatusCodeContext scc) => {
         // Da wir bisher nur den OAuthService verwenden, wenden  wird die Fallbacklogik hier immer an. Falls andere Controller dazuommen sollten,
         // muss man diesen auskommentierten Block aktivieren, damit die Fallbacklogik nur für die definierten Controller greift.
-        
         //var security = _Configuration.GetSection("Security").Get<SecurityOptions>() ?? new();
         //string contollerFromRoute = scc.HttpContext.GetRouteValue("controller")?.ToString() ?? "";
         //if (!security.WinAuthFallbackAnonymousControllers.Contains(contollerFromRoute)) {
         //  return;
         //}
-
         if (scc.HttpContext.Response.StatusCode == 401) {
-
           scc.HttpContext.Response.ContentType = "text/html; charset=utf-8";
           string queryParams = scc.HttpContext.Request.QueryString.HasValue ? scc.HttpContext.Request.QueryString.Value : "";
-          
           // ersetze  login_hint mit default user login name
           queryParams = System.Text.RegularExpressions.Regex.Replace(queryParams, "login_hint=[^&]*", "login_hint=U_001");
           string fallbackUrl = "/oauth2/authorize" + queryParams;
-
           await scc.HttpContext.Response.WriteAsync(
             "<!DOCTYPE html><html><head><title>Login</title></head><body>" +
             "</body>" +
             "<script>" +
-            $"setTimeout(function() {{ window.location.href = '{fallbackUrl}'; }}, 100);" + // mit delay weiterleiten, damit der Browser die 401 Challenge abschließen kann,
-                                                                                            // bevor der Redirect kommt.
-                                                                                            // Ansonsten könnte es passieren, dass der Redirect zu früh kommt und der Browser
-                                                                                            // die Challenge nicht mehr mitbekommt.                                                                                                                                                // dass der Browser die Challenge abschließen kann.                                                                                          // bevor der Redirect erfolgt. 100ms sollten in der Regel ausreichend sein, um die Challenge abzuschließen.
+            $"setTimeout(function() {{ window.location.href = '{fallbackUrl}'; }}, 100);" + 
+            // mit delay weiterleiten, damit der Browser die 401 Challenge abschließen kann,
+            // bevor der Redirect kommt.
+            // Ansonsten könnte es passieren, dass der Redirect zu früh kommt und der Browser
+            // die Challenge nicht mehr mitbekommt. dass der Browser die Challenge abschließen kann.                                                                                          // bevor der Redirect erfolgt. 100ms sollten in der Regel ausreichend sein, um die Challenge abzuschließen.
             "</script>" +
             "</html>"
           );
         }
       });
+
       app.UseAuthentication(); //<< WINDOWS-AUTH
       app.UseAuthorization();
 
