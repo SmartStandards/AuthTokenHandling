@@ -1,7 +1,7 @@
 {
   "currentVersion": "5.0.5",
-  "currentVersionWithSuffix": "5.0.5-testsso",
-  "releaseType": "testsso",
+  "currentVersionWithSuffix": "5.0.5",
+  "releaseType": "",
   "previousVersion": "5.0.4",
   "changeGrade": "fix",
   "currentMajor": 5,

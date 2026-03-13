@@ -16,5 +16,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("46adc8b8-2f14-4a31-87ca-95b71ee09ea9")]
 
 [assembly: AssemblyVersion("5.0.5")]
-[assembly: AssemblyInformationalVersion("5.0.5-testsso")]
+[assembly: AssemblyInformationalVersion("5.0.5")]
 //DONT ADD: [assembly: AssemblyFileVersion("5.0.5")] !!!
