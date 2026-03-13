@@ -1,5 +1,6 @@
 ﻿using Logging.SmartStandards;
 using Logging.SmartStandards.CopyForAuthTokenHandling;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -40,9 +41,37 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     // AUTHORIZE STEP #1 - BROWSER LANDING (HTTP-GET)                                                //
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    [Route("authorize")]
-    [Authorize()]
+
+    [Route("sso/authorize")]
+    [Authorize(Policy = "WindowsOnly")]
     [HttpGet(), Produces("text/html")]
+    public ActionResult GetLogonPageSso(
+      [FromQuery(Name = "response_type")] string responseType,
+      [FromQuery(Name = "client_id")] string clientId,
+      [FromQuery(Name = "redirect_uri")] string redirectUri,
+      [FromQuery(Name = "state")] string state,
+      [FromQuery(Name = "scope")] string rawScopePreference,
+      [FromQuery(Name = "login_hint")] string loginHint,
+      [FromQuery(Name = "err")] string errorMessagePassedViaQueryString,
+      [FromQuery(Name = "otp")] string sessionId,
+      [FromQuery(Name = "view_mode")] int viewMode,
+      [FromQuery(Name = "code")] string codeFromDelegate //NUR WENN EIN DELEGATE DAZWISCHEN HING
+    ) {
+
+      if (!this.TryGetPasstroughUserIdentity(out string winUserName)) { 
+        return Challenge("Negotiate");
+      }
+
+      return GetLogonPage(
+        responseType, clientId, redirectUri, state, rawScopePreference, "pass-trough",
+        errorMessagePassedViaQueryString, sessionId, viewMode, codeFromDelegate
+      );
+
+    }
+
+    [Route("authorize")]
+    [HttpGet(), Produces("text/html")]
+    [AllowAnonymous]
     public ActionResult GetLogonPage(
       [FromQuery(Name = "response_type")] string responseType,
       [FromQuery(Name = "client_id")] string clientId,
@@ -186,6 +215,14 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           string winUserName = null;
 
           if (loginHint == "pass-trough" || loginHint == "WINAUTH") {
+
+            //Authorize-Attribut über der methode nötig!!!
+            if (!Request.GetDisplayUrl().Contains("sso")) {
+
+              //return Challenge("Negotiate");
+              return this.Redirect("sso/authorize" + Request.QueryString);
+            }
+
             loginHint = string.Empty;
 
             if (this.TryGetPasstroughUserIdentity(out winUserName)) {
@@ -262,6 +299,20 @@ namespace Security.AccessTokenHandling.OAuth.Server {
               responseType, "Please enter your credentials:",
               loginHint, state, clientId, redirectUri, rawScopePreference, viewOpt, errorMessagePassedViaQueryString
             );
+
+
+            //SSO VORSCHLAG (nur ein Angebot in From eines links)
+            if (!Request.GetDisplayUrl().Contains("sso")) {
+              //authFormTemplate = authFormTemplate.Replace(
+              //   "</body>", $"<a href=\"sso/authorize{Request.QueryString}\">Use Single-Sign-On (pass-trough)</a></body>"
+              //);
+
+              authFormTemplate = authFormTemplate.Replace(
+                 "</form>", $"<p><a href=\"sso/authorize{Request.QueryString}\">Go to Single-Sign-On Page (pass-trough)</a></p></form>"
+              );
+            }
+
+
           }
 
         }

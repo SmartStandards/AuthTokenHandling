@@ -1,5 +1,6 @@
 ﻿using Logging.SmartStandards;
 using Logging.SmartStandards.CopyForAuthTokenHandling;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -15,6 +16,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     [HttpPost(), Produces("application/json")]
     [Route("introspect")]
     [Consumes("application/x-www-form-urlencoded")]
+    [AllowAnonymous]
     public Dictionary<string, object> Introspect([FromForm] IFormCollection value) {
       try {
 

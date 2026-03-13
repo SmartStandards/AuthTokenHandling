@@ -1,10 +1,12 @@
 ﻿using Logging.SmartStandards;
 using Logging.SmartStandards.CopyForAuthTokenHandling;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Linq;
+using System.Web;
 
 namespace Security.AccessTokenHandling.OAuth.Server {
 
@@ -14,9 +16,23 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     // AUTHORIZE STEP #2 - FORM SUBMIT (HTTP-POST)                                                   //
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    [Route("sso/authorize")] //Step2 - POST
+    [HttpPost(), Produces("text/html")]
+    [Consumes("application/x-www-form-urlencoded")]
+    [Authorize(Policy = "WindowsOnly")]
+    public ActionResult PostLogonFormSso([FromForm] IFormCollection value) {
+
+      if (!this.TryGetPasstroughUserIdentity(out string winUserName)) {
+        return Challenge("Negotiate");
+      }
+
+      return this.PostLogonForm(value);
+    }
+
     [Route("authorize")] //Step2 - POST
     [HttpPost(), Produces("text/html")]
     [Consumes("application/x-www-form-urlencoded")]
+    [AllowAnonymous]
     public ActionResult PostLogonForm([FromForm] IFormCollection value) {
 
       string login = null;
@@ -119,12 +135,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
         string[] selectedScopes = value.Keys.Where((k) => k.StartsWith("scope_")).Select((k) => k.Substring(6)).ToArray();
 
-        if (redirectUri.Contains("?")) {
-          redirectUri = redirectUri + "&";
-        }
-        else {
-          redirectUri = redirectUri + "?";
-        }
+        //if (redirectUri.Contains("?")) {
+        //  redirectUri = redirectUri + "&";
+        //}
+        //else {
+        //  redirectUri = redirectUri + "?";
+        //}
 
         if (responseType.Equals("code", StringComparison.InvariantCultureIgnoreCase)) {
 
@@ -136,21 +152,21 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionId}&view_mode={viewMode}&err={step2Msg}");
           }
 
-          redirectUri = redirectUri + "code=" + code;
+          redirectUri = AppendUrlParam(redirectUri, "code", code, false);
         }
         else if (responseType.Equals("token", StringComparison.InvariantCultureIgnoreCase)) {
           //token oder id_token kann gefordert sein!
 
           TokenIssuingResult tokenResult = null;
           if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out tokenResult)) {
-            redirectUri = redirectUri + tokenResult.ToString();
+            redirectUri = AppendUrlParam(redirectUri, tokenResult.ToString());
           }
           else {
             if(!string.IsNullOrWhiteSpace(tokenResult?.error)) {
-              redirectUri = redirectUri + "error=" + tokenResult.error;
+              redirectUri = AppendUrlParam(redirectUri, "error", tokenResult.error, true);
             }
             else {
-              redirectUri = redirectUri + "error=no-token";
+              redirectUri = AppendUrlParam(redirectUri, "error", "no-token", false);
             }       
           }
         }
@@ -165,11 +181,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           }
         }
         else {
-          redirectUri = redirectUri + "error=unknown-response-type";
+          redirectUri = AppendUrlParam(redirectUri, "error", "unknown-response-type", false);
         }
 
         if (!string.IsNullOrWhiteSpace(state)) {
-          redirectUri = redirectUri + "&state=" + state;
+          redirectUri = AppendUrlParam(redirectUri, "state", state, false);
         }
         return this.Redirect(redirectUri);
       }
@@ -177,6 +193,22 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         SecLogger.LogCritical(ex);
         string errorPage = _AuthPageBuilder.GetErrorPage("Processing Error: " + ex.Message, viewOpt);
         return this.Content(errorPage, "text/html");
+      }
+    }
+
+    private string AppendUrlParam(string url, string name, string value, bool escapeValue) {
+      if (escapeValue) {
+        value = HttpUtility.UrlEncode(value);
+      }
+      return AppendUrlParam( url, $"{name}={value}");
+    }
+
+    private string AppendUrlParam(string url, string nameAndAlreadyEscapedValue) {
+      if (url.Contains("?")) {
+        return url + $"&{nameAndAlreadyEscapedValue}";
+      }
+      else {
+        return url + $"?{nameAndAlreadyEscapedValue}";
       }
     }
 

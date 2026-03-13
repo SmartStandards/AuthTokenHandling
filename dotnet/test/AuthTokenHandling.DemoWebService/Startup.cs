@@ -2,6 +2,8 @@ using DistributedDataFlow;
 using Logging.SmartStandards;
 using Logging.SmartStandards.AspSupport;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -79,8 +81,15 @@ namespace Security {
       services.AddOAuthServerController();
 
 
-
-
+      if (_Configuration.GetValue<bool>("EnableWindowsAuth")) {
+        services.AddAuthentication().AddNegotiate();
+        services.AddAuthorization(options => {
+          options.AddPolicy("WindowsOnly", policy => {
+            policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
+            policy.RequireAuthenticatedUser();
+          });
+        });
+      }
 
 
 
@@ -160,7 +169,7 @@ namespace Security {
             Type = SecuritySchemeType.OAuth2,
             Flows = new OpenApiOAuthFlows {
               Implicit = new OpenApiOAuthFlow {
-                AuthorizationUrl = new Uri("http://localhost:55202" + baseUrl + "oauth2/authorize"), // deine Auth-URL
+                AuthorizationUrl = new Uri("http://localhost:55882" + baseUrl + "oauth2/authorize"), // deine Auth-URL
                 Scopes = new Dictionary<string, string>
                 {
                     { "write", "Schreibrechte anfordern" }
@@ -198,7 +207,7 @@ namespace Security {
           new OpenApiInfo {
             Title = "OAuth",
             Version = "2",
-            Description = $"[**DEMO-PASS-TROUGH**]({baseUrl}oauth2/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=WINAUTH&client_id=11aa22bb33cc) | [**DEMO-LOGON**]({baseUrl}oauth2/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=U_001&client_id=11aa22bb33cc) *(pwd: **U_001!**)*"
+            Description = $"[**DEMO-PASS-TROUGH**]({baseUrl}oauth2/sso/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=WINAUTH&client_id=11aa22bb33cc) | [**DEMO-LOGON**]({baseUrl}oauth2/authorize?response_type=display&redirect_uri=http://localhost&state=dummy&scope=write&login_hint=U_001&client_id=11aa22bb33cc) *(pwd: **U_001!**)*"
             //Contact = new OpenApiContact {
             //  Name = "",
             //  Email = "",
@@ -298,7 +307,38 @@ namespace Security {
           .AllowAnyMethod()
           .AllowAnyHeader()
       );
+      app.UseStatusCodePages(async (StatusCodeContext scc) => {
+        // Da wir bisher nur den OAuthService verwenden, wenden  wird die Fallbacklogik hier immer an. Falls andere Controller dazuommen sollten,
+        // muss man diesen auskommentierten Block aktivieren, damit die Fallbacklogik nur für die definierten Controller greift.
+        
+        //var security = _Configuration.GetSection("Security").Get<SecurityOptions>() ?? new();
+        //string contollerFromRoute = scc.HttpContext.GetRouteValue("controller")?.ToString() ?? "";
+        //if (!security.WinAuthFallbackAnonymousControllers.Contains(contollerFromRoute)) {
+        //  return;
+        //}
 
+        if (scc.HttpContext.Response.StatusCode == 401) {
+
+          scc.HttpContext.Response.ContentType = "text/html; charset=utf-8";
+          string queryParams = scc.HttpContext.Request.QueryString.HasValue ? scc.HttpContext.Request.QueryString.Value : "";
+          
+          // ersetze  login_hint mit default user login name
+          queryParams = System.Text.RegularExpressions.Regex.Replace(queryParams, "login_hint=[^&]*", "login_hint=U_001");
+          string fallbackUrl = "/oauth2/authorize" + queryParams;
+
+          await scc.HttpContext.Response.WriteAsync(
+            "<!DOCTYPE html><html><head><title>Login</title></head><body>" +
+            "</body>" +
+            "<script>" +
+            $"setTimeout(function() {{ window.location.href = '{fallbackUrl}'; }}, 100);" + // mit delay weiterleiten, damit der Browser die 401 Challenge abschließen kann,
+                                                                                            // bevor der Redirect kommt.
+                                                                                            // Ansonsten könnte es passieren, dass der Redirect zu früh kommt und der Browser
+                                                                                            // die Challenge nicht mehr mitbekommt.                                                                                                                                                // dass der Browser die Challenge abschließen kann.                                                                                          // bevor der Redirect erfolgt. 100ms sollten in der Regel ausreichend sein, um die Challenge abzuschließen.
+            "</script>" +
+            "</html>"
+          );
+        }
+      });
       app.UseAuthentication(); //<< WINDOWS-AUTH
       app.UseAuthorization();
 
