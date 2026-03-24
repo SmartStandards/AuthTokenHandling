@@ -121,9 +121,9 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       out TokenIssuingResult tokenResult
     ) {
 
-      tokenResult = new TokenIssuingResult();
 
       if (TryValidateSessionId(sessionId, out string login)) {
+        tokenResult = new TokenIssuingResult();
 
         //for security selectedScopes needs be be filtered again because some value could have been injected
         selectedScopes = this.GetAvailableScopes(login, selectedScopes).ToStringArray();
@@ -138,8 +138,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
       }
       else {
-        tokenResult.error = "Invalid or expired sessionOtp";
-        tokenResult.error_description = "Invalid or expired sessionOtp";
+        tokenResult = TokenIssuingResult.FromError("Invalid or expired sessionOtp");
         return false;
       }
 
@@ -183,8 +182,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       TokenIssuingResult result = new TokenIssuingResult();
 
       if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
-        result.error = "invalid_client";
-        result.error_description = "Unknown client";
+        result = TokenIssuingResult.FromError("invalid_client", "Unknown client");
         return result;
       }
 
@@ -227,9 +225,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       TokenIssuingResult tokenResult = new TokenIssuingResult();
 
       if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
-        tokenResult.error = "invalid_client";
-        tokenResult.error_description = "Unknown client";
-        return tokenResult;
+        return TokenIssuingResult.FromError("invalid_client", "Unknown client");
       }
 
       //for security selectedScopes needs be be filtered again because some value could have been injected
@@ -251,12 +247,9 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     #region " REFRESH TOKEN - FLOW "
 
     public TokenIssuingResult CreateFollowUpToken(string refreshToken) {
-      TokenIssuingResult tokenResult = new TokenIssuingResult();
 
-      tokenResult.error = "invalid_request";
-      tokenResult.error_description = "Refresh-Token currently not supported";
+      return TokenIssuingResult.FromError("invalid_request", "Refresh-Token currently not supported");
 
-      return tokenResult;
     }
 
     #endregion

@@ -165,9 +165,7 @@ namespace Security.AccessTokenHandling {
           }
         }
 
-        result = new TokenIssuingResult();
-        result.error = "user_abort";
-        result.error_description = "The user aborted the credential input dialog.";
+        result = TokenIssuingResult.FromError("user_abort", "The user aborted the credential input dialog.");
 
         DialogResult dialogResult = DialogResult.None;
         while (dialogResult != DialogResult.Cancel) {

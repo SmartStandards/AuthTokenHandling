@@ -5,6 +5,7 @@ using Logging.SmartStandards.CopyForAuthTokenHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -27,14 +28,14 @@ namespace Security.AccessTokenHandling {
       try {
 
         string rawToken = null;
-        if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out var extractedAuthHeader)) {
-          rawToken = extractedAuthHeader.ToString();
+        if (context.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues extractedAuthHeader)) {
+
+          rawToken = StripTokenPrefix(extractedAuthHeader.ToString());
+
           if (String.IsNullOrWhiteSpace(rawToken)) {
             rawToken = null;
           }
-          else if (rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
-            rawToken = rawToken.Substring(7);
-          }
+   
         }
 
         int httpReturnCode = 200;
@@ -117,6 +118,16 @@ namespace Security.AccessTokenHandling {
         }
       }
 
+    }
+
+    private readonly static string[] _KnownTokenPrefixes = new string[] { "Bearer", "JWT" };
+    internal static string StripTokenPrefix(string rawToken) {
+      foreach (string prefix in _KnownTokenPrefixes) {
+        if (rawToken != null && rawToken.StartsWith(prefix + " ", StringComparison.CurrentCultureIgnoreCase)) {
+          return rawToken.Substring(prefix.Length + 1);
+        }
+      }
+      return rawToken;
     }
 
   }//EvaluateBearerTokenAttribute

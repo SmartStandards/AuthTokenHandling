@@ -20,7 +20,7 @@ namespace Security.AccessTokenHandling.OAuth {
     public string token_type { get; set; }
 
     /// <summary>
-    /// seconds until expiration
+    /// Seconds until expiration! Not a Unix timestamp or DateTime! (conform to RFC 6749)
     /// </summary>
     public int expires_in { get; set; }
 
@@ -76,6 +76,21 @@ namespace Security.AccessTokenHandling.OAuth {
     }
 
     #endregion
+
+    public static TokenIssuingResult FromError(string error, string description = null) {
+
+      if (string.IsNullOrWhiteSpace(error) && !string.IsNullOrWhiteSpace(description)) {
+        error = description;
+      }
+      else if (string.IsNullOrWhiteSpace(description) && !string.IsNullOrWhiteSpace(error)) {
+        description = error;
+      }
+
+      return new TokenIssuingResult() {
+        error = error,
+        error_description = description
+      };
+    }
 
   }
 

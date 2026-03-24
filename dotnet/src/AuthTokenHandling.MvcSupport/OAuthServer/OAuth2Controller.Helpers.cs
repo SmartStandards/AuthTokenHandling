@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Logging.SmartStandards.CopyForAuthTokenHandling;
+using System;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -27,12 +28,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           userName = windowsUserIfIdentified.Name?.ToString();
         }
         else {
-          Trace.TraceWarning($"Cannot identify pass-trough user identity: Unknown identity-class");
+          SecLogger.LogWarning($"Cannot identify pass-trough user identity: Unknown identity-class");
         }
-        Trace.TraceInformation($"Identified pass-trough user identity: " + userName);
+        SecLogger.LogInformation($"Identified pass-trough user identity: " + userName);
       }
       catch (Exception ex) {
-        Trace.TraceWarning($"Cannot identify pass-trough user identity: " + ex.Message);
+        SecLogger.LogWarning($"Cannot identify pass-trough user identity: " + ex.Message);
       }
 
       return !string.IsNullOrWhiteSpace(userName);

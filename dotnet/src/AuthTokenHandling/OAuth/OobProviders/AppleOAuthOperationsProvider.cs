@@ -243,15 +243,13 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       result = new TokenIssuingResult();
 
       if (String.IsNullOrWhiteSpace(finalUrlFromAuthFlow)) {
-        result.error = "invalid_argument";
-        result.error_description = "finalUrlFromAuthFlow must not be empty.";
+        result = TokenIssuingResult.FromError("invalid_argument", "finalUrlFromAuthFlow must not be empty.");
         return false;
       }
 
       Uri uri;
       if (!Uri.TryCreate(finalUrlFromAuthFlow, UriKind.Absolute, out uri)) {
-        result.error = "invalid_argument";
-        result.error_description = "finalUrlFromAuthFlow is not a valid absolute URI.";
+        result = TokenIssuingResult.FromError("invalid_argument", "finalUrlFromAuthFlow is not a valid absolute URI.");
         return false;
       }
 
@@ -349,20 +347,21 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       result = new TokenIssuingResult();
 
       if (String.IsNullOrWhiteSpace(code)) {
-        result.error = "invalid_argument";
-        result.error_description = "code must not be empty.";
+        result = TokenIssuingResult.FromError("invalid_argument", "code must not be empty.");
         return false;
       }
 
       if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) {
-        result.error = "missing_client_credentials";
-        result.error_description = "clientId and clientSecret (Apple JWT) are required.";
+        result = TokenIssuingResult.FromError(
+          "missing_client_credentials", "clientId and clientSecret (Apple JWT) are required."
+        );
         return false;
       }
 
       if (String.IsNullOrWhiteSpace(redirectUriAgain)) {
-        result.error = "missing_redirect_uri";
-        result.error_description = "redirectUriAgain must be provided and exactly match the authorization request.";
+        result = TokenIssuingResult.FromError(
+          "missing_redirect_uri", "redirectUriAgain must be provided and exactly match the authorization request."
+        );
         return false;
       }
 
@@ -375,10 +374,9 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       Dictionary<string, object> additionalQueryParams = null
     ) {
 
-      result = new TokenIssuingResult {
-        error = "unsupported_grant_type",
-        error_description = "Apple does not support client_credentials for Sign in with Apple."
-      };
+      result = TokenIssuingResult.FromError(
+        "unsupported_grant_type", "Apple does not support client_credentials for Sign in with Apple."
+      );
 
       return false;
     }
@@ -393,14 +391,12 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       result = new TokenIssuingResult();
 
       if (String.IsNullOrWhiteSpace(refreshToken)) {
-        result.error = "invalid_argument";
-        result.error_description = "refreshToken must not be empty.";
+        result = TokenIssuingResult.FromError("invalid_argument", "refreshToken must not be empty.");
         return false;
       }
 
       if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) {
-        result.error = "missing_client_credentials";
-        result.error_description = "clientId and clientSecret (Apple JWT) are required.";
+        result = TokenIssuingResult.FromError("missing_client_credentials","clientId and clientSecret (Apple JWT) are required.");
         return false;
       }
 

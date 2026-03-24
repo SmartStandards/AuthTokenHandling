@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 
@@ -68,10 +69,7 @@ namespace Security.AccessTokenHandling {
       params string[] requiredApiPermissions
     ) {
 
-      string rawToken = rawAuthHeader;
-      if (rawToken != null && rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
-        rawToken = rawToken.Substring(7);
-      }
+      string rawToken = StripTokenPrefix(rawAuthHeader);
 
       ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(
         rawToken, contractType, calledContractMethod, callingMachine,
@@ -183,9 +181,7 @@ namespace Security.AccessTokenHandling {
       }
       else {
 
-        if (rawToken.StartsWith("Bearer ", StringComparison.CurrentCultureIgnoreCase)) {
-          rawToken = rawToken.Substring(7);
-        }
+        rawToken = StripTokenPrefix(rawToken);
 
         //analyze token
         GetCachedIntrospectionResult(
@@ -479,6 +475,16 @@ namespace Security.AccessTokenHandling {
 
       return;
     }
+
+    private readonly static string[] _KnownTokenPrefixes = new string[] { "Bearer", "JWT" };
+    internal static string StripTokenPrefix(string rawToken) {     
+      foreach (string prefix in _KnownTokenPrefixes) {
+        if (rawToken != null && rawToken.StartsWith(prefix + " ", StringComparison.CurrentCultureIgnoreCase)) {
+          return rawToken.Substring(prefix.Length + 1);
+        }
+      }
+      return rawToken;
+    } 
 
   }
 

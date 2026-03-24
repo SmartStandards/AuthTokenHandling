@@ -113,21 +113,14 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         else {
 
           SecLogger.LogError(2079846554883157227L, 73027, "Token retrival (for Client '{clientId}') failed: {reason}", clientId, $"Unknown Grant-Type '{grantType}'");
-        
-          return new TokenIssuingResult {
-            error = $"Grant-Type '{grantType}' not supported!",
-            error_description = $"Grant-Type '{grantType}' not supported!"
-          };
+
+          return TokenIssuingResult.FromError($"Grant-Type '{grantType}' not supported!");
         }
       }
       catch (Exception ex) {
         SecLogger.LogCritical(ex);
 
-        return new TokenIssuingResult {
-          error = "Processing Error",
-          error_description = ex.Message
-        };
-
+        return TokenIssuingResult.FromError("Processing Error", ex.Message);
       }
     }
 
@@ -166,11 +159,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
         SecLogger.LogCritical(ex);
 
-        return new TokenIssuingResult {
-          error = "Processing Error",
-          error_description = ex.Message
-        };
-
+        return TokenIssuingResult.FromError("Processing Error", ex.Message);
       }
     }
 
