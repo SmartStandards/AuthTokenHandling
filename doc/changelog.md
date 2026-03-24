@@ -6,7 +6,17 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-* convenience-method: TokenIssuingResult.FromError
+* 
+
+
+
+## v 5.0.7
+
+released **2026-03-24** including:
+
+- convenience-method: TokenIssuingResult.FromError
+
+
 
 ## v 5.0.6
 released **2026-03-13**, including:
