@@ -1,13 +1,13 @@
 {
-  "currentVersion": "5.0.6",
-  "currentVersionWithSuffix": "5.0.6",
+  "currentVersion": "5.0.10",
+  "currentVersionWithSuffix": "5.0.10",
   "releaseType": "",
-  "previousVersion": "5.0.4",
+  "previousVersion": "5.0.9",
   "changeGrade": "fix",
   "currentMajor": 5,
   "currentMinor": 0,
-  "currentPatch": 6,
-  "versionDateInfo": "2026-03-13",
-  "versionTimeInfo": "15:46:00",
-  "versionNotes": "- Fixed redirectUri contains trailing ?-Char\n- Fixed retrival-url for GenericOauthOperationsProvider\n"
+  "currentPatch": 10,
+  "versionDateInfo": "2026-03-25",
+  "versionTimeInfo": "06:41:22",
+  "versionNotes": "- Fix: Changelog\n"
 }
