@@ -10,6 +10,14 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 5.0.8
+
+released **2026-03-24** including:
+
+- Fix: Changelog
+
+
+
 ## v 5.0.7
 
 released **2026-03-24** including:
