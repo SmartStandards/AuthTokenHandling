@@ -22,12 +22,10 @@
       </group>
       <group targetFramework="net8.0">
         <dependency id="SmartStandards.AuthTokenHandling" version="[5.0.10]" />
-        <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>
       <group targetFramework="net10.0">
         <dependency id="SmartStandards.AuthTokenHandling" version="[5.0.10]" />
-        <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="CefSharp.Wrapped" version="[0.1.2,2.0)" />
       </group>
     </dependencies>
