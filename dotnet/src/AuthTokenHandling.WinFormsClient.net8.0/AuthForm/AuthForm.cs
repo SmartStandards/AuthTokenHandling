@@ -59,6 +59,8 @@ namespace Security.AccessTokenHandling {
     }
 
     private string _EntryUrl = "";
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public String CurrentUrl {
       get {
         return this.txtUrl.Text;
@@ -68,7 +70,11 @@ namespace Security.AccessTokenHandling {
         this.txtUrl.Text = value;
       }
     }
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public String ReturnOn { get; set; } = "DUMMY";
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     public int SecondsToWaitBeforeShowing { get; internal set; }
 
     private void BrowserForm_FormClosed(object sender, FormClosedEventArgs e) {

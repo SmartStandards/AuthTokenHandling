@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Security</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\AuthTokenHandling.net6.0\AuthTokenHandling.net6.0.csproj">
+    <ProjectReference Include="..\..\src\AuthTokenHandling.net10.0\AuthTokenHandling.net10.0.csproj">
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

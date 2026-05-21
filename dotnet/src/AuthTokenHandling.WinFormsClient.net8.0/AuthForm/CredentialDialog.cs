@@ -20,6 +20,7 @@ namespace Security.AccessTokenHandling {
     private List<TextBox> _InputBoxes = new List<TextBox>();
     private Dictionary<string, object> _ClaimsToEdit =null;
 
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Dictionary<string, object> ClaimsToEdit {
       get {
         return _ClaimsToEdit;

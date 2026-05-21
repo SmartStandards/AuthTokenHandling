@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows7.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <BaseOutputPath>..\..\dist\bin-net6.0</BaseOutputPath>
+    <BaseOutputPath>..\..\dist\bin-net8.0</BaseOutputPath>
     <AssemblyName>AuthTest</AssemblyName>
     <Title>AuthTest</Title>
     <ApplicationIcon>appicon.ico</ApplicationIcon>
