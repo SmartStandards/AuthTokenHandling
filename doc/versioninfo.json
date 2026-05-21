@@ -1,13 +1,13 @@
 {
-  "currentVersion": "5.0.10",
-  "currentVersionWithSuffix": "5.0.10",
+  "currentVersion": "5.1.0",
+  "currentVersionWithSuffix": "5.1.0",
   "releaseType": "",
-  "previousVersion": "5.0.9",
-  "changeGrade": "fix",
+  "previousVersion": "5.0.10",
+  "changeGrade": "minor",
   "currentMajor": 5,
-  "currentMinor": 0,
-  "currentPatch": 10,
-  "versionDateInfo": "2026-03-25",
-  "versionTimeInfo": "06:41:22",
-  "versionNotes": "- Fix: Changelog\n"
+  "currentMinor": 1,
+  "currentPatch": 0,
+  "versionDateInfo": "2026-05-21",
+  "versionTimeInfo": "13:04:51",
+  "versionNotes": "- new Feature: now offering a Target for .NET 10\n- (.NET 6 was removed)\n- Rearranged dependent Packages (to be compliant for .NET 10)\n"
 }

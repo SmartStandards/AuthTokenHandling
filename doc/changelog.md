@@ -6,9 +6,15 @@ This files contains a version history including all changes relevant for semanti
 
 ## Upcoming Changes
 
-- **new Feature**: now offering a Target for .NET 10
-- (.NET 6 was removed)
-- Rearranged dependent Packages (to be compliant for .NET 10)
+*(none)*
+
+
+
+## v 5.1.0
+released **2026-05-21**, including:
+ - **new Feature**: now offering a Target for .NET 10
+ - (.NET 6 was removed)
+ - Rearranged dependent Packages (to be compliant for .NET 10)
 
 
 
