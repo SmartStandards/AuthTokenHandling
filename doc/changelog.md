@@ -10,6 +10,12 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 5.1.1
+released **2026-06-09**, including:
+ - New revision without significant changes
+
+
+
 ## v 5.1.0
 released **2026-05-21**, including:
  - **new Feature**: now offering a Target for .NET 10
