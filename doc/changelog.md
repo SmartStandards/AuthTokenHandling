@@ -10,6 +10,14 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 5.1.2
+released **2026-10-19**, including:
+ - added 'AddWellKnownOAuthProtectedResourceEndpoint'
+ - fix startup and add skills
+ - docs: capture backward-compatible OAuth discovery requirements
+
+
+
 ## v 5.1.1
 released **2026-06-09**, including:
  - New revision without significant changes

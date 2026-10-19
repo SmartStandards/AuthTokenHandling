@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>SmartStandards.AuthTokenHandling.MvcSupport</id>
-    <version>5.1.1</version>
+    <version>5.1.2</version>
     <title>SmartStandards.AuthTokenHandling.MvcSupport</title>
     <authors>SmartStandards</authors>
     <owners>(public domain)</owners>
@@ -16,11 +16,11 @@
     <projectUrl>https://github.com/SmartStandards/AuthTokenHandling</projectUrl>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[5.1.1]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[5.1.2]" />
         <dependency id="jose-jwt" version="4.0.1" />
       </group>
       <group targetFramework="net10.0">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[5.1.1]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[5.1.2]" />
         <dependency id="jose-jwt" version="5.3.0" />
         <dependency id="Newtonsoft.Json" version="13.0.4" />
       </group>
