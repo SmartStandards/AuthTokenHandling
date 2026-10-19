@@ -242,12 +242,12 @@ namespace Security {
       ILoggerFactory loggerfactory, IHostApplicationLifetime lifetimeEvents
     ) {
 
+      app.UseAmbientFieldAdapterMiddleware();
+
       var logFileFullName = _Configuration.GetValue<string>("LogFileName");
       var logDir = Path.GetFullPath(Path.GetDirectoryName(logFileFullName));
       Directory.CreateDirectory(logDir);
       loggerfactory.AddFile(logFileFullName);
-
-
 
       //SmartStandardsTraceLogPipe.InitializeAsLoggerInput();
       //DevLogger.LogMethod = loggerfactory.CreateLogger<DevLogger>();
@@ -255,7 +255,6 @@ namespace Security {
       //required for the www-root
       app.UseStaticFiles();
 
-      app.UseAmbientFieldAdapterMiddleware();
 
       if (!_Configuration.GetValue<bool>("ProdMode")) {
         app.UseDeveloperExceptionPage();
