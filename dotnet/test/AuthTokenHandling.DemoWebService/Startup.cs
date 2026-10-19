@@ -103,6 +103,17 @@ namespace Security {
         }
       );
 
+      services.AddWellKnownOAuthProtectedResourceEndpoint(
+        (cfg) => {
+          // 'Resource', 'AuthorizationServers' and 'MetadataUrl' are qualified on-demand from the incoming request
+          // when they are empty or relative (not starting with 'http').
+          cfg.ScopesSupported = new string[] {
+            "write"
+          };
+        }
+      );
+      // Protected resource discovery only needs public metadata. IOAuthOperationsProvider remains relevant for token issuing, retrieval, refresh and remote introspection flows.
+
       //UJMW Controller sollen auch den AccessTokenValidator zur validierung nutzen 
       UjmwHostConfiguration.AuthHeaderEvaluator = AccessTokenValidator.TryValidateHttpAuthHeader;
 
@@ -219,6 +230,15 @@ namespace Security {
         );
 
         c.SwaggerDoc(
+          ".well-known",
+          new OpenApiInfo {
+            Title = ".well-known",
+            Version = "1",
+            Description = "Public discovery endpoints (e.g. RFC 9728 OAuth Protected Resource Metadata). Can be addressed on any path level, e.g. '/foo/.well-known/oauth-protected-resource'."
+          }
+        );
+
+        c.SwaggerDoc(
           "ApiV3",
           new OpenApiInfo {
             Title = _ApiTitle + " - API",
@@ -280,6 +300,7 @@ namespace Security {
 
           //represents the sorting in SwaggerUI combo-box
           c.SwaggerEndpoint("schema/OAuth.json", "OAuth2 Demo");
+          c.SwaggerEndpoint("schema/.well-known.json", ".well-known");
           c.SwaggerEndpoint("schema/ApiV3.json", _ApiTitle + " - API v" + _ApiVersion.ToString(3));
       
           c.RoutePrefix = "docs";

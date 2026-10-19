@@ -1371,6 +1371,8 @@ custom environment/domain implementation
 
 The controller can implement generic protocol/HTTP behavior while the actual authentication and token policy remain behind `IOAuthService`.
 
+ASP.NET Core host integration MUST also follow the SmartStandards skill `asp-net-core-development-guidelines`: reusable controllers should stay hidden from automatic controller discovery and should be exposed only through explicit service convenience extensions.
+
 ### 24.2 Typical endpoints
 
 The server capability may provide endpoints such as:

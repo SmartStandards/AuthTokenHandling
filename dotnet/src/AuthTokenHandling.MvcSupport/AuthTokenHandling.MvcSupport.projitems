@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -11,6 +11,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\ControllerRegistrar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EvaluateBearerTokenAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceRegistry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourcePathStartupFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\DefaultAuthPageBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Post.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Retrieval.cs" />

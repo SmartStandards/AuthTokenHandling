@@ -28,4 +28,5 @@ description: Project-specific implementation details, constraints and pitfalls f
 
 ## Related skills
 
-- [PLASE-FILL-THIS]
+- `asp-net-core-development-guidelines` - SmartStandards-wide ASP.NET Core integration rules for explicit controller exposure and controlled endpoint registration (leading version in the `AI-SKILLS-SMART` consolidation repository, no local copy).
+- `auth-token-handling` - Normative desired-state reference for AccessTokenHandling concepts and integration patterns.

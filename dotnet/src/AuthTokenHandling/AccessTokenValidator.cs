@@ -69,6 +69,41 @@ namespace Security.AccessTokenHandling {
       params string[] requiredApiPermissions
     ) {
 
+      ExtendedAuthRequiredResponse extendedAuthRequiredResponse;
+      return TryValidateHttpAuthHeader(
+        rawAuthHeader,
+        contractType,
+        calledContractMethod,
+        callingMachine,
+        ref httpReturnCode,
+        ref httpReasonPhrase,
+        out extendedAuthRequiredResponse,
+        requiredApiPermissions
+      );
+
+    }
+
+    /// <summary>
+    /// A convenience method which validates an HTTP Authorization header and returns optional extended rejection response details.
+    /// </summary>
+    /// <param name="rawAuthHeader"></param>
+    /// <param name="contractType"></param>
+    /// <param name="calledContractMethod"></param>
+    /// <param name="callingMachine"></param>
+    /// <param name="httpReturnCode">will only be changed on negative outcome (401/403)</param>
+    /// <param name="httpReasonPhrase">a Reason-Phrase which shall be transmitted to the client (low detail!, to reduce attack-surface)</param>
+    /// <param name="extendedAuthRequiredResponse">optional additional HTTP response details, such as authentication challenge headers</param>
+    /// <param name="requiredApiPermissions"></param>
+    /// <returns></returns>
+    public static bool TryValidateHttpAuthHeader(
+      string rawAuthHeader, Type contractType, MethodInfo calledContractMethod, string callingMachine,
+      ref int httpReturnCode, ref string httpReasonPhrase,
+      out ExtendedAuthRequiredResponse extendedAuthRequiredResponse,
+      params string[] requiredApiPermissions
+    ) {
+
+      extendedAuthRequiredResponse = null;
+
       string rawToken = StripTokenPrefix(rawAuthHeader);
 
       ValidationOutcome outcome = TryValidateTokenAndEvaluateScopes(
@@ -98,6 +133,26 @@ namespace Security.AccessTokenHandling {
         else {
           httpReturnCode = 403;
           httpReasonPhrase = "Forbidden (bad token)"; //low detail - just a hint for the client
+        }
+      }
+
+      if (httpReturnCode == 401) {
+        if (TryBuildExtendedAuthRequiredResponse(
+          outcome,
+          httpReturnCode,
+          httpReasonPhrase,
+          contractType,
+          calledContractMethod,
+          callingMachine,
+          requiredApiPermissions,
+          out extendedAuthRequiredResponse
+        )) {
+          if (extendedAuthRequiredResponse.StatusCode >= 100) {
+            httpReturnCode = extendedAuthRequiredResponse.StatusCode;
+          }
+          if (!string.IsNullOrWhiteSpace(extendedAuthRequiredResponse.ReasonPhrase)) {
+            httpReasonPhrase = extendedAuthRequiredResponse.ReasonPhrase;
+          }
         }
       }
 

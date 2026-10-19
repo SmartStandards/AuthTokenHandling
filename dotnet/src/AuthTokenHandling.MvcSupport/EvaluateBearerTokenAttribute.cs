@@ -42,10 +42,12 @@ namespace Security.AccessTokenHandling {
         string httpReasonPhrase = string.Empty;
         string apiCaller = context.HttpContext.Connection.RemoteIpAddress.ToString();
         MethodInfo calledContractMethod = GetMethodInfoFromContext(context, out Type contractType);
+        ExtendedAuthRequiredResponse extendedAuthRequiredResponse;
 
         if (AccessTokenValidator.TryValidateHttpAuthHeader(
           rawToken, contractType, calledContractMethod, apiCaller,
           ref httpReturnCode, ref httpReasonPhrase,
+          out extendedAuthRequiredResponse,
           _RequiredApiPermissions
         )) {
 
@@ -54,6 +56,13 @@ namespace Security.AccessTokenHandling {
 
         }
         else {
+          ApplyExtendedAuthRequiredResponse(
+            context.HttpContext,
+            ref httpReturnCode,
+            ref httpReasonPhrase,
+            extendedAuthRequiredResponse
+          );
+          ApplyProtectedResourceMetadataChallenge(context.HttpContext, httpReturnCode);
           context.Result = new ContentResult() {
             StatusCode = httpReturnCode,
             Content = httpReasonPhrase
@@ -70,6 +79,56 @@ namespace Security.AccessTokenHandling {
       }
 
     }//OnActionExecutionAsync()
+
+    /// <summary>
+    /// Emits the RFC 9728 'WWW-Authenticate: Bearer resource_metadata="..."' challenge for 401 responses,
+    /// if the protected-resource discovery endpoint was registered and no challenge was set by a custom hook.
+    /// The metadata URL is qualified on-demand using the incoming request.
+    /// </summary>
+    private static void ApplyProtectedResourceMetadataChallenge(HttpContext httpContext, int httpReturnCode) {
+      if (httpReturnCode != 401) {
+        return;
+      }
+      if (httpContext.Response.Headers.ContainsKey("WWW-Authenticate")) {
+        return;
+      }
+      string challenge;
+      if (WellKnownOAuthProtectedResourceRegistry.TryBuildBearerChallenge(httpContext.Request, out challenge)) {
+        httpContext.Response.Headers["WWW-Authenticate"] = challenge;
+      }
+    }
+
+    private static void ApplyExtendedAuthRequiredResponse(
+      HttpContext httpContext,
+      ref int httpReturnCode,
+      ref string httpReasonPhrase,
+      ExtendedAuthRequiredResponse extendedAuthRequiredResponse
+    ) {
+      if (extendedAuthRequiredResponse == null) {
+        return;
+      }
+
+      if (extendedAuthRequiredResponse.StatusCode >= 100) {
+        httpReturnCode = extendedAuthRequiredResponse.StatusCode;
+      }
+      if (!string.IsNullOrWhiteSpace(extendedAuthRequiredResponse.ReasonPhrase)) {
+        httpReasonPhrase = extendedAuthRequiredResponse.ReasonPhrase;
+      }
+
+      if (extendedAuthRequiredResponse.Headers == null) {
+        return;
+      }
+
+      foreach (HttpResponseHeader header in extendedAuthRequiredResponse.Headers) {
+        if (header == null) {
+          continue;
+        }
+        if (string.IsNullOrWhiteSpace(header.Name)) {
+          continue;
+        }
+        httpContext.Response.Headers[header.Name] = header.Value;
+      }
+    }
 
     /// <summary>
     /// Convenience to be used for example when initializing 'DynamicUjmwControllerOptions',

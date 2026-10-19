@@ -46,6 +46,15 @@ namespace Security.AccessTokenHandling {
     public delegate void RawTokenExposalMethod(string token, MethodInfo targetContractMethod, string subject, string[] permittedScopes);
 
     /// <summary>
+    /// Creates optional HTTP response details for an authentication-required rejection without coupling the validator to a concrete HTTP stack.
+    /// </summary>
+    /// <param name="context">The validation and HTTP mapping context.</param>
+    /// <returns>Additional response details, or null to keep the existing response unchanged.</returns>
+    public delegate ExtendedAuthRequiredResponse ExtendedAuthRequiredResponseBuilder(
+      ExtendedAuthRequiredResponseContext context
+    );
+
+    /// <summary>
     /// </summary>
     /// <param name="targetContractMethod"></param>
     /// <param name="callingMachine"></param>
@@ -220,11 +229,67 @@ namespace Security.AccessTokenHandling {
 
     }
 
+    /// <summary>
+    /// Configures optional extended response details for authentication-required HTTP rejections.
+    /// </summary>
+    /// <param name="responseBuilder">The response builder, or null to disable extended responses.</param>
+    public static void ConfigureExtendedAuthRequiredResponse(
+      ExtendedAuthRequiredResponseBuilder responseBuilder
+    ) {
+      lock (_ExtendedAuthRequiredResponseLock) {
+        _ExtendedAuthRequiredResponseBuilder = responseBuilder;
+      }
+    }
+
+    /// <summary>
+    /// Disables optional extended response details for authentication-required HTTP rejections.
+    /// </summary>
+    public static void ClearExtendedAuthRequiredResponse() {
+      ConfigureExtendedAuthRequiredResponse(null);
+    }
+
+    private static bool TryBuildExtendedAuthRequiredResponse(
+      ValidationOutcome validationOutcome,
+      int statusCode,
+      string reasonPhrase,
+      Type contractType,
+      MethodInfo targetContractMethod,
+      string callingMachine,
+      string[] requiredApiPermissions,
+      out ExtendedAuthRequiredResponse response
+    ) {
+
+      ExtendedAuthRequiredResponseBuilder responseBuilder;
+      lock (_ExtendedAuthRequiredResponseLock) {
+        responseBuilder = _ExtendedAuthRequiredResponseBuilder;
+      }
+
+      if (responseBuilder == null) {
+        response = null;
+        return false;
+      }
+
+      ExtendedAuthRequiredResponseContext context = new ExtendedAuthRequiredResponseContext(
+        validationOutcome,
+        statusCode,
+        reasonPhrase,
+        contractType,
+        targetContractMethod,
+        callingMachine,
+        requiredApiPermissions
+      );
+
+      response = responseBuilder.Invoke(context);
+      return response != null;
+    }
+
     private static IAuthRequirementsProvider _RequirementsProvider;
     private static IntrospectorLookupMethod _IntrospectorSelector;
     private static PermittedScopesVisitorMethod _PermittedScopesVisitorMethod = null;
     private static AuditingHook _AuditingHook = null;
     private static RawTokenExposalMethod _RawTokenExposalMethod = null;
+    private static ExtendedAuthRequiredResponseBuilder _ExtendedAuthRequiredResponseBuilder = null;
+    private static readonly object _ExtendedAuthRequiredResponseLock = new object();
 
     private static string _AnonymousSubjectName = null;
     private static string _ApiPermissionPrefix = "API:";
