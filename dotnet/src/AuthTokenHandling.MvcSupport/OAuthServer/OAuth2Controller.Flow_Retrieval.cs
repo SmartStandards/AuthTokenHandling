@@ -46,8 +46,19 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           if (value.TryGetValue("code", out StringValues codeValue)) {
             code = codeValue.ToString();
           }
+          string codeVerifier = null;
+          if (value.TryGetValue("code_verifier", out StringValues codeVerifierValue)) {
+            codeVerifier = codeVerifierValue.ToString();
+          }
 
-          TokenIssuingResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code);
+          TokenIssuingResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code, out string boundCodeChallenge);
+
+          //PKCE: the code has already been consumed here, so a failed verification also invalidates it
+          if (string.IsNullOrWhiteSpace(result.error)) {
+            if (!TryVerifyPkce(boundCodeChallenge, codeVerifier, out string pkceError)) {
+              result = TokenIssuingResult.FromError("invalid_grant", pkceError);
+            }
+          }
 
           if (!string.IsNullOrWhiteSpace(result.error)) {
             SecLogger.LogError(2079846554883157221L, 73021, "Token retrival (for Client '{clientId}') via code '{code}' failed: {reason}", clientId, code, $"{result.error} - {result.error_description}");
@@ -135,6 +146,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     /// <param name="clientId"></param>
     /// <param name="clientSecret"></param>
     /// <param name="code"></param>
+    /// <param name="codeVerifier">PKCE code verifier (optional)</param>
     /// <returns></returns>
     [HttpGet(), Produces("application/json")]
     [Route("token")]
@@ -142,7 +154,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "grant_type")] string grantType,
       [FromQuery(Name = "client_id")] string clientId,
       [FromQuery(Name = "client_secret")] string clientSecret,
-      [FromQuery(Name = "code")] string code
+      [FromQuery(Name = "code")] string code,
+      [FromQuery(Name = "code_verifier")] string codeVerifier
     ) {
       try {
 
@@ -152,6 +165,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         args["client_id"] = clientId;
         args["client_secret"] = clientSecret;
         args["code"] = code;
+        args["code_verifier"] = codeVerifier;
 
         return this.RetrieveToken(new FormCollection(args));
       }

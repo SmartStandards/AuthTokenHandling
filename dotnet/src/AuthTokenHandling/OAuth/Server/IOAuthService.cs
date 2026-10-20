@@ -56,13 +56,40 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       out TokenIssuingResult tokenResult
     );
 
+    /// <summary>
+    /// Validates the session and creates a one-time retrieval code (authorization-code flow).
+    /// </summary>
+    /// <param name="apiClientId"></param>
+    /// <param name="sessionId"></param>
+    /// <param name="selectedScopes"></param>
+    /// <param name="codeChallenge">
+    /// PKCE (RFC 7636) code challenge, which has already been validated by the caller,
+    /// or null/empty if the client did not use PKCE. It must be treated as an OPAQUE value:
+    /// it just needs to be persisted together with the created code and to be returned
+    /// unchanged by 'RetrieveTokenByCode'. The verification is done by the caller.
+    /// </param>
+    /// <param name="code"></param>
+    /// <param name="message"></param>
+    /// <returns></returns>
     bool TryValidateSessionIdAndCreateRetrievalCode(
-      string apiClientId, string sessionId, string[] selectedScopes,
+      string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge,
       out string code, out string message
     );
 
+    /// <summary>
+    /// Redeems a retrieval code (which must be consumed, so that it can be used only once).
+    /// </summary>
+    /// <param name="clientId"></param>
+    /// <param name="clientSecret"></param>
+    /// <param name="code"></param>
+    /// <param name="codeChallenge">
+    /// The PKCE code challenge which was bound to the code within 'TryValidateSessionIdAndCreateRetrievalCode'
+    /// (unchanged, or null/empty if there was none). The caller will verify it against the 'code_verifier'
+    /// and will discard the returned token, if the verification fails.
+    /// </param>
+    /// <returns></returns>
     TokenIssuingResult RetrieveTokenByCode(
-      string clientId, string clientSecret, string code
+      string clientId, string clientSecret, string code, out string codeChallenge
     );
 
     bool TryValidateApiClient(

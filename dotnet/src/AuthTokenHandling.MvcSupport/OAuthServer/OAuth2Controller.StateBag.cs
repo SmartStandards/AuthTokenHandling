@@ -13,6 +13,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       public string OriginalScope { get; set; }
       public string OriginalResponseType { get; set; }
       public string OriginalClientId { get; set; }
+      public string OriginalCodeChallenge { get; set; }
 
       [Obsolete("Should be refactored to explicit values!")]
       public int ViewMode { get; set; }

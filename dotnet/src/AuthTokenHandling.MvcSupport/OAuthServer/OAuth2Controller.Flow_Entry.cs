@@ -55,7 +55,9 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "err")] string errorMessagePassedViaQueryString,
       [FromQuery(Name = "otp")] string sessionId,
       [FromQuery(Name = "view_mode")] int viewMode,
-      [FromQuery(Name = "code")] string codeFromDelegate //NUR WENN EIN DELEGATE DAZWISCHEN HING
+      [FromQuery(Name = "code")] string codeFromDelegate, //NUR WENN EIN DELEGATE DAZWISCHEN HING
+      [FromQuery(Name = "code_challenge")] string codeChallenge,
+      [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod
     ) {
 
       if (!this.TryGetPasstroughUserIdentity(out string winUserName)) { 
@@ -64,7 +66,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
       return GetLogonPage(
         responseType, clientId, redirectUri, state, rawScopePreference, "pass-trough",
-        errorMessagePassedViaQueryString, sessionId, viewMode, codeFromDelegate
+        errorMessagePassedViaQueryString, sessionId, viewMode, codeFromDelegate,
+        codeChallenge, codeChallengeMethod
       );
 
     }
@@ -82,7 +85,9 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "err")] string errorMessagePassedViaQueryString,
       [FromQuery(Name = "otp")] string sessionId,
       [FromQuery(Name = "view_mode")] int viewMode,
-      [FromQuery(Name = "code")] string codeFromDelegate //NUR WENN EIN DELEGATE DAZWISCHEN HING
+      [FromQuery(Name = "code")] string codeFromDelegate, //NUR WENN EIN DELEGATE DAZWISCHEN HING
+      [FromQuery(Name = "code_challenge")] string codeChallenge,
+      [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod
     ) {
 
       Uri thisUri = new Uri(HttpContext.Request.GetDisplayUrl());
@@ -104,7 +109,15 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             return this.Content(errorPage, "text/html");
           }
         }
-  
+
+        //PKCE (optional) - the redirectUri has already been validated here, so errors can be returned to the client
+        if (!TryValidatePkceRequest(codeChallenge, codeChallengeMethod, out string pkceError)) {
+          SecLogger.LogError(2083109404818208611L, 73031, "Invalid PKCE params (for Client '{clientId}'): {reason}", clientId, pkceError);
+          return this.Redirect(
+            redirectUri.AppendQueryParam("error", "invalid_request").AppendQueryParam("error_description", pkceError, true).AppendQueryParam("state", state, true)
+          );
+        }
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////
 
         //ROUNDTRIP - DELEGATION TO ANOTHER OAUTH SERVER ???
@@ -137,6 +150,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
                 redirectUri = deserializedStateBag.OriginalRedirectUri;
                 state = deserializedStateBag.OriginalState;
                 rawScopePreference = deserializedStateBag.OriginalScope;
+                codeChallenge = deserializedStateBag.OriginalCodeChallenge;
                 viewMode = deserializedStateBag.ViewMode;
         
                 if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
@@ -171,6 +185,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
               OriginalScope = rawScopePreference,
               OriginalResponseType = responseType,
               OriginalClientId = clientId,
+              OriginalCodeChallenge = codeChallenge,
               ViewMode = viewMode
             };
 
@@ -244,7 +259,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
                 }
 
                 bool codeCreationSuccess = _AuthService.TryValidateSessionIdAndCreateRetrievalCode(
-                  clientId, sessionId, selectedScopes, out string code, out string step2Msg
+                  clientId, sessionId, selectedScopes, codeChallenge, out string code, out string step2Msg
                 );
 
                 if (!codeCreationSuccess) {
@@ -348,6 +363,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             );
 
           }
+        }
+
+        //the code challenge needs to be passed trough the form-POST
+        if (!TryInjectPkceFormField(ref authFormTemplate, codeChallenge)) {
+          string errorPage = _AuthPageBuilder.GetErrorPage("PKCE is not supported by the configured auth page (no form found)!", viewOpt);
+          return this.Content(errorPage, "text/html");
         }
 
         return this.Content(authFormTemplate, "text/html", Encoding.UTF8);

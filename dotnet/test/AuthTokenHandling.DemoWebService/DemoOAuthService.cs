@@ -36,6 +36,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     // States
     private Dictionary<long, string> _LoginsPerSessionId = new Dictionary<long, string>();
     private Dictionary<long, TokenIssuingResult> _TokensPerRetrievalCode = new Dictionary<long, TokenIssuingResult>();
+    private Dictionary<long, string> _CodeChallengesPerRetrievalCode = new Dictionary<long, string>();
 
     public bool TryAuthenticate(
       string apiClientId, string login, string password, bool noPasswordNeeded, string clientProvidedState,
@@ -150,7 +151,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     #region " CODE - FLOW "
 
     public bool TryValidateSessionIdAndCreateRetrievalCode(
-      string apiClientId, string sessionId, string[] selectedScopes,
+      string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge,
       out string code, out string message
     ) {
 
@@ -165,6 +166,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         lock (_TokensPerRetrievalCode) {
           //stage the token for retrieval
           _TokensPerRetrievalCode[retrievalCode] = tokenResult;
+          //bind the (opaque) PKCE code challenge to the code
+          _CodeChallengesPerRetrievalCode[retrievalCode] = codeChallenge;
         }
 
         code = retrievalCode.ToString();
@@ -178,8 +181,9 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       }
     }
 
-    public TokenIssuingResult RetrieveTokenByCode(string clientId, string clientSecret, string code) {
+    public TokenIssuingResult RetrieveTokenByCode(string clientId, string clientSecret, string code, out string codeChallenge) {
       TokenIssuingResult result = new TokenIssuingResult();
+      codeChallenge = null;
 
       if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
         result = TokenIssuingResult.FromError("invalid_client", "Unknown client");
@@ -196,9 +200,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             if (_TokensPerRetrievalCode.ContainsKey(codeLong)) {
 
               result = _TokensPerRetrievalCode[codeLong];
+              _CodeChallengesPerRetrievalCode.TryGetValue(codeLong, out codeChallenge);
 
               //make sure the code can only be used once
               _TokensPerRetrievalCode.Remove(codeLong);
+              _CodeChallengesPerRetrievalCode.Remove(codeLong);
 
               return result;
             }

@@ -91,7 +91,7 @@ Choose the smallest additive design after checking these seams. A new overload o
 
 The future sample should accept STRATO credentials on its own login page, validate them through the CalDAV connector and issue OAuth tokens. Encrypted credential-bearing refresh tokens are an explicit experiment strategy, not the default for the framework. Access-token calls also need server-side access to the credentials. Key persistence, authenticated encryption, expiration, refresh rotation/reuse detection and revocation require explicit design before that follow-up is implemented.
 
-Existing IOAuthService and IOAuthServiceWithDelegation are reuse candidates, not proof of current MCP interoperability. PKCE/S256, resource binding and a client-registration method compatible with ChatGPT and Claude require separate verification.
+PKCE/S256, resource binding and a client-registration method compatible with ChatGPT and Claude require separate verification. Basic optional S256 PKCE for the authorization-code flow is meanwhile built into the ASP.NET Core `OAuth2Controller` (see `oauth-server-pkce.md`); metadata advertisement and per-client enforcement are still open.
 
 ## Acceptance and implementation handoff
 

@@ -44,6 +44,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       string prefferredScope = "";
       int viewMode = 1;
       string responseType = null;
+      string codeChallenge = null;
 
       AuthPageViewModeOptions viewOpt = new AuthPageViewModeOptions();
 
@@ -79,6 +80,9 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           Int32.TryParse(viewModeValue.ToString(), out viewMode);
           viewOpt.LowSpaceEmbedded = (viewMode == 2);
         }
+        if (value.TryGetValue(_PkceFormFieldName, out StringValues codeChallengeValue)) {
+          codeChallenge = codeChallengeValue.ToString();
+        }
 
         #endregion
 
@@ -89,9 +93,15 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           return this.Content(errorPage, "text/html");
         }
 
+        //the code challenge has already been validated on GET, but the form could have been manipulated
+        if (!string.IsNullOrEmpty(codeChallenge) && !IsValidS256Challenge(codeChallenge)) {
+          string errorPage = _AuthPageBuilder.GetErrorPage("Invalid 'code_challenge'!", viewOpt);
+          return this.Content(errorPage, "text/html");
+        }
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-        //beim ersten post (also noch kein OTP da....)
+        //beim ersten post (also noch keine sessionId da....)
         if (String.IsNullOrWhiteSpace(sessionId)) {
 
           bool winAuthSuccess = false;
@@ -122,11 +132,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           //und zurück zur seite leiten
           if (logonSuccess) {
             //inkl. übergabe des OTP
-            return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}");
+            return this.Redirect(AppendPkceQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}", codeChallenge));
           }
           else {
             //inkl. übergabe der fehlermeldung
-            return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&err={step1Msg}");
+            return this.Redirect(AppendPkceQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&err={step1Msg}", codeChallenge));
           }
 
         }
@@ -145,11 +155,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         if (responseType.Equals("code", StringComparison.InvariantCultureIgnoreCase)) {
 
           bool success = _AuthService.TryValidateSessionIdAndCreateRetrievalCode(
-            clientId, sessionId, selectedScopes, out string code, out string step2Msg
+            clientId, sessionId, selectedScopes, codeChallenge, out string code, out string step2Msg
           );
 
           if (!success || string.IsNullOrWhiteSpace(code)) {
-            return this.Redirect($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionId}&view_mode={viewMode}&err={step2Msg}");
+            return this.Redirect(AppendPkceQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionId}&view_mode={viewMode}&err={step2Msg}", codeChallenge));
           }
 
           redirectUri = AppendUrlParam(redirectUri, "code", code, false);

@@ -700,9 +700,14 @@ Agents SHOULD think in terms of the standard OAuth flow rather than a particular
 
 ### 10.3 PKCE
 
-PKCE is a **known required evolution area** and SHOULD be added for modern authorization-code scenarios, especially public clients.
+The built-in OAuth server (`OAuth2Controller` in AuthTokenHandling.MvcSupport, ASP.NET Core only) supports PKCE (RFC 7636) for the authorization-code flow:
 
-V1 does not pretend that current code already provides a complete PKCE implementation.
+- only `code_challenge_method=S256` is supported (`plain` and a missing method are rejected with `invalid_request`),
+- PKCE is optional; requests without `code_challenge` behave as before,
+- the controller validates the challenge, carries it through the login/consent forms (hidden field), the redirects and the delegation `StateBag`, and verifies the `code_verifier` at the token endpoint (`invalid_grant` on mismatch, missing verifier, or a verifier sent for a code without challenge),
+- `IOAuthService` implementations only persist the challenge as an opaque value together with the code (`TryValidateSessionIdAndCreateRetrievalCode(..., codeChallenge, ...)`) and return it when the code is redeemed (`RetrieveTokenByCode(..., out codeChallenge)`); they never need to know S256.
+
+Whether public clients may redeem codes without `client_secret` is still decided by the `IOAuthService` implementation. Enforcing PKCE per client and advertising `code_challenge_methods_supported` (RFC 8414) are open follow-ups.
 
 ### 10.4 Implicit flow
 
@@ -1873,9 +1878,7 @@ The following areas are intentionally identified for future improvement.
 
 ### 32.1 PKCE
 
-Add proper PKCE support for modern authorization-code flows.
-
-This is a high-priority evolution area.
+Basic PKCE support (S256, optional) is implemented in the built-in OAuth server (see 10.3). Remaining: optional per-client enforcement (e.g. for public clients) and advertising it via authorization-server metadata.
 
 ### 32.2 Refresh-token model
 
@@ -1910,6 +1913,34 @@ Older WebClient-style and compatibility HTTP modes SHOULD progressively be repla
 Some current mode names are historically shaped and may not map perfectly to modern OAuth terminology.
 
 Future revisions may improve naming carefully, with compatibility implications documented explicitly.
+
+### 32.7 TODO (later): OAuth standards validation and scope decision
+
+A conceptual, fundamental discussion is still pending. It SHOULD validate the built-in OAuth server and the client-side OAuth handling against the current OAuth standards landscape and produce an explicit, documented scope decision:
+
+- what is still missing compared to the relevant standards (e.g. RFC 6749, RFC 7636 PKCE, RFC 9700 OAuth 2.0 Security BCP, OAuth 2.1 draft, RFC 8414 authorization-server metadata, RFC 7662 introspection, RFC 7009 revocation, RFC 8707 resource indicators, RFC 7591 dynamic client registration, RFC 9449 DPoP, OpenID Connect),
+- which of these gaps SHOULD be closed,
+- where the scope is deliberately limited (lightweight control is intentional, see 3.3) and why,
+- how deprecated or non-standard features (implicit flow `response_type=token`, `response_type=display`, GET token proxy, other compatibility features listed in 24.7) are handled long-term (keep, restrict, deprecate, remove).
+
+Until this discussion has taken place, agents MUST NOT claim full standards compliance of the built-in OAuth server.
+
+### 32.8 TODO (later): Dedicated security hardening round
+
+After 32.7, a serious, dedicated review against attack vectors SHOULD be performed for the built-in OAuth server and the token handling (e.g. along the threat model of RFC 6819 and RFC 9700). Topics include, but are not limited to:
+
+- authorization-code interception and injection, code replay, PKCE downgrade,
+- redirect-URI validation (exact matching, open redirects), `state`/CSRF handling, mix-up attacks,
+- token leakage via URLs, browser history, referrer headers and logs (implicit flow, GET token proxy),
+- client authentication and secret handling, public vs. confidential clients,
+- refresh-token theft, rotation and replay detection (see 32.2),
+- clickjacking and XSS on the generated login/consent pages, HTML injection via custom `IAuthPageBuilder` output,
+- brute-force and enumeration on login and token endpoints, rate limiting,
+- session fixation and lifetime of `sessionId`/retrieval codes, one-time use guarantees in multi-instance hosting,
+- delegation round-trip integrity (`StateBag` tampering, state confidentiality),
+- token audience/scope confusion and sender-constrained tokens (DPoP/mTLS) as optional hardening.
+
+Findings SHOULD be documented together with explicit accept/fix decisions.
 
 ---
 
