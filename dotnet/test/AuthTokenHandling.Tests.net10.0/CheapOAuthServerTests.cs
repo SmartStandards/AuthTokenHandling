@@ -102,6 +102,56 @@ namespace Security {
     }
 
     [TestMethod]
+    public void GetAuthorizationServerCapabilities_DescribesPublicPkceClientsWithRegistration() {
+      CheapOAuthOptions options = this.CreateOptions();
+      options.ScopesSupported = new string[] { "mcp" };
+      IOAuthService service = this.CreateService(options);
+
+      AuthorizationServerCapabilities capabilities = service.GetAuthorizationServerCapabilities();
+
+      Assert.IsTrue(capabilities.SupportsDynamicClientRegistration);
+      CollectionAssert.AreEqual(new string[] { "S256" }, capabilities.CodeChallengeMethodsSupported);
+      CollectionAssert.AreEqual(new string[] { "none" }, capabilities.TokenEndpointAuthMethodsSupported);
+      CollectionAssert.AreEqual(new string[] { "authorization_code", "refresh_token" }, capabilities.GrantTypesSupported);
+      CollectionAssert.AreEqual(AccessTokenManager.ApplyApiPermissionPrefix(new string[] { "mcp" }), capabilities.ScopesSupported);
+    }
+
+    [TestMethod]
+    public void TryRegisterClient_PublicClient_IsRegistered() {
+      CheapOAuthService service = this.CreateService(this.CreateOptions());
+      string clientId;
+      string error;
+      string errorDescription;
+
+      bool registered = ((IOAuthService)service).TryRegisterClient(
+        "Claude", new string[] { _RedirectUri }, "none", out clientId, out error, out errorDescription
+      );
+
+      Assert.IsTrue(registered, errorDescription);
+      Assert.IsNull(error);
+      string message;
+      Assert.IsTrue(service.TryValidateApiClient(clientId, "localhost", _RedirectUri, out message), message);
+    }
+
+    [TestMethod]
+    public void TryRegisterClient_ConfidentialClientOrMissingRedirectUri_IsRejected() {
+      IOAuthService service = this.CreateService(this.CreateOptions());
+      string clientId;
+      string error;
+      string errorDescription;
+
+      Assert.IsFalse(service.TryRegisterClient(
+        null, new string[] { _RedirectUri }, "client_secret_post", out clientId, out error, out errorDescription
+      ));
+      Assert.AreEqual("invalid_client_metadata", error);
+
+      Assert.IsFalse(service.TryRegisterClient(
+        null, new string[] { }, null, out clientId, out error, out errorDescription
+      ));
+      Assert.AreEqual("invalid_redirect_uri", error);
+    }
+
+    [TestMethod]
     public void CreateRetrievalCode_WithoutPkce_Fails() {
       CheapOAuthService service = this.CreateService(this.CreateOptions());
       string clientId = service.ClientRegistry.RegisterClient(null, new string[] { _RedirectUri });

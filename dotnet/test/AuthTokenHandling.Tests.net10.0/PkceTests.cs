@@ -401,6 +401,20 @@ namespace Security {
         throw new NotImplementedException();
       }
 
+      public AuthorizationServerCapabilities GetAuthorizationServerCapabilities() {
+        return new AuthorizationServerCapabilities();
+      }
+
+      public bool TryRegisterClient(
+        string clientName, string[] redirectUris, string tokenEndpointAuthMethod,
+        out string clientId, out string error, out string errorDescription
+      ) {
+        clientId = null;
+        error = "invalid_client_metadata";
+        errorDescription = "Not supported.";
+        return false;
+      }
+
       public bool TryAuthenticate(
         string apiClientId, string login, string password, bool noPasswordNeeded, string clientProvidedState,
         out string sessionId, out string message

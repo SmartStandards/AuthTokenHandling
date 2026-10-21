@@ -19,6 +19,8 @@ namespace Security.AccessTokenHandling {
 
     /// <summary>
     /// NOTE: this will also require injectable implementations of 'IOAuthService' and 'IAuthPageBuilder'!
+    /// Registers the 'OAuth2Controller' (incl. RFC 7591 client registration) and the 'OAuthDiscoverController'
+    /// (RFC 8414 authorization server metadata).
     /// </summary>
     /// <param name="services"></param>
     public static void AddOAuthServerController(this IServiceCollection services) {
@@ -87,6 +89,12 @@ namespace Security.AccessTokenHandling {
       Type controllerType = typeof(OAuth2Controller);
       if (!feature.Controllers.Any((controller) => controller.AsType() == controllerType)) {
         feature.Controllers.Add(controllerType.GetTypeInfo());
+      }
+
+      // RFC 8414 metadata (capabilities delegated to 'IOAuthService') - always part of the OAuth server
+      Type discoverControllerType = typeof(WellKnownOAuthDiscoverController);
+      if (!feature.Controllers.Any((controller) => controller.AsType() == discoverControllerType)) {
+        feature.Controllers.Add(discoverControllerType.GetTypeInfo());
       }
 
     }

@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)EndpointAuthResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceController.cs" />
+    <Compile Include="..\AuthTokenHandling.MvcSupport\OAuthDiscovery\WellKnownOAuthDiscoverController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceRegistry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourcePathStartupFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\DefaultAuthPageBuilder.cs" />
@@ -21,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Retrieval.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.StateBag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Introspect_RFC7662.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Register_RFC7591.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Pkce.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Resource.cs" />
@@ -31,7 +33,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthGrantStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthClientRegistry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthSetupExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)OAuthDiscovery\OAuthDiscoverController.tmp" />
   </ItemGroup>
 </Project>

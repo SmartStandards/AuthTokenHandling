@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)OAuth\OAuthTokenIntrospectionResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuth\TokenIssuingResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuth\Server\IOAuthService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuth\Server\AuthorizationServerCapabilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JwtContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introspection\IAccessTokenIntrospector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configuration based validation\AuthTokenConfig (from UShell).cs" />

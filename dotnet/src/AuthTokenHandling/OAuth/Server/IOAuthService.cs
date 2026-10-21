@@ -112,6 +112,36 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     TokenIssuingResult CreateFollowUpToken(
       string refreshToken
     );
+
+    /// <summary>
+    /// Describes the capabilities of the authorization server (RFC 8414 authorization server metadata).
+    /// The endpoint URLs are NOT part of it - they are built by the controller (which owns the routes).
+    /// </summary>
+    /// <returns>The capabilities (must not be null).</returns>
+    AuthorizationServerCapabilities GetAuthorizationServerCapabilities();
+
+    /// <summary>
+    /// RFC 7591 dynamic client registration. The controller parses the HTTP request and builds the RFC response -
+    /// the implementation decides whether and how the client is registered.
+    /// Implementations without dynamic client registration should return false
+    /// (with error 'invalid_client_metadata') and report 'SupportsDynamicClientRegistration = false'.
+    /// </summary>
+    /// <param name="clientName">The optional human-readable name of the client ('client_name').</param>
+    /// <param name="redirectUris">The redirect URIs of the client ('redirect_uris', never null).</param>
+    /// <param name="tokenEndpointAuthMethod">The requested 'token_endpoint_auth_method' (null/empty if not given).</param>
+    /// <param name="clientId">The issued client id.</param>
+    /// <param name="error">RFC 7591 error code (e.g. 'invalid_redirect_uri', 'invalid_client_metadata'), if not successful.</param>
+    /// <param name="errorDescription">A human-readable error description, if not successful.</param>
+    /// <returns>True, if the client was registered.</returns>
+    bool TryRegisterClient(
+      string clientName,
+      string[] redirectUris,
+      string tokenEndpointAuthMethod,
+      out string clientId,
+      out string error,
+      out string errorDescription
+    );
+
   }
 
   public interface IOAuthServiceWithDelegation : IOAuthService {

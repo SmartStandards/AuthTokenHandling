@@ -427,6 +427,23 @@ One breaking change instead of two; all implementations (including UniversalBFF)
 All endpoints are provided as controllers that stay hidden from automatic discovery and are exposed only through the
 extension method (`asp-net-core-development-guidelines`). `MapControllers()` is then the only mapping a host needs.
 
+**No competing OAuth controllers (decided).** There is no Cheap-specific controller. All OAuth protocol endpoints are
+owned by generic controllers, which only depend on `IOAuthService`; the implementation-specific behavior is delegated
+into the `IOAuthService` implementation:
+
+- `OAuth2Controller` (API group `OAuth`) owns `authorize`, `token`, `introspect` **and** `POST /oauth2/register`
+  (RFC 7591). The controller parses the request and builds the RFC response; whether and how a client is registered
+  is decided by `IOAuthService.TryRegisterClient(...)`.
+- `OAuthDiscoverController` (API group `.well-known`) publishes the RFC 8414 metadata at
+  `/.well-known/oauth-authorization-server` and (alias, because some clients only probe it)
+  `/.well-known/openid-configuration`. The endpoint URLs are built by the controller (it knows the routes), the
+  capabilities come from `IOAuthService.GetAuthorizationServerCapabilities()` (`AuthorizationServerCapabilities`);
+  `registration_endpoint` is only published if `SupportsDynamicClientRegistration` is true.
+- Both controllers are registered **by default** through `AddOAuthServerController()` - every `IOAuthService`
+  implementer is expected to provide discovery and (medium-term) dynamic client registration. Implementations
+  without registration return `false` with `invalid_client_metadata` and report
+  `SupportsDynamicClientRegistration = false`.
+
 ### 4.5 Scope limit: discovery stays global (decided)
 
 The RFC 9728 discovery keeps its single, static, application-wide configuration (one set of authorization servers),

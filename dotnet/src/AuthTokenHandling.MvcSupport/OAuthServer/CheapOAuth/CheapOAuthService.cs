@@ -1,3 +1,5 @@
+using Logging.SmartStandards;
+using Logging.SmartStandards.CopyForAuthTokenHandling;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -345,6 +347,58 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     /// </summary>
     public TokenIssuingResult ValidateClientAndCreateToken(string clientId, string clientSecret, string[] selectedScopes) {
       return TokenIssuingResult.FromError("unsupported_grant_type", "The client credentials flow is not supported.");
+    }
+
+    #endregion
+
+    #region " Discovery (RFC 8414) + Client Registration (RFC 7591) "
+
+    /// <summary>
+    /// Authorization code flow with mandatory PKCE S256, refresh tokens, public clients only
+    /// and dynamic client registration.
+    /// </summary>
+    public AuthorizationServerCapabilities GetAuthorizationServerCapabilities() {
+      AuthorizationServerCapabilities capabilities = new AuthorizationServerCapabilities();
+      capabilities.ResponseTypesSupported = new string[] { "code" };
+      capabilities.GrantTypesSupported = new string[] { "authorization_code", "refresh_token" };
+      capabilities.CodeChallengeMethodsSupported = new string[] { "S256" };
+      capabilities.TokenEndpointAuthMethodsSupported = new string[] { "none" };
+      capabilities.ScopesSupported = AccessTokenManager.ApplyApiPermissionPrefix(_Options.ScopesSupported);
+      capabilities.SupportsDynamicClientRegistration = true;
+      return capabilities;
+    }
+
+    /// <summary>
+    /// Registers a public client (PKCE only) at the client registry.
+    /// </summary>
+    public bool TryRegisterClient(
+      string clientName, string[] redirectUris, string tokenEndpointAuthMethod,
+      out string clientId, out string error, out string errorDescription
+    ) {
+      clientId = null;
+      if (!string.IsNullOrWhiteSpace(tokenEndpointAuthMethod) && !string.Equals(tokenEndpointAuthMethod, "none", StringComparison.Ordinal)) {
+        error = "invalid_client_metadata";
+        errorDescription = "Only public clients ('token_endpoint_auth_method' = 'none') are supported.";
+        return false;
+      }
+      try {
+        clientId = _ClientRegistry.RegisterClient(clientName, redirectUris);
+      }
+      catch (ArgumentException ex) {
+        DevLogger.LogError(ex);
+        error = "invalid_redirect_uri";
+        errorDescription = ex.Message;
+        return false;
+      }
+      catch (InvalidOperationException ex) {
+        DevLogger.LogError(ex);
+        error = "invalid_client_metadata";
+        errorDescription = ex.Message;
+        return false;
+      }
+      error = null;
+      errorDescription = null;
+      return true;
     }
 
     #endregion

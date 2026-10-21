@@ -56,11 +56,8 @@ namespace Security.AccessTokenHandling {
         new CheapOAuthAuthPageBuilder(new DefaultAuthPageBuilder(options.LoginPageTitle, null, null), clientRegistry)
       );
 
+      //OAuth2Controller (incl. RFC 7591 registration) + OAuthDiscoverController (RFC 8414) - both delegate to 'IOAuthService'
       services.AddOAuthServerController();
-      IMvcBuilder builder = services.AddMvc();
-      builder.ConfigureApplicationPartManager(
-        (apm) => apm.FeatureProviders.Add(new CheapOAuthControllerProvider())
-      );
 
       if (options.RegisterProtectedResourceMetadata && WellKnownOAuthProtectedResourceRegistry.GetOptions() == null) {
         services.AddWellKnownOAuthProtectedResourceEndpoint((o) => {
@@ -99,22 +96,6 @@ namespace Security.AccessTokenHandling {
         config.ClientId = CheapOAuthOptions.SwaggerClientId;
       }
       return config;
-    }
-
-  }
-
-  public sealed class CheapOAuthControllerProvider : IApplicationFeatureProvider<ControllerFeature> {
-
-    internal CheapOAuthControllerProvider() {
-    }
-
-    void IApplicationFeatureProvider<ControllerFeature>.PopulateFeature(
-      IEnumerable<ApplicationPart> parts, ControllerFeature feature
-    ) {
-      Type controllerType = typeof(CheapOAuthController);
-      if (!feature.Controllers.Any((controller) => controller.AsType() == controllerType)) {
-        feature.Controllers.Add(controllerType.GetTypeInfo());
-      }
     }
 
   }
