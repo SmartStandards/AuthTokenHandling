@@ -84,7 +84,7 @@ public TokenIssuingResult RetrieveTokenByCode(
 }
 ```
 
-The controller verifies the returned challenge against the `code_verifier` afterwards. A complete reference implementation is `DemoOAuthService` in `dotnet/test/AuthTokenHandling.DemoWebService`.
+The controller verifies the returned challenge against the `code_verifier` afterwards. A complete reference implementation is `CheapOAuthService` in `dotnet/src/AuthTokenHandling.MvcSupport/OAuthServer/CheapOAuth`; the directly runnable demo host using it is `dotnet/test/AuthTokenHandling.DemoWebService`.
 
 ## Advanced Scenarios
 

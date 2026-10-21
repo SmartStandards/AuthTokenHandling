@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\ControllerRegistrar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EvaluateBearerTokenAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EndpointAuthResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceRegistry.cs" />
@@ -22,7 +23,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Introspect_RFC7662.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Pkce.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Resource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\IAuthPageBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Entry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthStatePersistence.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthGrantStore.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthClientRegistry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\CheapOAuth\CheapOAuthSetupExtensions.cs" />
   </ItemGroup>
 </Project>

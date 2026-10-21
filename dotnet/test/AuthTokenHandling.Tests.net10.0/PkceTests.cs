@@ -235,6 +235,13 @@ namespace Security {
     /// Creates the form content of an 'authorization_code' token request.
     /// </summary>
     private static IFormCollection CreateCodeRequest(string code, string codeVerifier) {
+      return CreateCodeRequest(code, codeVerifier, null);
+    }
+
+    /// <summary>
+    /// Creates the form content of an 'authorization_code' token request including an optional resource.
+    /// </summary>
+    private static IFormCollection CreateCodeRequest(string code, string codeVerifier, string resource) {
       Dictionary<string, StringValues> args = new Dictionary<string, StringValues>();
       args["grant_type"] = "authorization_code";
       args["client_id"] = FakePkceOAuthService.ClientId;
@@ -243,7 +250,88 @@ namespace Security {
       if (codeVerifier != null) {
         args["code_verifier"] = codeVerifier;
       }
+      if (resource != null) {
+        args["resource"] = resource;
+      }
       return new FormCollection(args);
+    }
+
+    #endregion
+
+    #region " Resource-Indicator (RFC 8707) "
+
+    private const string _Resource = "https://api.example.com/mcp";
+
+    /// <summary>
+    /// Verifies the validation of the 'resource' param.
+    /// </summary>
+    [TestMethod]
+    public void TryValidateResourceParam_VariousInputs_EvaluatedCorrectly() {
+      string error;
+
+      Assert.IsTrue(OAuth2Controller.TryValidateResourceParam(null, out error), "resource must be optional");
+      Assert.IsNull(error);
+
+      Assert.IsTrue(OAuth2Controller.TryValidateResourceParam(_Resource, out error));
+      Assert.IsNull(error);
+
+      Assert.IsFalse(OAuth2Controller.TryValidateResourceParam("/relative/path", out error), "must be absolute");
+      Assert.IsNotNull(error);
+
+      Assert.IsFalse(OAuth2Controller.TryValidateResourceParam(_Resource + "#frag", out error), "no fragment allowed");
+      Assert.IsNotNull(error);
+    }
+
+    /// <summary>
+    /// Verifies that the resource is injected into html forms and kept on internal redirects.
+    /// </summary>
+    [TestMethod]
+    public void ResourceRoundtripHelpers_WithAndWithoutResource_EvaluatedCorrectly() {
+      string html = "<body><form method=\"post\"></form></body>";
+      Assert.IsTrue(OAuth2Controller.TryInjectResourceFormField(ref html, _Resource));
+      Assert.IsTrue(html.Contains("name=\"resource\" value=\"" + _Resource + "\"></form>"));
+
+      string noForm = "<body>custom page</body>";
+      Assert.IsFalse(OAuth2Controller.TryInjectResourceFormField(ref noForm, _Resource), "resource must not get lost");
+
+      string url = "./authorize?client_id=abc";
+      Assert.AreEqual(url, OAuth2Controller.AppendRoundtripQueryParams(url, null, null));
+      Assert.AreEqual(
+        url + "&code_challenge=" + _RfcChallenge + "&code_challenge_method=S256&resource=https%3a%2f%2fapi.example.com%2fmcp",
+        OAuth2Controller.AppendRoundtripQueryParams(url, _RfcChallenge, _Resource)
+      );
+    }
+
+    /// <summary>
+    /// The resource bound to the code is returned by the service and a matching token request succeeds.
+    /// </summary>
+    [TestMethod]
+    public void RetrieveToken_MatchingOrOmittedResource_ReturnsToken() {
+      FakePkceOAuthService service = new FakePkceOAuthService();
+      OAuth2Controller controller = CreateController(service);
+
+      string code1 = service.StageCode(_RfcChallenge, _Resource);
+      TokenIssuingResult result1 = controller.RetrieveToken(CreateCodeRequest(code1, _RfcVerifier, _Resource));
+      Assert.IsTrue(string.IsNullOrWhiteSpace(result1.error), result1.error_description);
+
+      string code2 = service.StageCode(_RfcChallenge, _Resource);
+      TokenIssuingResult result2 = controller.RetrieveToken(CreateCodeRequest(code2, _RfcVerifier, null));
+      Assert.IsTrue(string.IsNullOrWhiteSpace(result2.error), result2.error_description);
+    }
+
+    /// <summary>
+    /// A token request naming another resource than the one bound to the code is rejected.
+    /// </summary>
+    [TestMethod]
+    public void RetrieveToken_DifferentResource_ReturnsInvalidTarget() {
+      FakePkceOAuthService service = new FakePkceOAuthService();
+      OAuth2Controller controller = CreateController(service);
+      string code = service.StageCode(_RfcChallenge, _Resource);
+
+      TokenIssuingResult result = controller.RetrieveToken(CreateCodeRequest(code, _RfcVerifier, "https://other.example.com"));
+
+      Assert.AreEqual("invalid_target", result.error);
+      Assert.IsNull(result.access_token);
     }
 
     #endregion
@@ -259,38 +347,50 @@ namespace Security {
       public const string IssuedAccessToken = "the-access-token";
 
       private readonly Dictionary<string, string> _CodeChallengesPerCode = new Dictionary<string, string>();
+      private readonly Dictionary<string, string> _ResourcesPerCode = new Dictionary<string, string>();
 
       /// <summary>
       /// Simulates the creation of a code (like 'TryValidateSessionIdAndCreateRetrievalCode').
       /// </summary>
       public string StageCode(string codeChallenge) {
+        return this.StageCode(codeChallenge, null);
+      }
+
+      /// <summary>
+      /// Simulates the creation of a code bound to a code challenge and a resource indicator.
+      /// </summary>
+      public string StageCode(string codeChallenge, string resource) {
         bool success = this.TryValidateSessionIdAndCreateRetrievalCode(
-          ClientId, "session", new string[] { }, codeChallenge, out string code, out string message
+          ClientId, "session", new string[] { }, codeChallenge, resource, out string code, out string message
         );
         Assert.IsTrue(success, message);
         return code;
       }
 
       public bool TryValidateSessionIdAndCreateRetrievalCode(
-        string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge,
+        string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge, string resource,
         out string code, out string message
       ) {
         code = Guid.NewGuid().ToString("N");
         _CodeChallengesPerCode[code] = codeChallenge;
+        _ResourcesPerCode[code] = resource;
         message = null;
         return true;
       }
 
-      public TokenIssuingResult RetrieveTokenByCode(string clientId, string clientSecret, string code, out string codeChallenge) {
+      public TokenIssuingResult RetrieveTokenByCode(string clientId, string clientSecret, string code, out string codeChallenge, out string resource) {
         codeChallenge = null;
+        resource = null;
         if (clientId != ClientId || clientSecret != ClientSecret) {
           return TokenIssuingResult.FromError("invalid_client", "Unknown client");
         }
         if (code == null || !_CodeChallengesPerCode.TryGetValue(code, out codeChallenge)) {
           return TokenIssuingResult.FromError("invalid_grant", "Invalid Code");
         }
+        _ResourcesPerCode.TryGetValue(code, out resource);
         //make sure the code can only be used once
         _CodeChallengesPerCode.Remove(code);
+        _ResourcesPerCode.Remove(code);
         TokenIssuingResult result = new TokenIssuingResult();
         result.access_token = IssuedAccessToken;
         result.token_type = "bearer";

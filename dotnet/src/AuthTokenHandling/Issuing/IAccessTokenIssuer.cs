@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 [assembly: InternalsVisibleTo("SmartStandards.AuthTokenHandling.WinFormsClient")]
+[assembly: InternalsVisibleTo("AuthTokenHandling.Tests")]
 
 namespace Security.AccessTokenHandling {
 

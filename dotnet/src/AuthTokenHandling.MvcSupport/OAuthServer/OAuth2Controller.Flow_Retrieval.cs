@@ -51,12 +51,24 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             codeVerifier = codeVerifierValue.ToString();
           }
 
-          TokenIssuingResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code, out string boundCodeChallenge);
+          TokenIssuingResult result = _AuthService.RetrieveTokenByCode(clientId, clientSecret, code, out string boundCodeChallenge, out string boundResource);
 
           //PKCE: the code has already been consumed here, so a failed verification also invalidates it
           if (string.IsNullOrWhiteSpace(result.error)) {
             if (!TryVerifyPkce(boundCodeChallenge, codeVerifier, out string pkceError)) {
               result = TokenIssuingResult.FromError("invalid_grant", pkceError);
+            }
+          }
+
+          //RFC 8707: if the token request names a resource, it must match the one bound to the code
+          //(only checked if a resource is bound at all - backward compatibility for clients without/with dropped resource)
+          if (string.IsNullOrWhiteSpace(result.error) && !string.IsNullOrEmpty(boundResource)) {
+            string requestedResource = null;
+            if (value.TryGetValue("resource", out StringValues requestedResourceValue)) {
+              requestedResource = requestedResourceValue.ToString();
+            }
+            if (!string.IsNullOrEmpty(requestedResource) && !string.Equals(requestedResource, boundResource, StringComparison.Ordinal)) {
+              result = TokenIssuingResult.FromError("invalid_target", "The 'resource' does not match the one of the authorization request.");
             }
           }
 

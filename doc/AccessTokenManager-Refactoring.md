@@ -61,6 +61,10 @@ AccessTokenManager.MapAnonymous(string logicalGroupOrSchemaName);
 
 // requires a scope for ONE logical name, or for all calls if null; no params array (call it once per name)
 AccessTokenManager.RequireScope(string scope, string logicalGroupOrSchemaName = null);
+
+// escape hatch (decided): prependConfiguredScopePrefix = false stores the scope literally (e.g. 'openid'),
+// without the configured API permission prefix
+AccessTokenManager.RequireScope(string scope, string logicalGroupOrSchemaName, bool prependConfiguredScopePrefix);
 ```
 
 `MapTokenSourceId` keeps its `params` array (convenience needed frequently, not security-critical).
@@ -150,6 +154,10 @@ everywhere, as soon as it is configured:
    - Information functions: access to the `AuthTokenConfig` per token source id.
    - Static method usable as `IntrospectorLookupMethod` in `AccessTokenValidator.ConfigureTokenValidation`.
    - Static method for the Swagger bridge (see 6): `apiGroupName -> KeyValuePair<string, AuthTokenConfig>[]`.
+     The template takes the scopes literally from `Claims["scope"]` (blank-separated). To keep the prefix symmetry
+     (3.2), the bridge returns per token source a **copy** of the registered `AuthTokenConfig` (never the registered
+     instance itself) whose `Claims["scope"]` contains the required scopes of the group (`RequireScope` for all calls
+     and for the group's logical names), already prefixed with the configured API permission prefix.
    - UJMW client wire-up, keeping the established shape:
      `UjmwClientConfiguration.DefaultAuthHeaderGetter = AccessTokenManager.GetAuthHeaderByContractType;`
      For a contract, the token source id is derived first (thin step, using the validator's
@@ -249,15 +257,32 @@ everywhere, as soon as it is configured:
      lookup, so that different requirements per logical name apply correctly (verify against the current code path
      before implementing).
    - Resolution chain UC-2 (3.6), including the new input "API group name" and the empty-string semantics.
-   - Accept the new UJMW hook form (API group name in, response headers out). The existing
-     `ExtendedAuthRequiredResponse` delivers the headers (e.g. `WWW-Authenticate`).
+   - Accept the new UJMW hook form (API group name in, response headers out). The headers come from the challenge
+     header hook (see 6).
 5. **New `TryValidateHttpAuthHeader` overload** with exactly the signature of UJMW's `AuthHeaderValidationMethod`
-   (see 5.1). It calls the existing logic and appends `ExtendedAuthRequiredResponse.Headers` as
-   `KeyValuePair<string, string>` to `responseHeaders`; headers preset by the caller are kept. On 403 no challenge
-   headers are added (unchanged behavior).
-6. **Auto-wiring of the challenge (EXT-01 of `oauth-discovery-implementation-handoff.md`, so far missing):**
-   `AddWellKnownOAuthProtectedResourceEndpoint` automatically configures the `ExtendedAuthRequiredResponse` builder,
-   so that a 401 carries `WWW-Authenticate: Bearer resource_metadata="..."`.
+   (see 5.1). It calls the existing logic and appends the headers of the challenge header hook (see 6) to
+   `responseHeaders`; headers preset by the caller are kept. On 403 no challenge headers are added (unchanged
+   behavior).
+6. **Challenge header hook, BCL types only (decided; replaces `ExtendedAuthRequiredResponse`):**
+   - `ExtendedAuthRequiredResponse`, `ExtendedAuthRequiredResponseContext`, `HttpResponseHeader`,
+     `ExtendedAuthRequiredResponseBuilder`, `ConfigureExtendedAuthRequiredResponse` /
+     `ClearExtendedAuthRequiredResponse` and every overload with `out ExtendedAuthRequiredResponse` are REMOVED.
+     Reason: status code and reason phrase are already transported via `ref int` / `ref string`, headers via
+     `ref KeyValuePair<string, string>[]`; the builder never overrides status or reason.
+   - What remains is the seam through which MvcSupport injects the challenge into the core (the core does not know
+     the RFC 9728 options):
+
+     ```csharp
+     // core; set automatically by AddWellKnownOAuthProtectedResourceEndpoint (EXT-01 of
+     // oauth-discovery-implementation-handoff.md); a hook set explicitly by the host is never overwritten
+     AccessTokenValidator.ConfigureChallengeHeaders(
+       Func<int /*statusCode*/, string[] /*requiredScopes, already prefixed*/, KeyValuePair<string, string>[]> headerBuilder
+     );
+     ```
+
+     It is only called for 401. The MvcSupport builder returns
+     `WWW-Authenticate: Bearer resource_metadata="...", scope="..."` (`scope` only if not empty).
+   - `EvaluateBearerTokenAttribute` switches to the `KeyValuePair` variant.
 7. **Placeholder convention `{RequestBaseUrl}` (binding for both sides):**
    - The core cannot know the public base URL (static builder, no request, also built for net48). It therefore writes
      the literal placeholder `{RequestBaseUrl}` into header values, e.g.
@@ -279,14 +304,24 @@ everywhere, as soon as it is configured:
      exception is thrown instead of using a broken URL. The documentation duty applies to these fields as well.
    - Documentation duty: the convention MUST be stated in the XML comments of every visible wire-up member involved
      (the `responseHeaders` parameter of the new delegate in all UJMW hosts, `SetAuthHeaderEvaluator`, the new
-     `TryValidateHttpAuthHeader` overload, `ExtendedAuthRequiredResponse.Headers`, `ResolveRequestBaseUrlPlaceholder`,
+     `TryValidateHttpAuthHeader` overload, `ConfigureChallengeHeaders`, `ResolveRequestBaseUrlPlaceholder`,
      `PublicBaseUrl`), worded as an official convention both sides must comply with.
 
 ### 4.2 `AuthTokenHandling.MvcSupport`
 
-1. `EvaluateBearerTokenAttribute`: resolve the token source like UC-4 (UC-3).
+1. `EvaluateBearerTokenAttribute`: resolve the token source like UC-4 (UC-3). Implemented: the logical names
+   (scheme names from `[Authorize]` / policy / default scheme) are determined via the same resolver; a configured
+   `IAuthRequirementsProvider` is still asked first and alone decides (no behavior change for existing hosts).
 2. Endpoint-metadata resolver for UC-4 (reads `AuthTokenSourceAttribute`, API group, `[Authorize]` with policy and
    scheme via `IAuthorizationPolicyProvider` / `IAuthenticationSchemeProvider`). Used by the MCP facade.
+   Implemented as `EndpointAuthResolver.ResolveEndpointAuthAsync(ActionDescriptor, IServiceProvider)` returning
+   `EndpointAuthInfo` (`IsAnonymous`, `LogicalNames[]`, `TokenSourceIds[]`, `RequiredScopes[]` already prefixed).
+
+**Challenge (decided, opt-in):** the `WWW-Authenticate` challenge (incl. `resource_metadata` and the `scope`
+parameter) is only emitted when the challenge header hook is configured (automatically by the discovery
+registration, see 4.1.6). Without this opt-in, 401/403 responses stay exactly as before. When enabled, a 401 carries
+`scope="..."` with the effective, already prefixed required scopes (if not empty); a 403 never carries a challenge.
+The effective scopes are passed to the hook as its `requiredScopes` argument.
 
 ### 4.3 `AuthTokenHandling.MvcSupport`: ASP.NET Core authentication handler (future best practice)
 
@@ -519,13 +554,15 @@ The full OAuth server ("the big solution") lives in the user-management module (
 | Phase | Repository | Content | Depends on |
 | --- | --- | --- | --- |
 | 1 | UJMW | new delegate, `SetAuthHeaderEvaluator`, API group name, headers, placeholder (5) | - |
-| 1 | AuthTokenHandling | manager, validator, EXT-01, placeholder, resolver, Cheap OAuth Server, `resource` (4.1, 4.2, 4.4) | - (parallel to UJMW) |
+| 1 | AuthTokenHandling | manager, validator, EXT-01 (challenge header hook), placeholder, resolver, Cheap OAuth Server, `resource` (4.1, 4.2, 4.4) | - (parallel to UJMW) |
 | 2 | AspNetCoreTemplate | Swagger delegate (6) | phase 1 (both) |
 | 2 | UniversalBFF | `IOAuthService` adaptation (8) | AuthTokenHandling 6.0 |
 | 3 | AiSupport | remove `MiniOAuth`, demo on the Cheap OAuth Server (7) | phases 1 and 2 |
 | 4 | AuthTokenHandling | ASP.NET Core authentication handler (4.3) | later |
 
-Versioning: version bumps are done exclusively and manually by the maintainer. Agents never edit `versioninfo.json`
+Packaging: `.nuspec` files are adjusted later by the maintainer (KVU) in the pipeline; agents do not edit them.
+
+Versioning: version bumps are done exclusively and manually by the maintainer.
 or `changelog.md`; at the end of each phase they report which bump the repository needs (AuthTokenHandling: major,
 already `6.0.0-develop`; UJMW and AspNetCoreTemplate: minor, additive only).
 
@@ -541,7 +578,8 @@ Always: all existing tests stay green; all target frameworks build (net48 / net8
   cached); register push under the matching source; `SetCurrentToken` (introspector only, no auditing; inactive token
   throws; empty clears) and the getters for subject and scopes; `MapIssuer` routes before the logical-name chain and
   unmapped issuers fall through; `DisableTokenRelay` suppresses the register push and outgoing relay; persistence only on opt-in and isolated per scope; challenge on
-  401, none on 403; the new `TryValidateHttpAuthHeader` overload is assignable to a delegate with identical signature
+  401 (via `ConfigureChallengeHeaders`, incl. prefixed `scope`), none on 403, no host-set hook overwritten, no type
+  `ExtendedAuthRequiredResponse*` / `HttpResponseHeader` left in the code base; the new `TryValidateHttpAuthHeader` overload is assignable to a delegate with identical signature
   (compile test with a local copy of the delegate); Cheap OAuth Server: PKCE mandatory, refresh rotation with reuse
   detection, DCR limits, Swagger client, `resource` -> `aud`, persistence survives a restart.
 - **AspNetCoreTemplate:** one security scheme per token source per group; without the delegate the output is
@@ -565,7 +603,10 @@ Always: all existing tests stay green; all target frameworks build (net48 / net8
 | UJMW `[AllowAnonymous]` option | Non-breaking only if the default stays off. |
 | Template: new Swagger overload | Additive; the existing method stays. Fallback keeps the config-key behavior. |
 | ASP.NET Core authentication handler | Additive, opt-in. |
-| Cheap OAuth Server | Additive, opt-in. |
+| Cheap OAuth Server | Additive, opt-in. Grants and advertises scopes with the configured prefix (symmetry rule 3.2). |
+| `RequireScope(..., bool prependConfiguredScopePrefix)` | Additive overload; the existing signature keeps prefixing. |
+| Extended auth-required response (challenge with `scope`) | Opt-in; without registration the responses are unchanged. |
+| Removal of `ExtendedAuthRequiredResponse` (incl. context, `HttpResponseHeader`, builder delegate, `ConfigureExtendedAuthRequiredResponse` / `ClearExtendedAuthRequiredResponse`, `out` overloads) | Breaking: introduced with commit `6d4a86a`, which is tagged `5.1.2` (possibly published). Accepted within the major version 6.0; replaced by `ConfigureChallengeHeaders` with BCL types and the `KeyValuePair` overloads (4.1.6). |
 | Removal of `MiniOAuth` in AiSupport | No break: never committed or released. |
 | `IOAuthService` (PKCE + `resource`) | Breaking. PKCE was made before this plan (commit `db5c0aa`); `resource` is added in the same unreleased major version 6.0. All implementations, including UniversalBFF's `BffUserService`, adapt once (8.1). |
 
@@ -580,10 +621,11 @@ off by default). The only breaking change in the landscape is the earlier PKCE c
 3. Default of the UJMW `[AllowAnonymous]` option (5.3).
 4. No setup overloads with explicit issuer or introspector instances (decided): token sources are always created from
    `AuthTokenConfig` through the factories; whatever is missing must be added to the configuration model and the
-   factories later. Open consequence for the Cheap OAuth Server (4.4): its in-process introspection must then also be
-   expressible via `AuthTokenConfig` / `IntrospectorFactory` (e.g. `OAUTH_INTROSPECTION_ENDPOINT` against its own
-   `/oauth2/introspect`, or a factory-side shortcut for an in-process `IOAuthService`). To be decided before phase 1
-   implements 4.4.
+   factories later. Consequence for the Cheap OAuth Server (4.4), decided: its config uses
+   `OAUTH_INTROSPECTION_ENDPOINT` against its own `{RequestBaseUrl}/oauth2/introspect`, and the server registers
+   itself via `IntrospectorFactory.RegisterInProcessIntrospector(validationEndpointUrl, introspector)`, so the factory
+   resolves exactly this endpoint url to the in-process service instead of an HTTP call. The token source has no
+   issuer (interactive code flow only, it is a pure validation source).
 5. URLs in a self-describing `AuthTokenConfig`: the Cheap OAuth Server knows its public URL only per request (or via
    an optional `PublicBaseUrl`). Relative URLs in `AuthTokenConfig` would need to be resolved per request by the
    consumers (Swagger, MCP discovery).

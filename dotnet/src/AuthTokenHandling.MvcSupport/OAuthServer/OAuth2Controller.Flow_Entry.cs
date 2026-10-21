@@ -57,7 +57,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "view_mode")] int viewMode,
       [FromQuery(Name = "code")] string codeFromDelegate, //NUR WENN EIN DELEGATE DAZWISCHEN HING
       [FromQuery(Name = "code_challenge")] string codeChallenge,
-      [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod
+      [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod,
+      [FromQuery(Name = "resource")] string resource
     ) {
 
       if (!this.TryGetPasstroughUserIdentity(out string winUserName)) { 
@@ -67,7 +68,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       return GetLogonPage(
         responseType, clientId, redirectUri, state, rawScopePreference, "pass-trough",
         errorMessagePassedViaQueryString, sessionId, viewMode, codeFromDelegate,
-        codeChallenge, codeChallengeMethod
+        codeChallenge, codeChallengeMethod, resource
       );
 
     }
@@ -87,7 +88,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "view_mode")] int viewMode,
       [FromQuery(Name = "code")] string codeFromDelegate, //NUR WENN EIN DELEGATE DAZWISCHEN HING
       [FromQuery(Name = "code_challenge")] string codeChallenge,
-      [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod
+      [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod,
+      [FromQuery(Name = "resource")] string resource
     ) {
 
       Uri thisUri = new Uri(HttpContext.Request.GetDisplayUrl());
@@ -116,6 +118,13 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           return this.Redirect(
             redirectUri.AppendQueryParam("error", "invalid_request").AppendQueryParam("error_description", pkceError, true).AppendQueryParam("state", state, true)
           );
+        }
+
+        //RESOURCE INDICATOR (RFC 8707, optional) - tolerant (backward compatibility): clients which sent an
+        //invalid value before have never been rejected, so the value is logged and dropped instead
+        if (!TryValidateResourceParam(resource, out string resourceError)) {
+          SecLogger.LogError(2083109404818208612L, 73032, "Invalid resource param (for Client '{clientId}') will be ignored: {reason}", clientId, resourceError);
+          resource = null;
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,6 +160,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
                 state = deserializedStateBag.OriginalState;
                 rawScopePreference = deserializedStateBag.OriginalScope;
                 codeChallenge = deserializedStateBag.OriginalCodeChallenge;
+                resource = deserializedStateBag.OriginalResource;
                 viewMode = deserializedStateBag.ViewMode;
         
                 if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
@@ -186,6 +196,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
               OriginalResponseType = responseType,
               OriginalClientId = clientId,
               OriginalCodeChallenge = codeChallenge,
+              OriginalResource = resource,
               ViewMode = viewMode
             };
 
@@ -259,7 +270,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
                 }
 
                 bool codeCreationSuccess = _AuthService.TryValidateSessionIdAndCreateRetrievalCode(
-                  clientId, sessionId, selectedScopes, codeChallenge, out string code, out string step2Msg
+                  clientId, sessionId, selectedScopes, codeChallenge, resource, out string code, out string step2Msg
                 );
 
                 if (!codeCreationSuccess) {
@@ -368,6 +379,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         //the code challenge needs to be passed trough the form-POST
         if (!TryInjectPkceFormField(ref authFormTemplate, codeChallenge)) {
           string errorPage = _AuthPageBuilder.GetErrorPage("PKCE is not supported by the configured auth page (no form found)!", viewOpt);
+          return this.Content(errorPage, "text/html");
+        }
+
+        //the resource indicator needs to be passed trough the form-POST as well
+        if (!TryInjectResourceFormField(ref authFormTemplate, resource)) {
+          string errorPage = _AuthPageBuilder.GetErrorPage("Resource indicators are not supported by the configured auth page (no form found)!", viewOpt);
           return this.Content(errorPage, "text/html");
         }
 

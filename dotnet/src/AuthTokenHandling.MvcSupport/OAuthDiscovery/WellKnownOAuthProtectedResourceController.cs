@@ -39,7 +39,11 @@ namespace Security.AccessTokenHandling {
       document["authorization_servers"] = JArray.FromObject(options.ResolveAuthorizationServers(this.Request));
 
       if (options.ScopesSupported != null && options.ScopesSupported.Length > 0) {
-        document["scopes_supported"] = JArray.FromObject(options.ScopesSupported);
+        string[] scopesSupported = options.ScopesSupported;
+        if (options.ApplyApiPermissionPrefixToScopesSupported) {
+          scopesSupported = AccessTokenManager.ApplyApiPermissionPrefix(scopesSupported);
+        }
+        document["scopes_supported"] = JArray.FromObject(scopesSupported);
       }
 
       string json = document.ToString(Formatting.None);

@@ -55,6 +55,14 @@ namespace Security.AccessTokenHandling {
       // and by the 'EvaluateBearerTokenAttribute' when emitting the 401 challenge).
       WellKnownOAuthProtectedResourceRegistry.Register(options);
 
+      // OPT-IN wiring of the 401 challenge for all adapters (UJMW hook, WCF inspector, EvaluateBearerTokenAttribute).
+      // A builder configured explicitly by the host is never overwritten.
+      if (options.EmitChallengeForAllAdapters && !AccessTokenValidator.IsChallengeHeaderBuilderConfigured) {
+        AccessTokenValidator.ConfigureChallengeHeaders(
+          WellKnownOAuthProtectedResourceRegistry.BuildChallengeHeaders
+        );
+      }
+
       // Allows addressing '.well-known/oauth-protected-resource' on any path level (e.g. '/foo/.well-known/...').
       services.AddTransient<IStartupFilter, WellKnownOAuthProtectedResourcePathStartupFilter>();
 

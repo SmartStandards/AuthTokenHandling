@@ -1,4 +1,4 @@
-#if !NET46
+﻿#if !NET46
 
 using Microsoft.AspNetCore.Http;
 using System;
@@ -14,12 +14,44 @@ namespace Security.AccessTokenHandling {
     private string[] _AuthorizationServers;
     private string[] _ScopesSupported;
     private string _MetadataUrl;
+    private bool _EmitChallengeForAllAdapters;
+    private bool _ApplyApiPermissionPrefixToScopesSupported;
 
     public WellKnownOAuthProtectedResourceOptions() {
       _Resource = null;
       _AuthorizationServers = new string[] { };
       _ScopesSupported = new string[] { };
       _MetadataUrl = null;
+      _EmitChallengeForAllAdapters = false;
+    }
+
+    /// <summary>
+    /// OPT-IN (default false): if true, the configured API permission prefix (e.g. 'API:') is applied to the
+    /// published 'scopes_supported' (unless already present) at the time of the request (symmetry rule).
+    /// Default false keeps the released behavior (published literally).
+    /// </summary>
+    public bool ApplyApiPermissionPrefixToScopesSupported {
+      get {
+        return _ApplyApiPermissionPrefixToScopesSupported;
+      }
+      set {
+        _ApplyApiPermissionPrefixToScopesSupported = value;
+      }
+    }
+
+    /// <summary>
+    /// OPT-IN (default false): if true, the 401 challenge
+    /// wired up for all other adapters (UJMW hook, WCF inspector) by configuring the
+    /// 'AccessTokenValidator.ConfigureChallengeHeaders' builder (a builder configured explicitly by the host
+    /// is never overwritten). Default false keeps the released behavior: only 'EvaluateBearerTokenAttribute' emits it.
+    /// </summary>
+    public bool EmitChallengeForAllAdapters {
+      get {
+        return _EmitChallengeForAllAdapters;
+      }
+      set {
+        _EmitChallengeForAllAdapters = value;
+      }
     }
 
     /// <summary>
@@ -155,6 +187,46 @@ namespace Security.AccessTokenHandling {
         return QualifyUrl(_MetadataUrl, request);
       }
       return this.ResolveResource(request) + "/.well-known/oauth-protected-resource";
+    }
+
+    /// <summary>
+    /// Builds the metadata URL WITHOUT a request: relative parts are prefixed with the configured
+    /// 'AccessTokenManager.PublicBaseUrl' or (if not configured) with the literal placeholder '{RequestBaseUrl}',
+    /// which MUST be replaced by every HTTP adapter with the base URL of its own request (official convention).
+    /// </summary>
+    internal string BuildMetadataUrlTemplate() {
+      string baseUrl = AccessTokenManager.PublicBaseUrl;
+      if (string.IsNullOrWhiteSpace(baseUrl)) {
+        baseUrl = AccessTokenManager.RequestBaseUrlPlaceholder;
+      }
+      else {
+        baseUrl = TrimTrailingSlash(baseUrl);
+      }
+      if (!string.IsNullOrWhiteSpace(_MetadataUrl)) {
+        return QualifyUrlTemplate(_MetadataUrl, baseUrl);
+      }
+      string resource;
+      if (string.IsNullOrWhiteSpace(_Resource)) {
+        resource = baseUrl;
+      }
+      else {
+        resource = TrimTrailingSlash(QualifyUrlTemplate(_Resource, baseUrl));
+      }
+      return resource + "/.well-known/oauth-protected-resource";
+    }
+
+    private static string QualifyUrlTemplate(string url, string baseUrl) {
+      if (IsAbsoluteHttpUrl(url) || url.StartsWith(AccessTokenManager.RequestBaseUrlPlaceholder, StringComparison.Ordinal)) {
+        return url;
+      }
+      string relativePart = url.Trim();
+      if (relativePart == "/") {
+        return baseUrl;
+      }
+      if (!relativePart.StartsWith("/")) {
+        relativePart = "/" + relativePart;
+      }
+      return baseUrl + relativePart;
     }
 
     /// <summary>

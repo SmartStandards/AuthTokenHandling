@@ -4,6 +4,7 @@ using Logging.SmartStandards;
 using Logging.SmartStandards.CopyForAuthTokenHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 using System;
@@ -21,6 +22,18 @@ namespace Security.AccessTokenHandling {
 
     public EvaluateBearerTokenAttribute(params string[] requiredApiPermissions) {
       _RequiredApiPermissions = requiredApiPermissions;
+    }
+
+    /// <summary>
+    /// The explicitly required API permissions (without prefix, never null).
+    /// </summary>
+    public string[] RequiredApiPermissions {
+      get {
+        if (_RequiredApiPermissions == null) {
+          return new string[] { };
+        }
+        return _RequiredApiPermissions;
+      }
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
@@ -42,26 +55,34 @@ namespace Security.AccessTokenHandling {
         string httpReasonPhrase = string.Empty;
         string apiCaller = context.HttpContext.Connection.RemoteIpAddress.ToString();
         MethodInfo calledContractMethod = GetMethodInfoFromContext(context, out Type contractType);
-        ExtendedAuthRequiredResponse extendedAuthRequiredResponse;
+        string apiGroupName = GetApiGroupNameFromContext(context);
+        KeyValuePair<string, string>[] responseHeaders = new KeyValuePair<string, string>[] { };
 
-        if (AccessTokenValidator.TryValidateHttpAuthHeader(
-          rawToken, contractType, calledContractMethod, apiCaller,
+        //UC-3: the logical names are determined like UC-4 (scheme/policy names from [Authorize]),
+        //but only in manager mode - a configured IAuthRequirementsProvider still decides alone (legacy)
+        string[] additionalLogicalNames = null;
+        if (!AccessTokenValidator.IsRequirementsProviderConfigured) {
+          additionalLogicalNames = await EndpointAuthResolver.ResolveAuthenticationSchemeNamesAsync(
+            context.ActionDescriptor, context.HttpContext.RequestServices
+          );
+        }
+
+        bool accessGranted = AccessTokenValidator.TryValidateHttpAuthHeader(
+          rawToken, contractType, calledContractMethod, apiGroupName, apiCaller,
           ref httpReturnCode, ref httpReasonPhrase,
-          out extendedAuthRequiredResponse,
-          _RequiredApiPermissions
-        )) {
+          ref responseHeaders,
+          _RequiredApiPermissions,
+          additionalLogicalNames
+        );
+
+        if (accessGranted) {
 
           //continue with the api call...
           await next();
 
         }
         else {
-          ApplyExtendedAuthRequiredResponse(
-            context.HttpContext,
-            ref httpReturnCode,
-            ref httpReasonPhrase,
-            extendedAuthRequiredResponse
-          );
+          ApplyResponseHeaders(context.HttpContext, responseHeaders);
           ApplyProtectedResourceMetadataChallenge(context.HttpContext, httpReturnCode);
           context.Result = new ContentResult() {
             StatusCode = httpReturnCode,
@@ -98,36 +119,45 @@ namespace Security.AccessTokenHandling {
       }
     }
 
-    private static void ApplyExtendedAuthRequiredResponse(
-      HttpContext httpContext,
-      ref int httpReturnCode,
-      ref string httpReasonPhrase,
-      ExtendedAuthRequiredResponse extendedAuthRequiredResponse
-    ) {
-      if (extendedAuthRequiredResponse == null) {
+    /// <summary>
+    /// Writes the headers delivered by the validator (e.g. the challenge) to the response and resolves the
+    /// '{RequestBaseUrl}' placeholder (official convention).
+    /// </summary>
+    private static void ApplyResponseHeaders(HttpContext httpContext, KeyValuePair<string, string>[] responseHeaders) {
+      if (responseHeaders == null || responseHeaders.Length == 0) {
         return;
       }
 
-      if (extendedAuthRequiredResponse.StatusCode >= 100) {
-        httpReturnCode = extendedAuthRequiredResponse.StatusCode;
-      }
-      if (!string.IsNullOrWhiteSpace(extendedAuthRequiredResponse.ReasonPhrase)) {
-        httpReasonPhrase = extendedAuthRequiredResponse.ReasonPhrase;
-      }
+      string requestBaseUrl = (
+        httpContext.Request.Scheme + "://" + httpContext.Request.Host.ToUriComponent() + httpContext.Request.PathBase.ToUriComponent()
+      ).TrimEnd('/');
 
-      if (extendedAuthRequiredResponse.Headers == null) {
-        return;
-      }
-
-      foreach (HttpResponseHeader header in extendedAuthRequiredResponse.Headers) {
-        if (header == null) {
+      foreach (KeyValuePair<string, string> header in responseHeaders) {
+        if (string.IsNullOrWhiteSpace(header.Key)) {
           continue;
         }
-        if (string.IsNullOrWhiteSpace(header.Name)) {
-          continue;
-        }
-        httpContext.Response.Headers[header.Name] = header.Value;
+        //official convention: the placeholder '{RequestBaseUrl}' must be replaced by the adapter
+        httpContext.Response.Headers[header.Key] = AccessTokenManager.ResolveRequestBaseUrlPlaceholder(header.Value, requestBaseUrl);
       }
+    }
+
+    /// <summary>
+    /// Reads the API group name (logical name for the token source resolution) from
+    /// '[ApiExplorerSettings(GroupName = ...)]' of the action or the controller. Returns "" if not known.
+    /// </summary>
+    private static string GetApiGroupNameFromContext(ActionExecutingContext context) {
+      ControllerActionDescriptor descriptor = context.ActionDescriptor as ControllerActionDescriptor;
+      if (descriptor == null) {
+        return string.Empty;
+      }
+      ApiExplorerSettingsAttribute settings = descriptor.MethodInfo.GetCustomAttribute<ApiExplorerSettingsAttribute>(true);
+      if (settings == null || string.IsNullOrEmpty(settings.GroupName)) {
+        settings = descriptor.ControllerTypeInfo.GetCustomAttribute<ApiExplorerSettingsAttribute>(true);
+      }
+      if (settings == null || settings.GroupName == null) {
+        return string.Empty;
+      }
+      return settings.GroupName;
     }
 
     /// <summary>

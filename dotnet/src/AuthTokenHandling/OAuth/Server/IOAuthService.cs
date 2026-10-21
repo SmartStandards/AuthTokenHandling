@@ -68,11 +68,17 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     /// it just needs to be persisted together with the created code and to be returned
     /// unchanged by 'RetrieveTokenByCode'. The verification is done by the caller.
     /// </param>
+    /// <param name="resource">
+    /// Resource indicator (RFC 8707) of the authorize request, which has already been validated by the caller,
+    /// or null/empty if the client did not request a specific resource. It must be treated as an OPAQUE value:
+    /// it just needs to be persisted together with the created code and to be returned unchanged by
+    /// 'RetrieveTokenByCode'. Implementations should bind it to the issued grant (audience, claim 'aud').
+    /// </param>
     /// <param name="code"></param>
     /// <param name="message"></param>
     /// <returns></returns>
     bool TryValidateSessionIdAndCreateRetrievalCode(
-      string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge,
+      string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge, string resource,
       out string code, out string message
     );
 
@@ -87,9 +93,13 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     /// (unchanged, or null/empty if there was none). The caller will verify it against the 'code_verifier'
     /// and will discard the returned token, if the verification fails.
     /// </param>
+    /// <param name="resource">
+    /// The resource indicator (RFC 8707) which was bound to the code within 'TryValidateSessionIdAndCreateRetrievalCode'
+    /// (unchanged, or null/empty if there was none).
+    /// </param>
     /// <returns></returns>
     TokenIssuingResult RetrieveTokenByCode(
-      string clientId, string clientSecret, string code, out string codeChallenge
+      string clientId, string clientSecret, string code, out string codeChallenge, out string resource
     );
 
     bool TryValidateApiClient(

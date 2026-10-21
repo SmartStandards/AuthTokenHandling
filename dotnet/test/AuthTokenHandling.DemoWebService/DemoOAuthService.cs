@@ -1,419 +1,427 @@
-﻿using Microsoft.AspNetCore.SignalR.Protocol;
-using Security.AccessTokenHandling;
-using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.ServiceModel.Channels;
-using System.SmartStandards;
-using System.Text;
-using static System.Net.WebRequestMethods;
-
-namespace Security.AccessTokenHandling.OAuth.Server {
-
-  public partial class DemoOAuthService : IOAuthService, IOAuthServiceWithDelegation {
-
-    #region " DEMO "
-
-    // In a real world scenario these would be stored in a secure database!
-
-
-    private bool ValidateUser(string login) {
-      return (login.StartsWith("U_"));
-    }
-    private bool ValidatePassword(string login, string password) {
-      return (!string.IsNullOrWhiteSpace(password) && password == login + "!");
-    }
-
-    #endregion
-
-    // This Demo uses JWTs only
-    private IAccessTokenIssuer _JwtIssuer = new LocalJwtIssuer(_OutTotallySecretDemoJwtKey, 5, true);
-    private IAccessTokenIntrospector _JwtIntropector = new LocalJwtIntrospector(_OutTotallySecretDemoJwtKey);
-
-    // States
-    private Dictionary<long, string> _LoginsPerSessionId = new Dictionary<long, string>();
-    private Dictionary<long, TokenIssuingResult> _TokensPerRetrievalCode = new Dictionary<long, TokenIssuingResult>();
-    private Dictionary<long, string> _CodeChallengesPerRetrievalCode = new Dictionary<long, string>();
-
-    public bool TryAuthenticate(
-      string apiClientId, string login, string password, bool noPasswordNeeded, string clientProvidedState,
-      out string sessionId, out string message
-    ) {
-
-      if (noPasswordNeeded) {
-        message = "Pass-trough authentication successful";
-      }
-      else {
-
-        if (!this.ValidateUser(login)) {
-          message = "Wrong credentials";
-          sessionId = null;
-          return false;
-        }
-
-        if (this.ValidatePassword(login, password)) {
-          message = "Password authentication successful";
-        }
-        else {
-          message = "Wrong credentials";
-          sessionId = null;
-          return false;
-        }
-      }
-
-      //start the logon session (valid for 1 minute)
-
-      long sid = Snowflake44.Generate();
-      sessionId = sid.ToString();
-
-      lock (_LoginsPerSessionId) {
-        _LoginsPerSessionId[sid] = login;
-      }
-
-      this.CleanupExpiredCodesAndSessions();
-
-      return true;
-    }
-
-    public bool TryGetAvailableScopesBySessionId(
-      string apiClientId, string sessionId, string[] prefferedScopes,
-      out ScopeDescriptor[] availableScopes, out string message
-    ) {
-
-      if (TryValidateSessionId(sessionId, out string login)) {
-        availableScopes = this.GetAvailableScopes(login, prefferedScopes);
-        message = null;
-        return true;
-      }
-      else {
-        availableScopes = Array.Empty<ScopeDescriptor>();
-        message = "Invalid or expired logon-session";
-        return false;
-      }
-
-    }
-
-    protected ScopeDescriptor[] GetAvailableScopes(
-      string loginOrClientId, string[] scopesToSelect
-    ) {
+﻿// DISABLED: replaced by the Cheap OAuth Server (see Program.cs) - kept for reference only.
+
+//using Microsoft.AspNetCore.SignalR.Protocol;
+//using Security.AccessTokenHandling;
+//using Serilog;
+//using System;
+//using System.Collections.Generic;
+//using System.Linq;
+//using System.Runtime.InteropServices;
+//using System.Security.Cryptography;
+//using System.ServiceModel.Channels;
+//using System.SmartStandards;
+//using System.Text;
+//using static System.Net.WebRequestMethods;
+
+//namespace Security.AccessTokenHandling.OAuth.Server {
+
+//  public partial class DemoOAuthService : IOAuthService, IOAuthServiceWithDelegation {
+
+//    #region " DEMO "
+
+//    // In a real world scenario these would be stored in a secure database!
+
+
+//    private bool ValidateUser(string login) {
+//      return (login.StartsWith("U_"));
+//    }
+//    private bool ValidatePassword(string login, string password) {
+//      return (!string.IsNullOrWhiteSpace(password) && password == login + "!");
+//    }
+
+//    #endregion
+
+//    // This Demo uses JWTs only
+//    private IAccessTokenIssuer _JwtIssuer = new LocalJwtIssuer(_OutTotallySecretDemoJwtKey, 5, true);
+//    private IAccessTokenIntrospector _JwtIntropector = new LocalJwtIntrospector(_OutTotallySecretDemoJwtKey);
+
+//    // States
+//    private Dictionary<long, string> _LoginsPerSessionId = new Dictionary<long, string>();
+//    private Dictionary<long, TokenIssuingResult> _TokensPerRetrievalCode = new Dictionary<long, TokenIssuingResult>();
+//    private Dictionary<long, string> _CodeChallengesPerRetrievalCode = new Dictionary<long, string>();
+//    private Dictionary<long, string> _ResourcesPerRetrievalCode = new Dictionary<long, string>();
+
+//    public bool TryAuthenticate(
+//      string apiClientId, string login, string password, bool noPasswordNeeded, string clientProvidedState,
+//      out string sessionId, out string message
+//    ) {
+
+//      if (noPasswordNeeded) {
+//        message = "Pass-trough authentication successful";
+//      }
+//      else {
+
+//        if (!this.ValidateUser(login)) {
+//          message = "Wrong credentials";
+//          sessionId = null;
+//          return false;
+//        }
+
+//        if (this.ValidatePassword(login, password)) {
+//          message = "Password authentication successful";
+//        }
+//        else {
+//          message = "Wrong credentials";
+//          sessionId = null;
+//          return false;
+//        }
+//      }
+
+//      //start the logon session (valid for 1 minute)
+
+//      long sid = Snowflake44.Generate();
+//      sessionId = sid.ToString();
+
+//      lock (_LoginsPerSessionId) {
+//        _LoginsPerSessionId[sid] = login;
+//      }
+
+//      this.CleanupExpiredCodesAndSessions();
+
+//      return true;
+//    }
+
+//    public bool TryGetAvailableScopesBySessionId(
+//      string apiClientId, string sessionId, string[] prefferedScopes,
+//      out ScopeDescriptor[] availableScopes, out string message
+//    ) {
+
+//      if (TryValidateSessionId(sessionId, out string login)) {
+//        availableScopes = this.GetAvailableScopes(login, prefferedScopes);
+//        message = null;
+//        return true;
+//      }
+//      else {
+//        availableScopes = Array.Empty<ScopeDescriptor>();
+//        message = "Invalid or expired logon-session";
+//        return false;
+//      }
+
+//    }
+
+//    protected ScopeDescriptor[] GetAvailableScopes(
+//      string loginOrClientId, string[] scopesToSelect
+//    ) {
+
+//      return new ScopeDescriptor[] {
+//      new ScopeDescriptor {
+//        Expression = "read", Label = "Read Data",
+//        Selected = true,//mandatory!
+//        ReadOnly= true, Invisible= false
+//      },
+//      new ScopeDescriptor {
+//        Expression = "write", Label = "Write Data",
+//        Selected = scopesToSelect.Contains("write"),
+//        ReadOnly= false, Invisible= false
+//      },
+//    };
+
+//    }
 
-      return new ScopeDescriptor[] {
-      new ScopeDescriptor {
-        Expression = "read", Label = "Read Data",
-        Selected = true,//mandatory!
-        ReadOnly= true, Invisible= false
-      },
-      new ScopeDescriptor {
-        Expression = "write", Label = "Write Data",
-        Selected = scopesToSelect.Contains("write"),
-        ReadOnly= false, Invisible= false
-      },
-    };
+//    #region " IMPLICIT - FLOW "
 
-    }
+//    public bool TryValidateSessionIdAndCreateToken(
+//      string apiClientId, string sessionId, string[] selectedScopes,
+//      out TokenIssuingResult tokenResult
+//    ) {
 
-    #region " IMPLICIT - FLOW "
 
-    public bool TryValidateSessionIdAndCreateToken(
-      string apiClientId, string sessionId, string[] selectedScopes,
-      out TokenIssuingResult tokenResult
-    ) {
+//      if (TryValidateSessionId(sessionId, out string login)) {
+//        tokenResult = new TokenIssuingResult();
 
+//        //for security selectedScopes needs be be filtered again because some value could have been injected
+//        selectedScopes = this.GetAvailableScopes(login, selectedScopes).ToStringArray();
 
-      if (TryValidateSessionId(sessionId, out string login)) {
-        tokenResult = new TokenIssuingResult();
+//        //this is to keep the demo simple,
+//        //in a real world scenario not a good idea...
+//        string subject = login;
 
-        //for security selectedScopes needs be be filtered again because some value could have been injected
-        selectedScopes = this.GetAvailableScopes(login, selectedScopes).ToStringArray();
+//        return _JwtIssuer.RequestAccessToken(
+//          nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
+//        );
 
-        //this is to keep the demo simple,
-        //in a real world scenario not a good idea...
-        string subject = login;
+//      }
+//      else {
+//        tokenResult = TokenIssuingResult.FromError("Invalid or expired sessionOtp");
+//        return false;
+//      }
 
-        return _JwtIssuer.RequestAccessToken(
-          nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
-        );
+//    }
 
-      }
-      else {
-        tokenResult = TokenIssuingResult.FromError("Invalid or expired sessionOtp");
-        return false;
-      }
+//    #endregion
 
-    }
 
-    #endregion
+//    #region " CODE - FLOW "
 
+//    public bool TryValidateSessionIdAndCreateRetrievalCode(
+//      string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge, string resource,
+//      out string code, out string message
+//    ) {
 
-    #region " CODE - FLOW "
+//      bool success = this.TryValidateSessionIdAndCreateToken(
+//        apiClientId, sessionId, selectedScopes,
+//        out TokenIssuingResult tokenResult
+//      );
 
-    public bool TryValidateSessionIdAndCreateRetrievalCode(
-      string apiClientId, string sessionId, string[] selectedScopes, string codeChallenge,
-      out string code, out string message
-    ) {
+//      if (success) {
+//        long retrievalCode = Snowflake44.Generate();
 
-      bool success = this.TryValidateSessionIdAndCreateToken(
-        apiClientId, sessionId, selectedScopes,
-        out TokenIssuingResult tokenResult
-      );
+//        lock (_TokensPerRetrievalCode) {
+//          //stage the token for retrieval
+//          _TokensPerRetrievalCode[retrievalCode] = tokenResult;
+//          //bind the (opaque) PKCE code challenge to the code
+//          _CodeChallengesPerRetrievalCode[retrievalCode] = codeChallenge;
+//          //bind the (opaque) resource indicator to the code
+//          _ResourcesPerRetrievalCode[retrievalCode] = resource;
+//        }
 
-      if (success) {
-        long retrievalCode = Snowflake44.Generate();
+//        code = retrievalCode.ToString();
+//        message = null;
+//        return true;
+//      }
+//      else {
+//        code = null;
+//        message = tokenResult?.error;
+//        return false;
+//      }
+//    }
 
-        lock (_TokensPerRetrievalCode) {
-          //stage the token for retrieval
-          _TokensPerRetrievalCode[retrievalCode] = tokenResult;
-          //bind the (opaque) PKCE code challenge to the code
-          _CodeChallengesPerRetrievalCode[retrievalCode] = codeChallenge;
-        }
+//    public TokenIssuingResult RetrieveTokenByCode(string clientId, string clientSecret, string code, out string codeChallenge, out string resource) {
+//      TokenIssuingResult result = new TokenIssuingResult();
+//      codeChallenge = null;
+//      resource = null;
 
-        code = retrievalCode.ToString();
-        message = null;
-        return true;
-      }
-      else {
-        code = null;
-        message = tokenResult?.error;
-        return false;
-      }
-    }
+//      if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
+//        result = TokenIssuingResult.FromError("invalid_client", "Unknown client");
+//        return result;
+//      }
 
-    public TokenIssuingResult RetrieveTokenByCode(string clientId, string clientSecret, string code, out string codeChallenge) {
-      TokenIssuingResult result = new TokenIssuingResult();
-      codeChallenge = null;
+//      lock (_TokensPerRetrievalCode) {
 
-      if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
-        result = TokenIssuingResult.FromError("invalid_client", "Unknown client");
-        return result;
-      }
+//        if (long.TryParse(code, out long codeLong)) {
 
-      lock (_TokensPerRetrievalCode) {
+//          //code is only valid for 1 minute
+//          if (Snowflake44.DecodeDateTime(codeLong).AddMinutes(1) > DateTime.UtcNow) {
 
-        if (long.TryParse(code, out long codeLong)) {
+//            if (_TokensPerRetrievalCode.ContainsKey(codeLong)) {
 
-          //code is only valid for 1 minute
-          if (Snowflake44.DecodeDateTime(codeLong).AddMinutes(1) > DateTime.UtcNow) {
+//              result = _TokensPerRetrievalCode[codeLong];
+//              _CodeChallengesPerRetrievalCode.TryGetValue(codeLong, out codeChallenge);
+//              _ResourcesPerRetrievalCode.TryGetValue(codeLong, out resource);
 
-            if (_TokensPerRetrievalCode.ContainsKey(codeLong)) {
+//              //make sure the code can only be used once
+//              _TokensPerRetrievalCode.Remove(codeLong);
+//              _CodeChallengesPerRetrievalCode.Remove(codeLong);
+//              _ResourcesPerRetrievalCode.Remove(codeLong);
 
-              result = _TokensPerRetrievalCode[codeLong];
-              _CodeChallengesPerRetrievalCode.TryGetValue(codeLong, out codeChallenge);
+//              return result;
+//            }
 
-              //make sure the code can only be used once
-              _TokensPerRetrievalCode.Remove(codeLong);
-              _CodeChallengesPerRetrievalCode.Remove(codeLong);
+//          }
 
-              return result;
-            }
+//        }
 
-          }
+//      }
 
-        }
+//      result.error = "invalid_code";
+//      result.error_description = "Invalid Code";
+//      return result;
+//    }
 
-      }
+//    #endregion
 
-      result.error = "invalid_code";
-      result.error_description = "Invalid Code";
-      return result;
-    }
+//    #region " CLIENT CREDENTIAL - FLOW "
 
-    #endregion
+//    public TokenIssuingResult ValidateClientAndCreateToken(
+//      string clientId, string clientSecret, string[] selectedScopes
+//    ) {
 
-    #region " CLIENT CREDENTIAL - FLOW "
+//      TokenIssuingResult tokenResult = new TokenIssuingResult();
 
-    public TokenIssuingResult ValidateClientAndCreateToken(
-      string clientId, string clientSecret, string[] selectedScopes
-    ) {
+//      if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
+//        return TokenIssuingResult.FromError("invalid_client", "Unknown client");
+//      }
 
-      TokenIssuingResult tokenResult = new TokenIssuingResult();
+//      //for security selectedScopes needs be be filtered again because some value could have been injected
+//      selectedScopes = this.GetAvailableScopes("API_" + clientId, selectedScopes).ToStringArray();
 
-      if (!this.TryValidateApiClientSecret(clientId, clientSecret)) {
-        return TokenIssuingResult.FromError("invalid_client", "Unknown client");
-      }
+//      //this is to keep the demo simple,
+//      //in a real world scenario not a good idea...
+//      string subject = "API_" + clientId;
 
-      //for security selectedScopes needs be be filtered again because some value could have been injected
-      selectedScopes = this.GetAvailableScopes("API_" + clientId, selectedScopes).ToStringArray();
+//      bool success = _JwtIssuer.RequestAccessToken(
+//        nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
+//      );
 
-      //this is to keep the demo simple,
-      //in a real world scenario not a good idea...
-      string subject = "API_" + clientId;
+//      return tokenResult;
+//    }
 
-      bool success = _JwtIssuer.RequestAccessToken(
-        nameof(DemoOAuthService), subject, "Everybody", selectedScopes, out tokenResult
-      );
+//    #endregion
 
-      return tokenResult;
-    }
+//    #region " REFRESH TOKEN - FLOW "
 
-    #endregion
+//    public TokenIssuingResult CreateFollowUpToken(string refreshToken) {
 
-    #region " REFRESH TOKEN - FLOW "
+//      return TokenIssuingResult.FromError("invalid_request", "Refresh-Token currently not supported");
 
-    public TokenIssuingResult CreateFollowUpToken(string refreshToken) {
+//    }
 
-      return TokenIssuingResult.FromError("invalid_request", "Refresh-Token currently not supported");
+//    #endregion
 
-    }
+//    #region " Introspection (RFC7662) "
 
-    #endregion
+//    public void IntrospectAccessToken(string rawToken, out bool isActive, out Dictionary<string, object> claims) {
 
-    #region " Introspection (RFC7662) "
+//      _JwtIntropector.IntrospectAccessToken(rawToken, out isActive, out claims);
 
-    public void IntrospectAccessToken(string rawToken, out bool isActive, out Dictionary<string, object> claims) {
+//      //in addition to that we could check here, if the token was revoked!
 
-      _JwtIntropector.IntrospectAccessToken(rawToken, out isActive, out claims);
+//    }
 
-      //in addition to that we could check here, if the token was revoked!
+//    #endregion
 
-    }
+//    public bool TryValidateApiClient(
+//      string apiClientId, string apiCallerHost, string redirectUri,
+//      out string message
+//    ) {
 
-    #endregion
+//      if (apiClientId == _OurDemoOAuthClientId) {
+//        message = "Valid client";
+//        return true;
+//      }
+//      else {
+//        message = "Unknown client";
+//        return false;
+//      }
 
-    public bool TryValidateApiClient(
-      string apiClientId, string apiCallerHost, string redirectUri,
-      out string message
-    ) {
+//    }
 
-      if (apiClientId == _OurDemoOAuthClientId) {
-        message = "Valid client";
-        return true;
-      }
-      else {
-        message = "Unknown client";
-        return false;
-      }
+//    public bool TryValidateApiClientSecret(
+//      string apiClientId, string apiClientSecret
+//    ) {
 
-    }
+//      if (apiClientId == _OurDemoOAuthClientId && apiClientSecret == _OurDemoOAuthClientSecret) {
+//        return true;
+//      }
+//      else {
+//        return false;
+//      }
 
-    public bool TryValidateApiClientSecret(
-      string apiClientId, string apiClientSecret
-    ) {
+//    }
 
-      if (apiClientId == _OurDemoOAuthClientId && apiClientSecret == _OurDemoOAuthClientSecret) {
-        return true;
-      }
-      else {
-        return false;
-      }
+//    private bool TryValidateSessionId(string sessionId, out string login) {
+//      lock (_LoginsPerSessionId) {
 
-    }
+//        if (long.TryParse(sessionId, out long sid)) {
 
-    private bool TryValidateSessionId(string sessionId, out string login) {
-      lock (_LoginsPerSessionId) {
+//          if (Snowflake44.DecodeDateTime(sid).AddMinutes(1) > DateTime.UtcNow) {
 
-        if (long.TryParse(sessionId, out long sid)) {
+//            if (_LoginsPerSessionId.TryGetValue(sid, out login)) {
 
-          if (Snowflake44.DecodeDateTime(sid).AddMinutes(1) > DateTime.UtcNow) {
+//              return true;
+//            }
+//          }
+//        }
+//      }
 
-            if (_LoginsPerSessionId.TryGetValue(sid, out login)) {
+//      login = null;
+//      return false;
+//    }
 
-              return true;
-            }
-          }
-        }
-      }
+//    private void CleanupExpiredCodesAndSessions() {
 
-      login = null;
-      return false;
-    }
+//      lock (_LoginsPerSessionId) {
+//        foreach (long sid in _LoginsPerSessionId.Keys.ToArray()) {
+//          if (Snowflake44.DecodeDateTime(sid).AddMinutes(1) < DateTime.UtcNow) {
+//            _LoginsPerSessionId.Remove(sid);
+//          }
+//        }
+//      }
 
-    private void CleanupExpiredCodesAndSessions() {
+//      lock (_TokensPerRetrievalCode) {
+//        foreach (long code in _TokensPerRetrievalCode.Keys.ToArray()) {
+//          if (Snowflake44.DecodeDateTime(code).AddMinutes(1) < DateTime.UtcNow) {
+//            _TokensPerRetrievalCode.Remove(code);
+//          }
+//        }
+//      }
 
-      lock (_LoginsPerSessionId) {
-        foreach (long sid in _LoginsPerSessionId.Keys.ToArray()) {
-          if (Snowflake44.DecodeDateTime(sid).AddMinutes(1) < DateTime.UtcNow) {
-            _LoginsPerSessionId.Remove(sid);
-          }
-        }
-      }
+//    }
 
-      lock (_TokensPerRetrievalCode) {
-        foreach (long code in _TokensPerRetrievalCode.Keys.ToArray()) {
-          if (Snowflake44.DecodeDateTime(code).AddMinutes(1) < DateTime.UtcNow) {
-            _TokensPerRetrievalCode.Remove(code);
-          }
-        }
-      }
 
-    }
+//    #region " OAuth - Delegation (CIBA) "
 
+//    private const string _ClinetIdForDelegation = "GOOGLE";
+//    private const string _DelegationClientId = "fsffwef";
+//    private const string _DelegationClientSecret = "fsffwef";
+//    private const string _DelegationAuthUrl = "fsffwef";
+//    private const string _DelegationRetrivalUrl = "fsffwef";
 
-    #region " OAuth - Delegation (CIBA) "
+//    public bool CodeFlowDelegationRequired(
+//      string clientId, ref string loginHint,
+//      out string targetAuthorizeUrl, out string targetClientId, out string anonymousSessionId
+//    ) {
 
-    private const string _ClinetIdForDelegation = "GOOGLE";
-    private const string _DelegationClientId = "fsffwef";
-    private const string _DelegationClientSecret = "fsffwef";
-    private const string _DelegationAuthUrl = "fsffwef";
-    private const string _DelegationRetrivalUrl = "fsffwef";
+//      if (clientId == _ClinetIdForDelegation) {
 
-    public bool CodeFlowDelegationRequired(
-      string clientId, ref string loginHint,
-      out string targetAuthorizeUrl, out string targetClientId, out string anonymousSessionId
-    ) {
+//        targetAuthorizeUrl = _DelegationAuthUrl;
+//        targetClientId = _DelegationClientId;
 
-      if (clientId == _ClinetIdForDelegation) {
+//        long sid = Snowflake44.Generate();
+//        anonymousSessionId = sid.ToString();
+//        lock (_LoginsPerSessionId) {
+//          _LoginsPerSessionId[sid] = "=>" + _ClinetIdForDelegation;
+//        }
+//        return true;
+//      }
+//      else {
+//        targetAuthorizeUrl = null;
+//        targetClientId = null;
+//        anonymousSessionId = null;
+//        return false;
+//      }
+//    }
 
-        targetAuthorizeUrl = _DelegationAuthUrl;
-        targetClientId = _DelegationClientId;
+//    public bool TryHandleCodeflowDelegationResult(
+//      string codeFromDelegate, string sessionId, string thisRedirectUri
+//    ) {
 
-        long sid = Snowflake44.Generate();
-        anonymousSessionId = sid.ToString();
-        lock (_LoginsPerSessionId) {
-          _LoginsPerSessionId[sid] = "=>" + _ClinetIdForDelegation;
-        }
-        return true;
-      }
-      else {
-        targetAuthorizeUrl = null;
-        targetClientId = null;
-        anonymousSessionId = null;
-        return false;
-      }
-    }
+//      if (long.TryParse(sessionId, out long sid)) {
+//        lock (_LoginsPerSessionId) {
+//          if (_LoginsPerSessionId.TryGetValue(sid, out string logonToCheck)) {
+//            if (logonToCheck == ("=>" + _ClinetIdForDelegation)) {
 
-    public bool TryHandleCodeflowDelegationResult(
-      string codeFromDelegate, string sessionId, string thisRedirectUri
-    ) {
+//              bool success = OAuthBackgroundAuthenticator.TryRetrieveTokenViaCode(
+//                codeFromDelegate,
+//                _DelegationClientId,
+//                _DelegationClientSecret,
+//                false,
+//                _DelegationRetrivalUrl,
+//                thisRedirectUri,
+//                out string accessToken,
+//                out string refreshToken,
+//                out string idToken,
+//                out string error
+//              );
 
-      if (long.TryParse(sessionId, out long sid)) {
-        lock (_LoginsPerSessionId) {
-          if (_LoginsPerSessionId.TryGetValue(sid, out string logonToCheck)) {
-            if (logonToCheck == ("=>" + _ClinetIdForDelegation)) {
+//              if (success) {
 
-              bool success = OAuthBackgroundAuthenticator.TryRetrieveTokenViaCode(
-                codeFromDelegate,
-                _DelegationClientId,
-                _DelegationClientSecret,
-                false,
-                _DelegationRetrivalUrl,
-                thisRedirectUri,
-                out string accessToken,
-                out string refreshToken,
-                out string idToken,
-                out string error
-              );
+//                //TODO: wirkliche subject-identity über den entsp. introspector laden!
+//                _LoginsPerSessionId[sid] = "Identiy-Of-" + _ClinetIdForDelegation;
 
-              if (success) {
+//                return true;
+//              }
 
-                //TODO: wirkliche subject-identity über den entsp. introspector laden!
-                _LoginsPerSessionId[sid] = "Identiy-Of-" + _ClinetIdForDelegation;
+//            }
+//          }
+//        }
+//      }
 
-                return true;
-              }
+//      return false;
+//    }
 
-            }
-          }
-        }
-      }
+//    #endregion
 
-      return false;
-    }
+//  }
 
-    #endregion
-
-  }
-
-}
+//}

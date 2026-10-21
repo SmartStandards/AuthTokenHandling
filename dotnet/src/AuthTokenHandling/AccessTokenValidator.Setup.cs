@@ -46,15 +46,6 @@ namespace Security.AccessTokenHandling {
     public delegate void RawTokenExposalMethod(string token, MethodInfo targetContractMethod, string subject, string[] permittedScopes);
 
     /// <summary>
-    /// Creates optional HTTP response details for an authentication-required rejection without coupling the validator to a concrete HTTP stack.
-    /// </summary>
-    /// <param name="context">The validation and HTTP mapping context.</param>
-    /// <returns>Additional response details, or null to keep the existing response unchanged.</returns>
-    public delegate ExtendedAuthRequiredResponse ExtendedAuthRequiredResponseBuilder(
-      ExtendedAuthRequiredResponseContext context
-    );
-
-    /// <summary>
     /// </summary>
     /// <param name="targetContractMethod"></param>
     /// <param name="callingMachine"></param>
@@ -174,6 +165,25 @@ namespace Security.AccessTokenHandling {
       }
     }
 
+    /// <summary>
+    /// Configures the token validation to be driven completely by the 'AccessTokenManager' (recommended for new setups):
+    /// the token sources are resolved via the manager's resolution chain (issuer mapping, AuthTokenSourceAttribute,
+    /// API group name, contract name, 'default'), several token sources are tried in mapping order, validated tokens are
+    /// pushed into the manager's register, and the requirements (token required? which scopes?) are taken from the
+    /// manager ('MapAnonymous', 'RequireScope') plus the legacy 'RequiredApiPermissionAttribute'.
+    /// Without an anonymous mapping a token is ALWAYS required (fail closed).
+    /// </summary>
+    /// <param name="configurationMethod"> several options for customizing the behaviour </param>
+    public static void ConfigureTokenValidationViaAccessTokenManager(
+      Action<TokenIntrospectionConfigurator> configurationMethod = null
+    ) {
+      _RequirementsProvider = null;
+      _IntrospectorSelector = AccessTokenManager.LookupForIntrospector;
+      if (configurationMethod != null) {
+        configurationMethod.Invoke(new TokenIntrospectionConfigurator());
+      }
+    }
+
     public class TokenIntrospectionConfigurator {
 
       /// <summary>
@@ -230,57 +240,62 @@ namespace Security.AccessTokenHandling {
     }
 
     /// <summary>
-    /// Configures optional extended response details for authentication-required HTTP rejections.
+    /// Configures the (OPT-IN) builder for the challenge headers of authentication-required HTTP rejections
+    /// (e.g. 'WWW-Authenticate: Bearer resource_metadata="...", scope="..."'). It is invoked for 401 only (never for 403)
+    /// with the status code and the effective required scopes (already prefixed, exactly as checked against the token).
+    /// 'AddWellKnownOAuthProtectedResourceEndpoint(...)' (MvcSupport) wires it up automatically, unless a builder was
+    /// already configured by the host. Header values may contain the placeholder '{RequestBaseUrl}' (see
+    /// 'TryValidateHttpAuthHeader').
     /// </summary>
-    /// <param name="responseBuilder">The response builder, or null to disable extended responses.</param>
-    public static void ConfigureExtendedAuthRequiredResponse(
-      ExtendedAuthRequiredResponseBuilder responseBuilder
+    /// <param name="headerBuilder">The header builder, or null to disable challenge headers.</param>
+    public static void ConfigureChallengeHeaders(
+      Func<int, string[], KeyValuePair<string, string>[]> headerBuilder
     ) {
-      lock (_ExtendedAuthRequiredResponseLock) {
-        _ExtendedAuthRequiredResponseBuilder = responseBuilder;
+      lock (_ChallengeHeaderBuilderLock) {
+        _ChallengeHeaderBuilder = headerBuilder;
       }
     }
 
     /// <summary>
-    /// Disables optional extended response details for authentication-required HTTP rejections.
+    /// Disables the challenge headers for authentication-required HTTP rejections.
     /// </summary>
-    public static void ClearExtendedAuthRequiredResponse() {
-      ConfigureExtendedAuthRequiredResponse(null);
+    public static void ClearChallengeHeaders() {
+      ConfigureChallengeHeaders(null);
     }
 
-    private static bool TryBuildExtendedAuthRequiredResponse(
-      ValidationOutcome validationOutcome,
-      int statusCode,
-      string reasonPhrase,
-      Type contractType,
-      MethodInfo targetContractMethod,
-      string callingMachine,
-      string[] requiredApiPermissions,
-      out ExtendedAuthRequiredResponse response
-    ) {
+    /// <summary>
+    /// Returns true, if a builder for challenge headers is configured.
+    /// </summary>
+    public static bool IsChallengeHeaderBuilderConfigured {
+      get {
+        lock (_ChallengeHeaderBuilderLock) {
+          return _ChallengeHeaderBuilder != null;
+        }
+      }
+    }
 
-      ExtendedAuthRequiredResponseBuilder responseBuilder;
-      lock (_ExtendedAuthRequiredResponseLock) {
-        responseBuilder = _ExtendedAuthRequiredResponseBuilder;
+    /// <summary>
+    /// Invokes the configured challenge header builder (returns an empty array if none is configured).
+    /// </summary>
+    private static KeyValuePair<string, string>[] BuildChallengeHeaders(int statusCode, string[] requiredScopes) {
+
+      Func<int, string[], KeyValuePair<string, string>[]> headerBuilder;
+      lock (_ChallengeHeaderBuilderLock) {
+        headerBuilder = _ChallengeHeaderBuilder;
       }
 
-      if (responseBuilder == null) {
-        response = null;
-        return false;
+      if (headerBuilder == null) {
+        return new KeyValuePair<string, string>[] { };
+      }
+      if (requiredScopes == null) {
+        requiredScopes = new string[] { };
       }
 
-      ExtendedAuthRequiredResponseContext context = new ExtendedAuthRequiredResponseContext(
-        validationOutcome,
-        statusCode,
-        reasonPhrase,
-        contractType,
-        targetContractMethod,
-        callingMachine,
-        requiredApiPermissions
-      );
-
-      response = responseBuilder.Invoke(context);
-      return response != null;
+      KeyValuePair<string, string>[] headers = headerBuilder.Invoke(statusCode, requiredScopes);
+      if (headers == null) {
+        return new KeyValuePair<string, string>[] { };
+      }
+      return headers;
     }
 
     private static IAuthRequirementsProvider _RequirementsProvider;
@@ -288,12 +303,33 @@ namespace Security.AccessTokenHandling {
     private static PermittedScopesVisitorMethod _PermittedScopesVisitorMethod = null;
     private static AuditingHook _AuditingHook = null;
     private static RawTokenExposalMethod _RawTokenExposalMethod = null;
-    private static ExtendedAuthRequiredResponseBuilder _ExtendedAuthRequiredResponseBuilder = null;
-    private static readonly object _ExtendedAuthRequiredResponseLock = new object();
+    private static Func<int, string[], KeyValuePair<string, string>[]> _ChallengeHeaderBuilder = null;
+    private static readonly object _ChallengeHeaderBuilderLock = new object();
 
     private static string _AnonymousSubjectName = null;
     private static string _ApiPermissionPrefix = "API:";
     private static int _IntrospectionResultCachingMinutes = 2;
+
+    /// <summary>
+    /// The currently configured API permission prefix (shared with the AccessTokenManager to keep the prefix symmetric).
+    /// </summary>
+    internal static string ApiPermissionPrefix {
+      get {
+        if (_ApiPermissionPrefix == null) {
+          return string.Empty;
+        }
+        return _ApiPermissionPrefix;
+      }
+    }
+
+    /// <summary>
+    /// The currently configured (legacy) requirements provider (null, if the validator was not configured yet).
+    /// </summary>
+    internal static IAuthRequirementsProvider ConfiguredRequirementsProvider {
+      get {
+        return _RequirementsProvider;
+      }
+    }
 
   }
 

@@ -53,6 +53,12 @@ namespace Security.AccessTokenHandling {
         config.ValidationMode.Equals(WellknownValidationModes.OAUTH_INTROSPECTION_ENDPOINT_HTTPGETONLY, StringComparison.InvariantCultureIgnoreCase)
       ) {
 
+        //shortcut for an introspection endpoint which is served by an OAuth server within the same process
+        IAccessTokenIntrospector inProcessIntrospector;
+        if (TryGetInProcessIntrospector(config.ValidationEndpointUrl, out inProcessIntrospector)) {
+          return inProcessIntrospector;
+        }
+
         UrlGetterMethod urlGetter = DefaultUrlGetter;
         if (string.IsNullOrWhiteSpace(config.ValidationEndpointUrl)) {
           if (urlGetter == null) {
@@ -108,6 +114,46 @@ namespace Security.AccessTokenHandling {
       Type contractType
     );
     public static UrlGetterMethod DefaultUrlGetter { get; set; } = (t) => null;
+
+    #endregion
+
+    #region " in-process introspection endpoints "
+
+    private static readonly Dictionary<string, IAccessTokenIntrospector> _InProcessIntrospectors = (
+      new Dictionary<string, IAccessTokenIntrospector>(StringComparer.OrdinalIgnoreCase)
+    );
+
+    /// <summary>
+    /// Registers an introspector, which is used instead of an HTTP call, whenever a config with the
+    /// validation mode 'OAUTH_INTROSPECTION_ENDPOINT' points to exactly this 'validationEndpointUrl'
+    /// (e.g. an OAuth server hosted within the same process). Passing null removes the registration.
+    /// </summary>
+    public static void RegisterInProcessIntrospector(string validationEndpointUrl, IAccessTokenIntrospector introspector) {
+      if (string.IsNullOrWhiteSpace(validationEndpointUrl)) {
+        throw new ArgumentException($"'{nameof(validationEndpointUrl)}' must not be empty!");
+      }
+      lock (_InProcessIntrospectors) {
+        if (introspector == null) {
+          _InProcessIntrospectors.Remove(validationEndpointUrl);
+        }
+        else {
+          _InProcessIntrospectors[validationEndpointUrl] = introspector;
+        }
+      }
+    }
+
+    /// <summary>
+    /// Looks up an introspector registered via 'RegisterInProcessIntrospector'.
+    /// </summary>
+    private static bool TryGetInProcessIntrospector(string validationEndpointUrl, out IAccessTokenIntrospector introspector) {
+      introspector = null;
+      if (string.IsNullOrWhiteSpace(validationEndpointUrl)) {
+        return false;
+      }
+      lock (_InProcessIntrospectors) {
+        return _InProcessIntrospectors.TryGetValue(validationEndpointUrl, out introspector);
+      }
+    }
 
     #endregion
 
