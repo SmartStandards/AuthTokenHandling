@@ -475,6 +475,24 @@ namespace Security {
     }
 
     [TestMethod]
+    public void Challenge_On401_ForInactiveToken() {
+      int builderCalls = 0;
+      AccessTokenValidator.ConfigureChallengeHeaders((statusCode, scopes) => {
+        builderCalls++;
+        return new KeyValuePair<string, string>[] { new KeyValuePair<string, string>("WWW-Authenticate", "Bearer") };
+      });
+      Register("default", new FakeIntrospector("tok", "alice", "API:mcp"));
+      AccessTokenManager.RequireScope("mcp");
+
+      int code;
+      KeyValuePair<string, string>[] headers;
+      Assert.IsFalse(Validate("Bearer expiredOrRevokedTok", typeof(IDemoContract), string.Empty, out code, out headers));
+      Assert.AreEqual(401, code, "an inactive (e.g. expired) token must trigger re-authentication");
+      Assert.IsTrue(headers.Any((h) => h.Key == "WWW-Authenticate"));
+      Assert.AreEqual(1, builderCalls);
+    }
+
+    [TestMethod]
     public void TryValidateHttpAuthHeader_IsAssignableToUjmwDelegate() {
       AuthHeaderValidationMethod method = AccessTokenValidator.TryValidateHttpAuthHeader;
       Assert.IsNotNull(method);

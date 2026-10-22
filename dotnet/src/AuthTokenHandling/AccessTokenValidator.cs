@@ -223,15 +223,26 @@ namespace Security.AccessTokenHandling {
         httpReturnCode = 401;
         httpReasonPhrase = "Unauthorized (token required)"; //low detail - just a hint for the client
       }
-      else {
-        if (invalidReason.Contains("xpired")) { //<< 401 semantical more correct for expired tokens than 403)
-          httpReturnCode = 401;
+      else if (
+        outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenInvalid ||
+        outcome == AccessTokenValidator.ValidationOutcome.AccessDeniedTokenFromBadOrigin
+      ) {
+        //RFC 6750 (3.1, 'invalid_token'): an expired, revoked, malformed or unknown token is an authentication
+        //problem and must be answered with 401 + challenge, so that clients (e.g. MCP clients) re-authenticate.
+        //An introspector usually cannot tell 'expired' from 'invalid' (isActive=false only), so the reason text
+        //must not be the criterion here.
+        httpReturnCode = 401;
+        if (invalidReason.Contains("xpired")) {
           httpReasonPhrase = "Unauthorized (expired)"; //low detail - just a hint for the client
         }
         else {
-          httpReturnCode = 403;
-          httpReasonPhrase = "Forbidden (bad token)"; //low detail - just a hint for the client
+          httpReasonPhrase = "Unauthorized (invalid token)"; //low detail - just a hint for the client
         }
+      }
+      else {
+        //RFC 6750 (3.1, 'insufficient_scope'): valid token, but missing privileges -> 403 (no re-authentication)
+        httpReturnCode = 403;
+        httpReasonPhrase = "Forbidden (missing privileges)"; //low detail - just a hint for the client
       }
 
       if (httpReturnCode == 401) {

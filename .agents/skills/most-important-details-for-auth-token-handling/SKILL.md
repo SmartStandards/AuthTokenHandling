@@ -31,6 +31,9 @@ description: Project-specific implementation details, constraints and pitfalls f
 ## Contract rules
 
 - Contracts must stay **UJMW/WCF-transportable**: synchronous methods, simple DTOs with public properties, no callbacks.
+- All OAuth endpoints belong in the official `OAuth2Controller`; discovery (`.well-known`) goes into a generic
+  `OAuthDiscoverController` in the API group `.well-known`. Controllers depend only on `IOAuthService`; extend that
+  interface so implementation-specific needs are delegated down into the implementation.
 
 ## Compatibility rules (central infrastructure - nothing may break)
 
@@ -41,7 +44,9 @@ description: Project-specific implementation details, constraints and pitfalls f
 - Scope prefix symmetry: the configured prefix (default `API:`) is applied once everywhere (validation, `RequireScope`,
   Cheap OAuth grants and `scopes_supported`, challenge `scope`, Swagger). `RequireScope(scope, name, false)` is the
   explicit escape hatch for literal scopes.
-- Challenge only on 401, never on 403. MvcSupport feeds it into the core via the slim BCL-only hook
+- Challenge only on 401, never on 403. Status mapping in `TryValidateHttpAuthHeaderCore`: token missing/inactive
+  (expired, revoked, malformed)/bad origin -> 401 + challenge; only `AccessDeniedMissingPrivileges` -> 403. Never map
+  an inactive token to 403 - MCP clients (e.g. Copilot) only re-authenticate on 401. MvcSupport feeds it into the core via the slim BCL-only hook
   `AccessTokenValidator.ConfigureChallengeHeaders(Func<int, string[], KeyValuePair<string, string>[]>)` (status code,
   effective prefixed scopes); headers travel only as `ref KeyValuePair<string, string>[]`. The former
   `ExtendedAuthRequiredResponse*` / `HttpResponseHeader` types were removed (breaking vs. tag 5.1.2, accepted for 6.0) -

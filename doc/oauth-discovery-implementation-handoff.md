@@ -68,7 +68,7 @@ Authorization-server metadata under RFC 8414 is a separate capability. Our later
 Reviewed source baseline: d09cbcd84128290bcdb7d3ebafe135f6d85f5072. Re-read the current branch before implementing.
 
 - AccessTokenValidator.cs contains TryValidateHttpAuthHeader overloads intentionally compatible with UJMW's AuthHeaderEvaluator. They return bool and mutate status/reason via ref parameters; they cannot directly carry response headers.
-- Current mapping uses 401 for missing tokens and reasons containing "xpired"; other negative outcomes map to 403. This is existing behavior to preserve by default, not a recommendation for new protocol semantics.
+- Current mapping (RFC 6750 3.1): missing, inactive (expired/revoked/malformed) and bad-origin tokens map to 401 with challenge (`invalid_token` semantics, so that clients such as MCP clients re-authenticate); only missing privileges on a valid token (`insufficient_scope`) map to 403. The former reason-text heuristic ("xpired" -> 401, otherwise 403) was dropped, because introspectors usually only report `isActive=false` and an expired token then ended in a 403 dead end without re-authentication.
 - AccessTokenValidator.Setup.cs already uses static configuration and hooks. Follow existing conventions without changing unrelated validation behavior.
 - EvaluateBearerTokenAttribute.cs calls this validator and emits a ContentResult on rejection. This is a concrete HTTP response integration point.
 - UJMW's AuthHeaderInterceptor is an external consumer of the legacy callback. A core message change alone cannot make that adapter emit headers. Establish a backward-compatible header propagation seam; explicitly identify whether a small UJMW adapter change is required. Do not claim automatic coverage before verifying it.
