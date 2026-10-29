@@ -5,8 +5,8 @@
     <RootNamespace>Security</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <AssemblyVersion>6.0.4</AssemblyVersion>
-    <Version>6.0.4-develop</Version>
+    <AssemblyVersion>6.0.5</AssemblyVersion>
+    <Version>6.0.5-develop</Version>
     <AssemblyName>AuthTokenHandling.Tests</AssemblyName>
     <PackageId>Tests</PackageId>
     <Product>Tests</Product>

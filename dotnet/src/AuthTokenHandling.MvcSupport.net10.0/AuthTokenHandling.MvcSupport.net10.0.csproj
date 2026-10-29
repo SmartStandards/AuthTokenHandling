@@ -13,10 +13,10 @@
     <Product>SmartStandards.AuthTokenHandling</Product>
     <Company>(public domain)</Company>
     <Copyright>SmartStandards</Copyright>
-    <Version>6.0.4-develop</Version>
-    <AssemblyVersion>6.0.4</AssemblyVersion>
+    <Version>6.0.5-develop</Version>
+    <AssemblyVersion>6.0.5</AssemblyVersion>
     <Authors>SmartStandards</Authors>
-    <FileVersion>6.0.4</FileVersion>
+    <FileVersion>6.0.5</FileVersion>
     <PackageTags></PackageTags>
   </PropertyGroup>
   
