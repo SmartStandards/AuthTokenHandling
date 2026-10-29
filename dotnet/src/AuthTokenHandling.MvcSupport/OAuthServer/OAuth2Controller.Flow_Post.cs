@@ -19,11 +19,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     [Route("sso/authorize")] //Step2 - POST
     [HttpPost(), Produces("text/html")]
     [Consumes("application/x-www-form-urlencoded")]
-    [Authorize(Policy = "WindowsOnly")]
+    [AllowAnonymous] //the Windows identity is ensured by 'TryEnsurePassThroughIdentity' (incl. an optional 'WindowsOnly' policy)
     public ActionResult PostLogonFormSso([FromForm] IFormCollection value) {
 
-      if (!this.TryGetPasstroughUserIdentity(out string winUserName)) {
-        return Challenge("Negotiate");
+      AuthPageViewModeOptions ssoViewOpt = new AuthPageViewModeOptions();
+      if (!this.TryEnsurePassThroughIdentity(ssoViewOpt, out string winUserName, out ActionResult alternativeResult)) {
+        return alternativeResult;
       }
 
       return this.PostLogonForm(value);
@@ -119,14 +120,20 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
           bool winAuthSuccess = false;
           if (string.IsNullOrEmpty(password)) {
-            login = "";
+
+            string enteredLogin = login;
             if (!this.TryGetPasstroughUserIdentity(out login) || string.IsNullOrEmpty(login)) {
-              string errorPage = _AuthPageBuilder.GetErrorPage("PASS-THROUGH FAILED!", viewOpt);
-              return this.Content(errorPage, "text/html");
+
+              //no windows identity -> this was a credential form submitted without a password (e.g. a retry
+              //after a wrong password): back to the login form (keeping the flow state) instead of a dead end
+              string missingPasswordMsg = HttpUtility.UrlEncode("Please enter your password.");
+              string loginHint = HttpUtility.UrlEncode(enteredLogin);
+              return this.Redirect(AppendRoundtripQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={loginHint}&redirect_uri={redirectUri}&view_mode={viewMode}&err={missingPasswordMsg}", codeChallenge, resource, oauthPrompt));
             }
             else {
               winAuthSuccess = true;
             }
+
           }
           else {
             if (string.IsNullOrEmpty(login)) {

@@ -35,8 +35,8 @@
 
   <ItemGroup>
     <PackageReference Include="CefSharp.WinForms.NETCore" Version="138.0.340" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="UJMW.DynamicClient" Version="5.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="UJMW.DynamicClient" Version="5.6.3" />
   </ItemGroup>
 
   <ItemGroup>

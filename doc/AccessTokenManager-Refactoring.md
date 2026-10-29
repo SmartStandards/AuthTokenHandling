@@ -444,6 +444,20 @@ into the `IOAuthService` implementation:
   without registration return `false` with `invalid_client_metadata` and report
   `SupportsDynamicClientRegistration = false`.
 
+**Auth pages, `prompt` and Windows pass-through (decided, details in `oauth-server-auth-pages.md`):**
+
+- `TemplateAuthPageBuilder` (HtmlDocGen V2 embedded by T4, no package reference) is the default `IAuthPageBuilder` of
+  the Cheap OAuth Server (no opt-in). `DefaultAuthPageBuilder` stays available, and host registrations still win.
+- The consent step is skipped if the user has nothing to select. `prompt=consent` forces it.
+- `prompt` (OIDC Core 3.1.2.1) is an additional optional query parameter:
+  - `none` yields `login_required` / `consent_required`;
+  - it survives forms, redirects and the delegation `StateBag`;
+  - existing parameters such as `view_mode` and `login_hint` are unchanged.
+- The SSO endpoints no longer carry `[Authorize(Policy = "WindowsOnly")]`, because a missing policy threw an exception
+  before the controller ran. Availability is detected at runtime from the `Negotiate` / `Windows` authentication scheme
+  or the `WindowsOnly` policy. A registered `WindowsOnly` policy is still evaluated as before.
+  `CheapOAuthOptions.EnablePassThrough` (`PassThroughMode.Auto` default, `On`, `Off`) overrides the detection.
+
 ### 4.5 Scope limit: discovery stays global (decided)
 
 The RFC 9728 discovery keeps its single, static, application-wide configuration (one set of authorization servers),
@@ -621,6 +635,10 @@ Always: all existing tests stay green; all target frameworks build (net48 / net8
 | Template: new Swagger overload | Additive; the existing method stays. Fallback keeps the config-key behavior. |
 | ASP.NET Core authentication handler | Additive, opt-in. |
 | Cheap OAuth Server | Additive, opt-in. Grants and advertises scopes with the configured prefix (symmetry rule 3.2). |
+| `TemplateAuthPageBuilder` as default page builder | Visual change only; `IAuthPageBuilder` unchanged, `DefaultAuthPageBuilder` kept, host-registered builders still win. |
+| Skipping an empty consent step | Behavior change without contract change: the same code/token is issued, only the click on a page with nothing to select is omitted. |
+| `prompt` parameter | Additive optional query parameter; requests without it behave as before. |
+| SSO endpoints without `[Authorize(Policy = "WindowsOnly")]` | Non-breaking: a registered `WindowsOnly` policy is evaluated as before; hosts without it get an error page instead of an exception, and no SSO button. `EnablePassThrough` is additive with default `Auto`. |
 | `RequireScope(..., bool prependConfiguredScopePrefix)` | Additive overload; the existing signature keeps prefixing. |
 | Extended auth-required response (challenge with `scope`) | Opt-in; without registration the responses are unchanged. |
 | Removal of `ExtendedAuthRequiredResponse` (incl. context, `HttpResponseHeader`, builder delegate, `ConfigureExtendedAuthRequiredResponse` / `ClearExtendedAuthRequiredResponse`, `out` overloads) | Breaking: introduced with commit `6d4a86a`, which is tagged `5.1.2` (possibly published). Accepted within the major version 6.0; replaced by `ConfigureChallengeHeaders` with BCL types and the `KeyValuePair` overloads (4.1.6). |

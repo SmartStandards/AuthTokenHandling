@@ -32,6 +32,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     private string[] _DefaultScopes;
     private string[] _ScopesSupported;
     private bool _RegisterProtectedResourceMetadata;
+    private PassThroughMode _EnablePassThrough;
 
     public CheapOAuthOptions() {
       _ValidateLogin = null;
@@ -48,6 +49,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       _DefaultScopes = new string[] { };
       _ScopesSupported = new string[] { };
       _RegisterProtectedResourceMetadata = true;
+      _EnablePassThrough = PassThroughMode.Auto;
     }
 
     #region " Credential Source "
@@ -340,6 +342,20 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     }
 
     /// <summary>
+    /// Controls the Windows pass-through (Single-Sign-On) login (default: 'Auto').
+    /// 'Auto' offers it only, if the host has a Windows authentication scheme ('Negotiate' / 'Windows')
+    /// or a 'WindowsOnly' authorization policy registered.
+    /// </summary>
+    public PassThroughMode EnablePassThrough {
+      get {
+        return _EnablePassThrough;
+      }
+      set {
+        _EnablePassThrough = value;
+      }
+    }
+
+    /// <summary>
     /// Validates the options (called during setup).
     /// </summary>
     internal void Validate() {
@@ -349,6 +365,28 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         );
       }
     }
+
+  }
+
+  /// <summary>
+  /// Controls the Windows pass-through (Single-Sign-On) login of the OAuth server.
+  /// </summary>
+  public enum PassThroughMode {
+
+    /// <summary>
+    /// Offered only, if the host has a Windows authentication scheme or a 'WindowsOnly' policy registered.
+    /// </summary>
+    Auto = 0,
+
+    /// <summary>
+    /// Always offered (a missing host setup results in an error page instead of an exception).
+    /// </summary>
+    On = 1,
+
+    /// <summary>
+    /// Never offered.
+    /// </summary>
+    Off = 2
 
   }
 

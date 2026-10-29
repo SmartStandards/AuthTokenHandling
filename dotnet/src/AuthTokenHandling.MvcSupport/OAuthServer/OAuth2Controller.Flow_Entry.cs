@@ -43,7 +43,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
 
     [Route("sso/authorize")]
-    [Authorize(Policy = "WindowsOnly")]
+    [AllowAnonymous] //the Windows identity is ensured by 'TryEnsurePassThroughIdentity' (incl. an optional 'WindowsOnly' policy)
     [HttpGet(), Produces("text/html")]
     public ActionResult GetLogonPageSso(
       [FromQuery(Name = "response_type")] string responseType,
@@ -62,8 +62,10 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "prompt")] string oauthPrompt = null
     ) {
 
-      if (!this.TryGetPasstroughUserIdentity(out string winUserName)) { 
-        return Challenge("Negotiate");
+      AuthPageViewModeOptions ssoViewOpt = new AuthPageViewModeOptions();
+      ssoViewOpt.LowSpaceEmbedded = (viewMode == 2);
+      if (!this.TryEnsurePassThroughIdentity(ssoViewOpt, out string winUserName, out ActionResult alternativeResult)) {
+        return alternativeResult;
       }
 
       return GetLogonPage(
@@ -250,6 +252,14 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
           string winUserName = null;
 
+          if ((loginHint == "pass-trough" || loginHint == "WINAUTH") && !this.IsPassThroughAvailable()) {
+            SecLogger.LogWarning("Pass-trough authentication requested, but it is not available on this server!");
+            loginHint = string.Empty;
+            if (pseudoUnattendedMode) {
+              return this.CreateClientErrorResult(responseType, redirectUri, state, "login_required", "Pass-trough authentication is not available.", viewOpt);
+            }
+          }
+
           if (loginHint == "pass-trough" || loginHint == "WINAUTH") {
 
             //Authorize-Attribut über der methode nötig!!!
@@ -341,7 +351,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
 
             //SSO VORSCHLAG (nur ein Angebot in From eines links)
-            if (!Request.GetDisplayUrl().Contains("sso")) {
+            if (!Request.GetDisplayUrl().Contains("sso") && this.IsPassThroughAvailable()) {
               //authFormTemplate = authFormTemplate.Replace(
               //   "</body>", $"<a href=\"sso/authorize{Request.QueryString}\">Use Single-Sign-On (pass-trough)</a></body>"
               //);
