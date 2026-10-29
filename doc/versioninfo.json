@@ -1,10 +1,10 @@
 {
-  "currentVersionWithSuffix": "6.0.3-develop",
+  "currentVersionWithSuffix": "6.0.4-develop",
   "releaseType": "develop",
-  "currentVersion": "6.0.3",
+  "currentVersion": "6.0.4",
   "currentMajor": 6,
   "currentMinor": 0,
-  "currentFix": 3,
+  "currentFix": 4,
   "previousVersion": "0.0.0",
   "changeGrade": "initial",
   "versionTimeInfo": "00:00:00",

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>SmartStandards.AuthTokenHandling.WinFormsClient</id>
-    <version>6.0.3-develop</version>
+    <version>6.0.4-develop</version>
     <title>SmartStandards.AuthTokenHandling.WinFormsClient</title>
     <authors>SmartStandards</authors>
     <owners>(public domain)</owners>
@@ -16,16 +16,16 @@
     <projectUrl>https://github.com/SmartStandards/AuthTokenHandling</projectUrl>
     <dependencies>
       <group targetFramework=".NETFramework4.8">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[6.0.3-develop]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[6.0.4-develop]" />
         <dependency id="System.Text.Encodings.Web" version="6.0.0" />
         <dependency id="Microsoft.Web.WebView2" version="1.0.3967.48" />
       </group>
       <group targetFramework="net8.0">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[6.0.3-develop]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[6.0.4-develop]" />
         <dependency id="Microsoft.Web.WebView2" version="1.0.3967.48" />
       </group>
       <group targetFramework="net10.0">
-        <dependency id="SmartStandards.AuthTokenHandling" version="[6.0.3-develop]" />
+        <dependency id="SmartStandards.AuthTokenHandling" version="[6.0.4-develop]" />
         <dependency id="Microsoft.Web.WebView2" version="1.0.3967.48" />
       </group>
     </dependencies>
