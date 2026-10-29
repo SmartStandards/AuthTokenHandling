@@ -20,6 +20,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\DefaultAuthPageBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\TemplateAuthPageBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\TemplateAuthPageBuilder.Templates.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\TemplateAuthPageBuilder.Background.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\PngImageCodec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Background.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Prompt.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Post.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Retrieval.cs" />
@@ -40,5 +43,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)OAuthDiscovery\OAuthDiscoverController.tmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)OAuthBG.png">
+      <LogicalName>AuthTokenHandling.OAuthBG.png</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

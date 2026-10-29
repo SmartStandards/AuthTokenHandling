@@ -19,7 +19,7 @@ namespace Security.AccessTokenHandling.OAuth {
 
   /// <summary>
   /// INTERACTIVE-ISSUER!
-  /// Will open an embedded browser window (Cef-Sharp based) to perform the auth flow.
+  /// Will open an embedded browser window (Microsoft WebView2 based) to perform the auth flow.
   /// </summary>
   public class EmbeddedBrowserOAuthIssuer : IAccessTokenIssuer {
 

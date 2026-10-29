@@ -1,5 +1,4 @@
-﻿using CefSharp.DevTools.DOM;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Security.AccessTokenHandling;
 using Security.AccessTokenHandling.OAuth;
 using Security.AccessTokenHandling.OAuth.OobProviders;
@@ -255,7 +254,7 @@ namespace AuthTokenHandling.TestApp {
 
     }
 
-    private void btnDemoCefTest_Click(object sender, EventArgs e) {
+    private void btnDemoEmbeddedBrowserTest_Click(object sender, EventArgs e) {
 
       var oauthProvider = new GenericOAuthOperationsProvider();
       oauthProvider.ApplyCommonConfigurationValues(
@@ -266,14 +265,14 @@ namespace AuthTokenHandling.TestApp {
         supportsIframe: true
       );
 
-      IAccessTokenIssuer cefIssuer = new EmbeddedBrowserOAuthIssuer(
+      IAccessTokenIssuer embeddedBrowserIssuer = new EmbeddedBrowserOAuthIssuer(
         _OurDemoOAuthClientId, _OurDemoOAuthClientSecret,
         oauthProvider, this
       );
 
       Dictionary<string, object> claimsToRequest = new Dictionary<string, object>();
       claimsToRequest["login_hint"] = "U_001";
-      cefIssuer.TryRequestAccessToken(claimsToRequest, out TokenIssuingResult result);
+      embeddedBrowserIssuer.TryRequestAccessToken(claimsToRequest, out TokenIssuingResult result);
 
     }
 

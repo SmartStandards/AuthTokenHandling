@@ -23,6 +23,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     private string _PersistToDir;
     private string _PersistencePassphrase;
     private string _LoginPageTitle;
+    private string _LoginPageBackgroundCiColor;
+    private string _LoginPageCustomBackgroundImageUrl;
     private TimeSpan _AccessTokenLifetime;
     private TimeSpan _RefreshTokenLifetime;
     private int _MaxClientRegistrations;
@@ -205,6 +207,31 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       }
       set {
         _LoginPageTitle = value;
+      }
+    }
+
+    /// <summary>
+    /// OPTIONAL: a CI color (e.g. '#7b2cbf'), which is applied to the built-in background image of the login pages
+    /// (see 'TemplateAuthPageBuilder.BackgroundCiColor'). Null (default): the original image is used.
+    /// </summary>
+    public string LoginPageBackgroundCiColor {
+      get {
+        return _LoginPageBackgroundCiColor;
+      }
+      set {
+        _LoginPageBackgroundCiColor = value;
+      }
+    }
+
+    /// <summary>
+    /// OPTIONAL: the url of a custom background image for the login pages (replaces the built-in one).
+    /// </summary>
+    public string LoginPageCustomBackgroundImageUrl {
+      get {
+        return _LoginPageCustomBackgroundImageUrl;
+      }
+      set {
+        _LoginPageCustomBackgroundImageUrl = value;
       }
     }
 

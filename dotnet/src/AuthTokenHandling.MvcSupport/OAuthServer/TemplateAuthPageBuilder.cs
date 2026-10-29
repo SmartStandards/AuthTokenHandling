@@ -236,6 +236,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         model.BorderColor = "#3a3f46";
         model.MutedColor = "#9aa3ad";
         model.AccentColor = "#3d93ad";
+        model.AccentTextColor = "#ffffff";
+        model.AccentFocusColor = "rgba(47, 122, 146, 0.25)";
         model.ErrorBgColor = "#3d1c1f";
         model.ErrorTextColor = "#ff9b9b";
       }
@@ -247,15 +249,23 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         model.BorderColor = "#d5dbe1";
         model.MutedColor = "#6b7480";
         model.AccentColor = "#2f7a92";
+        model.AccentTextColor = "#ffffff";
+        model.AccentFocusColor = "rgba(47, 122, 146, 0.25)";
         model.ErrorBgColor = "#fdecec";
         model.ErrorTextColor = "#b42318";
       }
+
+      if (_BackgroundCiColor != null) {
+        ApplyCiColorToControls(model, _BackgroundCiColor, viewMode.Darkmode);
+      }
+
       if (!string.IsNullOrWhiteSpace(viewMode.CustomBgColor)) {
         model.BgColor = viewMode.CustomBgColor;
       }
       if (!string.IsNullOrWhiteSpace(viewMode.CustomTextColor)) {
         model.TextColor = viewMode.CustomTextColor;
       }
+      model.BackgroundImageUrl = this.GetBackgroundImageUrl(viewMode);
       return model;
     }
 
@@ -307,6 +317,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       private string _BorderColor;
       private string _MutedColor;
       private string _AccentColor;
+      private string _AccentTextColor;
+      private string _AccentFocusColor;
       private string _ErrorBgColor;
       private string _ErrorTextColor;
       private string _ResponseType;
@@ -324,6 +336,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       private string _Message;
       private string _Token;
       private string _CustomBody;
+      private string _BackgroundImageUrl;
 
       public string Title { get { return _Title; } set { _Title = value; } }
       public string Heading { get { return _Heading; } set { _Heading = value; } }
@@ -340,6 +353,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       public string BorderColor { get { return _BorderColor; } set { _BorderColor = value; } }
       public string MutedColor { get { return _MutedColor; } set { _MutedColor = value; } }
       public string AccentColor { get { return _AccentColor; } set { _AccentColor = value; } }
+      public string AccentTextColor { get { return _AccentTextColor; } set { _AccentTextColor = value; } }
+      public string AccentFocusColor { get { return _AccentFocusColor; } set { _AccentFocusColor = value; } }
       public string ErrorBgColor { get { return _ErrorBgColor; } set { _ErrorBgColor = value; } }
       public string ErrorTextColor { get { return _ErrorTextColor; } set { _ErrorTextColor = value; } }
       public string ResponseType { get { return _ResponseType; } set { _ResponseType = value; } }
@@ -358,6 +373,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       public string Message { get { return _Message; } set { _Message = value; } }
       public string Token { get { return _Token; } set { _Token = value; } }
       public string CustomBody { get { return _CustomBody; } set { _CustomBody = value; } }
+
+      /// <summary>
+      /// The (css-escaped) url of the background image - null, if no background image should be shown.
+      /// It is rendered raw (inside a style element HTML-encoding would not be decoded).
+      /// </summary>
+      public string BackgroundImageUrl { get { return _BackgroundImageUrl; } set { _BackgroundImageUrl = value; } }
 
       /// <summary>
       /// The first letter of the pass-through user (without domain), used as avatar.

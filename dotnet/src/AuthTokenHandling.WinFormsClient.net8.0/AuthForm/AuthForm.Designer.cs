@@ -30,6 +30,8 @@ namespace Security.AccessTokenHandling {
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AuthForm));
       timer1 = new Timer(components);
       txtUrl = new TextBox();
+      webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+      ((System.ComponentModel.ISupportInitialize)webView).BeginInit();
       this.SuspendLayout();
       // 
       // timer1
@@ -49,24 +51,37 @@ namespace Security.AccessTokenHandling {
       txtUrl.Text = "https://www.google.de";
       txtUrl.TextChanged += this.txtUrl_TextChanged;
       // 
+      // webView
+      // 
+      webView.AllowExternalDrop = false;
+      webView.DefaultBackgroundColor = System.Drawing.Color.White;
+      webView.Dock = DockStyle.Fill;
+      webView.Location = new System.Drawing.Point(0, 18);
+      webView.Name = "webView";
+      webView.Size = new System.Drawing.Size(800, 432);
+      webView.TabIndex = 0;
+      webView.ZoomFactor = 1D;
+      // 
       // AuthForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
       this.AutoScaleMode = AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.White;
       this.ClientSize = new System.Drawing.Size(800, 450);
+      this.Controls.Add(webView);
       this.Controls.Add(txtUrl);
       this.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
       this.Name = "AuthForm";
       this.Text = "Logon-Window (Browser)";
       this.Load += this.BrowserForm_Load;
+      ((System.ComponentModel.ISupportInitialize)webView).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
     }
 
     #endregion
 
-    private CefControl chromiumWebBrowser1;
+    private Microsoft.Web.WebView2.WinForms.WebView2 webView;
     private System.Windows.Forms.Timer timer1;
     private System.Windows.Forms.TextBox txtUrl;
   }

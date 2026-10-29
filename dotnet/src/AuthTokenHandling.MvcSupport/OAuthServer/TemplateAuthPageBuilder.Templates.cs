@@ -39,7 +39,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       --ath-border: {{ _Page.BorderColor }};
       --ath-muted: {{ _Page.MutedColor }};
       --ath-accent: {{ _Page.AccentColor }};
-      --ath-accent-text: #ffffff;
+      --ath-accent-text: {{ _Page.AccentTextColor }};
+      --ath-accent-focus: {{ _Page.AccentFocusColor }};
       --ath-error-bg: {{ _Page.ErrorBgColor }};
       --ath-error-text: {{ _Page.ErrorTextColor }};
       --ath-radius: 10px;
@@ -101,7 +102,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .ath-field input:focus { border-color: var(--ath-accent); box-shadow: 0 0 0 3px rgba(47, 122, 146, 0.25); }
+    box-shadow: 0 0 0 3px var(--ath-accent-focus); }
 
     .ath-error {
       padding: 10px 12px;
@@ -217,6 +218,16 @@ namespace Security.AccessTokenHandling.OAuth.Server {
     @media (max-width: 420px) {
       body { padding: 0; justify-content: flex-start; }
       .ath-card { border-radius: 0; border-left: 0; border-right: 0; }
+    }
+  </style>
+  <style u-if=""_Page.BackgroundImageUrl"">
+    body.ath-page {
+      background-color: var(--ath-bg);
+      background-image: url(""{{ raw _Page.BackgroundImageUrl }}"");
+      background-position: center center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
   </style>
 </head>";

@@ -52,8 +52,11 @@ namespace Security.AccessTokenHandling {
       services.AddSingleton(clientRegistry);
       services.AddSingleton(service);
       services.AddSingleton<IOAuthService>(service);
+      TemplateAuthPageBuilder pageBuilder = new TemplateAuthPageBuilder(options.LoginPageTitle, null, null);
+      pageBuilder.BackgroundCiColor = options.LoginPageBackgroundCiColor;
+      pageBuilder.CustomBackgroundImageUrl = options.LoginPageCustomBackgroundImageUrl;
       services.TryAddSingleton<IAuthPageBuilder>(
-        new CheapOAuthAuthPageBuilder(new TemplateAuthPageBuilder(options.LoginPageTitle, null, null), clientRegistry)
+        new CheapOAuthAuthPageBuilder(pageBuilder, clientRegistry)
       );
 
       //OAuth2Controller (incl. RFC 7591 registration) + OAuthDiscoverController (RFC 8414) - both delegate to 'IOAuthService'

@@ -70,7 +70,7 @@ namespace AuthTokenHandling.TestApp {
       label14 = new System.Windows.Forms.Label();
       label15 = new System.Windows.Forms.Label();
       btnCredentialDialogTest = new System.Windows.Forms.Button();
-      btnDemoCefTest = new System.Windows.Forms.Button();
+      btnDemoEmbeddedBrowserTest = new System.Windows.Forms.Button();
       btnGoogleExtTest = new System.Windows.Forms.Button();
       tabPage5 = new System.Windows.Forms.TabPage();
       tabControl1.SuspendLayout();
@@ -566,15 +566,15 @@ namespace AuthTokenHandling.TestApp {
       btnCredentialDialogTest.UseVisualStyleBackColor = true;
       btnCredentialDialogTest.Click += this.btnCredentialDialogTest_Click;
       // 
-      // btnDemoCefTest
+      // btnDemoEmbeddedBrowserTest
       // 
-      btnDemoCefTest.Location = new System.Drawing.Point(46, 92);
-      btnDemoCefTest.Name = "btnDemoCefTest";
-      btnDemoCefTest.Size = new System.Drawing.Size(279, 46);
-      btnDemoCefTest.TabIndex = 6;
-      btnDemoCefTest.Text = "CodeFlow auf DemoService mit CEF";
-      btnDemoCefTest.UseVisualStyleBackColor = true;
-      btnDemoCefTest.Click += this.btnDemoCefTest_Click;
+      btnDemoEmbeddedBrowserTest.Location = new System.Drawing.Point(46, 92);
+      btnDemoEmbeddedBrowserTest.Name = "btnDemoEmbeddedBrowserTest";
+      btnDemoEmbeddedBrowserTest.Size = new System.Drawing.Size(279, 46);
+      btnDemoEmbeddedBrowserTest.TabIndex = 6;
+      btnDemoEmbeddedBrowserTest.Text = "CodeFlow auf DemoService mit WebView2";
+      btnDemoEmbeddedBrowserTest.UseVisualStyleBackColor = true;
+      btnDemoEmbeddedBrowserTest.Click += this.btnDemoEmbeddedBrowserTest_Click;
       // 
       // btnGoogleExtTest
       // 
@@ -590,7 +590,7 @@ namespace AuthTokenHandling.TestApp {
       // 
       tabPage5.Controls.Add(btnGoogleExtTest);
       tabPage5.Controls.Add(btnCredentialDialogTest);
-      tabPage5.Controls.Add(btnDemoCefTest);
+      tabPage5.Controls.Add(btnDemoEmbeddedBrowserTest);
       tabPage5.Location = new System.Drawing.Point(4, 24);
       tabPage5.Name = "tabPage5";
       tabPage5.Padding = new System.Windows.Forms.Padding(3);
@@ -680,7 +680,7 @@ namespace AuthTokenHandling.TestApp {
     private System.Windows.Forms.Button btnCredentialDialogTest;
     private System.Windows.Forms.TabPage tabPage5;
     private System.Windows.Forms.Button btnGoogleExtTest;
-    private System.Windows.Forms.Button btnDemoCefTest;
+    private System.Windows.Forms.Button btnDemoEmbeddedBrowserTest;
   }
 }
 

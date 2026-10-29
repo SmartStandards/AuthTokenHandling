@@ -17,15 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="BrowserForm.cs" />
-    <Compile Remove="BrowserForm.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="BrowserForm.resx" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="..\..\test\AuthTokenHandling.DemoWebService\DemoOAuthService.DemoCfg.cs" Link="DemoOAuthService.DemoCfg.cs" />
   </ItemGroup>
 
@@ -34,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.WinForms.NETCore" Version="138.0.340" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="UJMW.DynamicClient" Version="5.6.3" />
   </ItemGroup>
