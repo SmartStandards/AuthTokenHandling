@@ -208,7 +208,7 @@ namespace Security.AccessTokenHandling.OAuth {
 
       dlg.SecondsToWaitBeforeShowing = secondsToWaitBeforeShowing;
       dlg.Opacity = 0.99;
-      dlg.WindowState = FormWindowState.Minimized;
+      dlg.WindowState = FormWindowState.Normal;
 
       Rectangle wa = Screen.PrimaryScreen.WorkingArea;
       if (windowWidth < 50) {

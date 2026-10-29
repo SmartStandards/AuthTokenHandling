@@ -197,6 +197,15 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         url.Append("&state=").Append(Uri.EscapeDataString(state));
       }
 
+      //PKCE (RFC 7636, optional - enabled via config 'pkce' = 'true'): the verifier is kept within this
+      //provider instance and will be sent when the code is exchanged (requires the same provider instance)
+      _PendingPkceCodeVerifier = null;
+      if (IsTrue(this.GetConfig("pkce", "false"))) {
+        _PendingPkceCodeVerifier = CreatePkceCodeVerifier();
+        url.Append("&code_challenge=").Append(Uri.EscapeDataString(CreatePkceCodeChallenge(_PendingPkceCodeVerifier)));
+        url.Append("&code_challenge_method=S256");
+      }
+
       if (additionalQueryParams != null) {
         string[] fobiddenAdditionalParams = { "response_type", "client_id", "redirect_uri", "scope", "state", "nonce" };
         foreach (var kvp in additionalQueryParams) {
@@ -218,6 +227,38 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       }
 
       return url.ToString();
+    }
+
+    private string _PendingPkceCodeVerifier = null;
+
+    /// <summary>
+    /// Creates a random PKCE 'code_verifier' (43 chars, BASE64URL).
+    /// </summary>
+    private static string CreatePkceCodeVerifier() {
+
+      byte[] buffer = new byte[32];
+      using (System.Security.Cryptography.RandomNumberGenerator rng = System.Security.Cryptography.RandomNumberGenerator.Create()) {
+        rng.GetBytes(buffer);
+      }
+
+      return ToBase64Url(buffer);
+    }
+
+    /// <summary>
+    /// Computes BASE64URL-ENCODE(SHA256(ASCII(code_verifier))) without padding.
+    /// </summary>
+    private static string CreatePkceCodeChallenge(string codeVerifier) {
+
+      byte[] hash;
+      using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create()) {
+        hash = sha.ComputeHash(Encoding.ASCII.GetBytes(codeVerifier));
+      }
+
+      return ToBase64Url(hash);
+    }
+
+    private static string ToBase64Url(byte[] data) {
+      return Convert.ToBase64String(data).TrimEnd('=').Replace('+', '-').Replace('/', '_');
     }
 
     [Obsolete("Implicit Grant is deprecated.")]
@@ -328,7 +369,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
       string redirectUriAgain = RemoveQueryAndFragment(uri);
       string code = queryValues["code"];
 
-      if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) {
+      //public clients (PKCE) don't need a secret
+      if (String.IsNullOrWhiteSpace(clientId) || (String.IsNullOrWhiteSpace(clientSecret) && _PendingPkceCodeVerifier == null)) {
         throw new InvalidOperationException("clientId and clientSecret are required to exchange the code for tokens.");
       }
 
@@ -366,7 +408,8 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
         result.error_description = "code must not be empty.";
         return false; 
       }
-      if (String.IsNullOrWhiteSpace(clientId) || String.IsNullOrWhiteSpace(clientSecret)) {
+      //public clients (PKCE) don't need a secret
+      if (String.IsNullOrWhiteSpace(clientId) || (String.IsNullOrWhiteSpace(clientSecret) && _PendingPkceCodeVerifier == null)) {
         result.error = "missing_client_credentials";
         result.error_description = "clientId and clientSecret are required."; 
         return false; 
@@ -658,7 +701,16 @@ namespace Security.AccessTokenHandling.OAuth.OobProviders {
 
       HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, tokenEndpointUrl);
 
-      if (this.ClientCredentialsViaBasicAuth) {
+      if (_PendingPkceCodeVerifier != null) {
+        form["code_verifier"] = _PendingPkceCodeVerifier;
+        _PendingPkceCodeVerifier = null;
+      }
+
+      if (String.IsNullOrWhiteSpace(clientSecret)) {
+        //public client (PKCE)
+        form["client_id"] = clientId;
+      }
+      else if (this.ClientCredentialsViaBasicAuth) {
         ApplyBasicAuth(req, clientId, clientSecret); //Standard: Client-Auth via Basic (RFC 6749 §2.3.1)
       }
       else {

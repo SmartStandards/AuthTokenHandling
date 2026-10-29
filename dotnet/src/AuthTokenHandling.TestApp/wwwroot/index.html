@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AuthTest</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div id="app">
+
+    <aside id="leftPanel">
+      <div class="panel-title">AuthTokenConfig Profiles</div>
+      <div class="toolbar">
+        <button id="btnNewProfile" title="Create a new profile">+ New</button>
+        <button id="btnCloneProfile" title="Duplicate the selected profile">Clone</button>
+        <button id="btnDeleteProfile" class="danger" title="Delete the selected profile">Delete</button>
+      </div>
+      <ul id="profileList" class="profile-list"></ul>
+      <div class="toolbar">
+        <button id="btnImport" title="Import profiles or bare AuthTokenConfigs from JSON files">Import&hellip;</button>
+        <button id="btnExport" title="Export the selected profile">Export&hellip;</button>
+        <button id="btnExportAll" title="Export all profiles">Export all&hellip;</button>
+      </div>
+      <div id="settingsPath" class="hint"></div>
+    </aside>
+
+    <main id="mainPanel">
+      <div class="profile-header">
+        <label>Profile name <input id="profileName" type="text" /></label>
+        <span id="dirtyMarker" class="dirty hidden">&#9679; unsaved</span>
+        <span class="spacer"></span>
+        <button id="btnRevert">Revert</button>
+        <button id="btnSave" class="primary">Save (Ctrl+S)</button>
+      </div>
+
+      <nav class="tabs" id="tabs">
+        <button data-tab="config" class="active">Config</button>
+        <button data-tab="json">Raw JSON</button>
+        <button data-tab="factories">Factories</button>
+        <button data-tab="jwt">Local JWT</button>
+        <button data-tab="oauth">OAuth Flows</button>
+      </nav>
+
+      <section class="tab-page" id="tab-config"></section>
+
+      <section class="tab-page hidden" id="tab-json">
+        <p class="hint">The complete profile ('Name', 'Config' = AuthTokenConfig, 'OAuth' = test-client flow settings). Apply to take the changes over into the editor.</p>
+        <textarea id="rawJson" class="code tall" spellcheck="false"></textarea>
+        <div class="toolbar">
+          <button id="btnApplyJson" class="primary">Apply JSON</button>
+          <button id="btnReloadJson">Reload from editor</button>
+          <button id="btnCopyConfigJson">Copy 'Config' only</button>
+        </div>
+      </section>
+
+      <section class="tab-page hidden" id="tab-factories">
+        <p class="hint">Creates the instances via <code>IssuerFactory.CreateFromConfig</code> / <code>IntrospectorFactory.CreateFromConfig</code> using the (unsaved) state of the editor.</p>
+        <div class="toolbar">
+          <button id="btnDescribeIssuer">Initialize Issuer</button>
+          <button id="btnDescribeIntrospector">Initialize Introspector</button>
+        </div>
+        <h3>Issue token via IssuerFactory</h3>
+        <div class="grid2">
+          <label>Subject (sub)<input id="issueSubject" type="text" placeholder="e.g. demo" /></label>
+          <label>Audience (aud)<input id="issueAudience" type="text" /></label>
+          <label>Scopes<input id="issueScopes" type="text" placeholder="space separated" /></label>
+        </div>
+        <label>Additional claims (JSON object)<textarea id="issueClaims" class="code" spellcheck="false">{}</textarea></label>
+        <div class="toolbar">
+          <button id="btnIssue" class="primary">Issue token</button>
+          <button id="btnIntrospect">Introspect current access token</button>
+        </div>
+        <h3>Result</h3>
+        <pre id="factoryResult" class="result"></pre>
+      </section>
+
+      <section class="tab-page hidden" id="tab-jwt">
+        <p class="hint">Issues a local JWT via the factory (IssueMode is forced to LOCAL_JWT_GENERATION, using 'JwtSelfSignKey' / 'JwtSelfSignAlg' / 'JwtExpMinutes' / 'Claims' of the editor) and validates it locally (LOCAL_JWT_VALIDATION with 'JwtValidationKey').</p>
+        <div class="grid2">
+          <label>Sign key<input id="jwtKey" type="text" /></label>
+          <label>Algorithm<select id="jwtAlg"></select></label>
+          <label>Expiration (minutes)<input id="jwtExp" type="number" min="1" /></label>
+          <label>Subject (sub)<input id="jwtSubject" type="text" placeholder="e.g. demo" /></label>
+          <label>Audience (aud)<input id="jwtAudience" type="text" /></label>
+          <label>Scopes<input id="jwtScopes" type="text" placeholder="space separated" /></label>
+        </div>
+        <label>Additional claims (JSON object)<textarea id="jwtClaims" class="code" spellcheck="false">{}</textarea></label>
+        <div class="toolbar">
+          <button id="btnJwtIssue" class="primary">Issue local JWT</button>
+          <button id="btnJwtValidate">Validate current access token locally</button>
+          <button id="btnJwtTakeOver" title="Writes the key/alg/exp values back into the config editor">Take over into config</button>
+        </div>
+        <pre id="jwtResult" class="result"></pre>
+      </section>
+
+      <section class="tab-page hidden" id="tab-oauth">
+        <div class="columns">
+          <div>
+            <h3>Interactive</h3>
+            <p class="hint">Opens the embedded browser (<code>EmbeddedBrowserOAuthIssuer</code>) using AuthEndpointUrl / RetrieveEndpointUrl / ClientId / ClientSecret.</p>
+            <div class="toolbar">
+              <button id="btnOAuthInteractive" class="primary">Run interactive flow</button>
+            </div>
+            <h3>Manual (external browser)</h3>
+            <div class="toolbar">
+              <button id="btnOAuthUrl">Generate authorize URL</button>
+              <button id="btnOAuthOpenUrl">Open in browser</button>
+            </div>
+            <textarea id="oauthAuthorizeUrl" class="code small" spellcheck="false" placeholder="authorize url"></textarea>
+            <label>Final redirected URL<textarea id="oauthRedirectedUrl" class="code small" spellcheck="false" placeholder="paste the url the browser was redirected to"></textarea></label>
+            <div class="toolbar">
+              <button id="btnOAuthFromUrl">Get token from redirected URL</button>
+            </div>
+            <label>Authorization code<input id="oauthCode" type="text" /></label>
+            <div class="toolbar">
+              <button id="btnOAuthExchange">Exchange code</button>
+            </div>
+          </div>
+          <div>
+            <h3>Non-interactive</h3>
+            <div class="toolbar">
+              <button id="btnOAuthClientCredentials" class="primary">Client credentials</button>
+              <button id="btnOAuthRefresh">Refresh (current refresh token)</button>
+            </div>
+            <h3>Provider operations</h3>
+            <div class="toolbar">
+              <button id="btnOAuthDescribe">Show provider config</button>
+              <button id="btnOAuthValidate">Validate token</button>
+              <button id="btnOAuthSubject">Resolve subject / scopes</button>
+            </div>
+          </div>
+        </div>
+        <h3>Result</h3>
+        <pre id="oauthResult" class="result"></pre>
+      </section>
+
+      <section id="tokenPanel">
+        <div class="panel-title">
+          Current tokens
+          <span class="spacer"></span>
+          <button id="btnClearTokens">Clear</button>
+        </div>
+        <div class="token-grid">
+          <div>
+            <label>access_token <button class="link" data-copy="tokAccess">copy</button> <button class="link" data-decode="tokAccess">decode</button></label>
+            <textarea id="tokAccess" class="code small" spellcheck="false"></textarea>
+            <label>refresh_token <button class="link" data-copy="tokRefresh">copy</button></label>
+            <textarea id="tokRefresh" class="code tiny" spellcheck="false"></textarea>
+            <label>id_token <button class="link" data-copy="tokId">copy</button> <button class="link" data-decode="tokId">decode</button></label>
+            <textarea id="tokId" class="code tiny" spellcheck="false"></textarea>
+          </div>
+          <div>
+            <label>Decoded (no signature check)</label>
+            <pre id="tokDecoded" class="result decoded"></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+  <div id="busy" class="busy hidden"><div class="spinner"></div><span id="busyText">working&hellip;</span></div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
