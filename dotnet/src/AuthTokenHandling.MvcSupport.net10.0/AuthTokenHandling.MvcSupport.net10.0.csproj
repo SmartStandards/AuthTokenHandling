@@ -39,7 +39,9 @@
   <Import Project="..\AuthTokenHandling.MvcSupport\AuthTokenHandling.MvcSupport.projitems" Label="Shared" />
 
   <ItemGroup>
+    <Compile Include="..\AuthTokenHandling.MvcSupport.net8.0\MicroTemplateEngine.cs" Link="MicroTemplateEngine.cs" />
     <Compile Include="..\AuthTokenHandling.net8.0\SmartStandards.Logging.cs" Link="SmartStandards.Logging.cs" />
+    <Compile Include="..\AuthTokenHandling.MvcSupport.net8.0\HtmlDocGen.cs" Link="HtmlDocGen.cs" Condition="Exists('..\AuthTokenHandling.MvcSupport.net8.0\HtmlDocGen.cs')" />
   </ItemGroup>
 
   <ItemGroup>

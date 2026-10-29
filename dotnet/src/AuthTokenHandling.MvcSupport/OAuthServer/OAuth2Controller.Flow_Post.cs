@@ -46,6 +46,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       string responseType = null;
       string codeChallenge = null;
       string resource = null;
+      string oauthPrompt = null;
 
       AuthPageViewModeOptions viewOpt = new AuthPageViewModeOptions();
 
@@ -86,6 +87,9 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         }
         if (value.TryGetValue(_ResourceFormFieldName, out StringValues resourceValue)) {
           resource = resourceValue.ToString();
+        }
+        if (value.TryGetValue(_PromptFormFieldName, out StringValues oauthPromptValue)) {
+          oauthPrompt = oauthPromptValue.ToString();
         }
 
         #endregion
@@ -131,8 +135,6 @@ namespace Security.AccessTokenHandling.OAuth.Server {
             }
           }
 
-          string redirectUrl = $"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}";
-
           //credentials prüfen...
           bool logonSuccess = _AuthService.TryAuthenticate(
             clientId, login, password, winAuthSuccess, state, out sessionId, out var step1Msg
@@ -141,11 +143,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           //und zurück zur seite leiten
           if (logonSuccess) {
             //inkl. übergabe des OTP
-            return this.Redirect(AppendRoundtripQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}", codeChallenge, resource));
+            return this.Redirect(AppendRoundtripQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&otp={sessionId}", codeChallenge, resource, oauthPrompt));
           }
           else {
             //inkl. übergabe der fehlermeldung
-            return this.Redirect(AppendRoundtripQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&err={step1Msg}", codeChallenge, resource));
+            return this.Redirect(AppendRoundtripQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&view_mode={viewMode}&err={step1Msg}", codeChallenge, resource, oauthPrompt));
           }
 
         }
@@ -154,59 +156,13 @@ namespace Security.AccessTokenHandling.OAuth.Server {
 
         string[] selectedScopes = value.Keys.Where((k) => k.StartsWith("scope_")).Select((k) => k.Substring(6)).ToArray();
 
-        //if (redirectUri.Contains("?")) {
-        //  redirectUri = redirectUri + "&";
-        //}
-        //else {
-        //  redirectUri = redirectUri + "?";
-        //}
-
-        if (responseType.Equals("code", StringComparison.InvariantCultureIgnoreCase)) {
-
-          bool success = _AuthService.TryValidateSessionIdAndCreateRetrievalCode(
-            clientId, sessionId, selectedScopes, codeChallenge, resource, out string code, out string step2Msg
-          );
-
-          if (!success || string.IsNullOrWhiteSpace(code)) {
-            return this.Redirect(AppendRoundtripQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionId}&view_mode={viewMode}&err={step2Msg}", codeChallenge, resource));
-          }
-
-          redirectUri = AppendUrlParam(redirectUri, "code", code, false);
+        ActionResult issuingResult = this.IssueAuthorizationResult(
+          responseType, clientId, sessionId, selectedScopes, redirectUri, state, codeChallenge, resource, viewOpt, out string step2Msg
+        );
+        if (issuingResult == null) {
+          return this.Redirect(AppendRoundtripQueryParams($"./authorize?response_type={responseType}&client_id={clientId}&state={state}&scope={prefferredScope}&login_hint={login}&redirect_uri={redirectUri}&otp={sessionId}&view_mode={viewMode}&err={step2Msg}", codeChallenge, resource, oauthPrompt));
         }
-        else if (responseType.Equals("token", StringComparison.InvariantCultureIgnoreCase)) {
-          //token oder id_token kann gefordert sein!
-
-          TokenIssuingResult tokenResult = null;
-          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out tokenResult)) {
-            redirectUri = AppendUrlParam(redirectUri, tokenResult.ToString());
-          }
-          else {
-            if(!string.IsNullOrWhiteSpace(tokenResult?.error)) {
-              redirectUri = AppendUrlParam(redirectUri, "error", tokenResult.error, true);
-            }
-            else {
-              redirectUri = AppendUrlParam(redirectUri, "error", "no-token", false);
-            }       
-          }
-        }
-        else if (responseType.Equals("display", StringComparison.InvariantCultureIgnoreCase)) {
-          if (_AuthService.TryValidateSessionIdAndCreateToken(clientId, sessionId, selectedScopes, out TokenIssuingResult result)) {
-            string displayPage = _AuthPageBuilder.GetTokenDisplayPage(result, viewOpt);
-            return this.Content(displayPage, "text/html");
-          }
-          else {
-            string errorPage = _AuthPageBuilder.GetErrorPage("Got no Token to display...", viewOpt);
-            return this.Content(errorPage, "text/html");
-          }
-        }
-        else {
-          redirectUri = AppendUrlParam(redirectUri, "error", "unknown-response-type", false);
-        }
-
-        if (!string.IsNullOrWhiteSpace(state)) {
-          redirectUri = AppendUrlParam(redirectUri, "state", state, false);
-        }
-        return this.Redirect(redirectUri);
+        return issuingResult;
       }
       catch (Exception ex) {
         SecLogger.LogCritical(ex);

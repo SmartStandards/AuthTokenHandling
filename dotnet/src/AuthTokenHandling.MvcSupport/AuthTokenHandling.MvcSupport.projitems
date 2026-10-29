@@ -18,6 +18,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourceRegistry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthDiscovery\WellKnownOAuthProtectedResourcePathStartupFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\DefaultAuthPageBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\TemplateAuthPageBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\TemplateAuthPageBuilder.Templates.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Prompt.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Post.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.Flow_Retrieval.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OAuthServer\OAuth2Controller.StateBag.cs" />
@@ -37,5 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)OAuthDiscovery\OAuthDiscoverController.tmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)OAuthServer\PromptTmp.txt" />
   </ItemGroup>
 </Project>

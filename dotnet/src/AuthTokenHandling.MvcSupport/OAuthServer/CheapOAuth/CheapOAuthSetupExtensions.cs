@@ -53,7 +53,7 @@ namespace Security.AccessTokenHandling {
       services.AddSingleton(service);
       services.AddSingleton<IOAuthService>(service);
       services.TryAddSingleton<IAuthPageBuilder>(
-        new CheapOAuthAuthPageBuilder(new DefaultAuthPageBuilder(options.LoginPageTitle, null, null), clientRegistry)
+        new CheapOAuthAuthPageBuilder(new TemplateAuthPageBuilder(options.LoginPageTitle, null, null), clientRegistry)
       );
 
       //OAuth2Controller (incl. RFC 7591 registration) + OAuthDiscoverController (RFC 8414) - both delegate to 'IOAuthService'

@@ -15,6 +15,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       public string OriginalClientId { get; set; }
       public string OriginalCodeChallenge { get; set; }
       public string OriginalResource { get; set; }
+      public string OriginalPrompt { get; set; }
 
       [Obsolete("Should be refactored to explicit values!")]
       public int ViewMode { get; set; }

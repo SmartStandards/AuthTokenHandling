@@ -58,7 +58,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "code")] string codeFromDelegate, //NUR WENN EIN DELEGATE DAZWISCHEN HING
       [FromQuery(Name = "code_challenge")] string codeChallenge,
       [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod,
-      [FromQuery(Name = "resource")] string resource
+      [FromQuery(Name = "resource")] string resource,
+      [FromQuery(Name = "prompt")] string oauthPrompt = null
     ) {
 
       if (!this.TryGetPasstroughUserIdentity(out string winUserName)) { 
@@ -68,7 +69,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       return GetLogonPage(
         responseType, clientId, redirectUri, state, rawScopePreference, "pass-trough",
         errorMessagePassedViaQueryString, sessionId, viewMode, codeFromDelegate,
-        codeChallenge, codeChallengeMethod, resource
+        codeChallenge, codeChallengeMethod, resource, oauthPrompt
       );
 
     }
@@ -89,7 +90,8 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       [FromQuery(Name = "code")] string codeFromDelegate, //NUR WENN EIN DELEGATE DAZWISCHEN HING
       [FromQuery(Name = "code_challenge")] string codeChallenge,
       [FromQuery(Name = "code_challenge_method")] string codeChallengeMethod,
-      [FromQuery(Name = "resource")] string resource
+      [FromQuery(Name = "resource")] string resource,
+      [FromQuery(Name = "prompt")] string oauthPrompt = null
     ) {
 
       Uri thisUri = new Uri(HttpContext.Request.GetDisplayUrl());
@@ -127,7 +129,10 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           resource = null;
         }
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        //PROMPT (OIDC, optional)
+        if (!TryValidatePromptParam(oauthPrompt, out string promptError)) {
+          return this.CreateClientErrorResult(responseType, redirectUri, state, "invalid_request", promptError, viewOpt);
+        }
 
         //ROUNDTRIP - DELEGATION TO ANOTHER OAUTH SERVER ???
         #region " IOAuthServiceWithDelegation "
@@ -161,6 +166,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
                 rawScopePreference = deserializedStateBag.OriginalScope;
                 codeChallenge = deserializedStateBag.OriginalCodeChallenge;
                 resource = deserializedStateBag.OriginalResource;
+                oauthPrompt = deserializedStateBag.OriginalPrompt;
                 viewMode = deserializedStateBag.ViewMode;
         
                 if (!_AuthService.TryValidateApiClient(clientId, apiCallerHost.Host, redirectUri, out string msg)) {
@@ -197,6 +203,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
               OriginalClientId = clientId,
               OriginalCodeChallenge = codeChallenge,
               OriginalResource = resource,
+              OriginalPrompt = oauthPrompt,
               ViewMode = viewMode
             };
 
@@ -226,8 +233,11 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           return this.Content(errorPage, "text/html");
         }
 
+        bool promptNone = HasPromptValue(oauthPrompt, "none");
+        bool promptConsent = HasPromptValue(oauthPrompt, "consent");
+
         //dont propmt for anything while trying pass-trough unattended...
-        bool pseudoUnattendedMode = (viewMode == 3); //TODO: umbau auf standardisierte "promt/consent" parameter!!!
+        bool pseudoUnattendedMode = (viewMode == 3 || promptNone); //legacy: view_mode=3
 
         ScopeDescriptor[] availableScopes = null;
         string authFormTemplate;
@@ -306,9 +316,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           ///////////////////////////////////////////////////////////////////////////////////////////////////
           #endregion
 
+          if (promptNone) {
+            return this.CreateClientErrorResult(responseType, redirectUri, state, "login_required", "User authentication is required.", viewOpt);
+          }
+
           if (!string.IsNullOrWhiteSpace(errorMessagePassedViaQueryString)) {
-            //HACK: hier darf natürlich kein html sein!
-            errorMessagePassedViaQueryString = $"<p><span style=\"color: red\">{errorMessagePassedViaQueryString}</span><p>";
+            errorMessagePassedViaQueryString = $"<p><span style=\"color: red\">{System.Net.WebUtility.HtmlEncode(errorMessagePassedViaQueryString)}</span></p>";
           }
           else {
             errorMessagePassedViaQueryString = "";
@@ -334,7 +347,7 @@ namespace Security.AccessTokenHandling.OAuth.Server {
               //);
 
               authFormTemplate = authFormTemplate.Replace(
-                 "</form>", $"<p><a href=\"sso/authorize{Request.QueryString}\">Go to Single-Sign-On Page (pass-trough)</a></p></form>"
+                 "</form>", $"<div class=\"ath-alt\"><div class=\"ath-divider\">or</div><a class=\"ath-btn ath-btn-secondary\" href=\"sso/authorize{Request.QueryString}\">Sign in with Windows (Single-Sign-On)</a></div></form>"
               );
             }
 
@@ -360,9 +373,25 @@ namespace Security.AccessTokenHandling.OAuth.Server {
           }
           else {
 
+            //nothing to select (and no explicit consent requested) -> skip the consent step
+            if (!promptConsent && TryGetScopesWithoutSelection(availableScopes, out string[] scopesWithoutSelection)) {
+              ActionResult issuingResult = this.IssueAuthorizationResult(
+                responseType, clientId, sessionId, scopesWithoutSelection, redirectUri, state, codeChallenge, resource, viewOpt, out string issuingError
+              );
+              if (issuingResult != null) {
+                return issuingResult;
+              }
+              if (promptNone) {
+                return this.CreateClientErrorResult(responseType, redirectUri, state, "access_denied", issuingError, viewOpt);
+              }
+              errorMessagePassedViaQueryString = issuingError;
+            }
+            else if (promptNone) {
+              return this.CreateClientErrorResult(responseType, redirectUri, state, "consent_required", "User consent is required.", viewOpt);
+            }
+
             if (!string.IsNullOrWhiteSpace(errorMessagePassedViaQueryString)) {
-              //HACK: natürlich darf hier kein html sein
-              errorMessagePassedViaQueryString = $"<p><span style=\"color: red\">{errorMessagePassedViaQueryString}</span><p>";
+              errorMessagePassedViaQueryString = $"<p><span style=\"color: red\">{System.Net.WebUtility.HtmlEncode(errorMessagePassedViaQueryString)}</span></p>";
             }
             else {
               errorMessagePassedViaQueryString = "";
@@ -385,6 +414,12 @@ namespace Security.AccessTokenHandling.OAuth.Server {
         //the resource indicator needs to be passed trough the form-POST as well
         if (!TryInjectResourceFormField(ref authFormTemplate, resource)) {
           string errorPage = _AuthPageBuilder.GetErrorPage("Resource indicators are not supported by the configured auth page (no form found)!", viewOpt);
+          return this.Content(errorPage, "text/html");
+        }
+
+        //the prompt needs to be passed trough the form-POST as well
+        if (!TryInjectPromptFormField(ref authFormTemplate, oauthPrompt)) {
+          string errorPage = _AuthPageBuilder.GetErrorPage("The 'prompt' param is not supported by the configured auth page (no form found)!", viewOpt);
           return this.Content(errorPage, "text/html");
         }
 
