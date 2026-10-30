@@ -4,8 +4,14 @@ This files contains a version history including all changes relevant for semanti
 *(it is automatically maintained using the ['KornSW-VersioningUtil'](https://github.com/KornSW/VersioningUtil))*
 
 
-## Upcoming Changes (6.0.5-develop)
-released **2026-10-29**, including:
+## Upcoming Changes
+
+*(none)*
+
+
+
+## v 6.0.6
+released **2026-10-30**, including:
  - Breaking Change: OAuth Controller PKCE support
 
 
