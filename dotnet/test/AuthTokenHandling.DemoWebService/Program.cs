@@ -62,7 +62,7 @@ namespace Security {
 
         //Background z.B. in einen LILA-Ton (CI-Farbe) transformieren,
         //damit die Demo-Instanz optisch erkennbar ist...
-        options.LoginPageBackgroundCiColor = "#5B00BB";
+        //options.LoginPageBackgroundCiColor = "#5B00BB";
       });
 
       // 2) the token validation is driven by the 'AccessTokenManager' (token source 'default' = the Cheap OAuth Server)

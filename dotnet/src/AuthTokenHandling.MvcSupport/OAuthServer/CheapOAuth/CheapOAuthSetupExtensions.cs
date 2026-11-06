@@ -25,46 +25,63 @@ namespace Security.AccessTokenHandling {
     /// </summary>
     /// <returns>The created service (e.g. to read the retained secret of a grant via 'GrantStore').</returns>
     public static CheapOAuthService AddCheapOAuthServer(this IServiceCollection services, Action<CheapOAuthOptions> configure) {
+     
       if (services == null) {
         throw new ArgumentNullException(nameof(services));
       }
+
       if (configure == null) {
         throw new ArgumentNullException(nameof(configure));
       }
 
-      CheapOAuthOptions options = new CheapOAuthOptions();
-      configure.Invoke(options);
-      options.Validate();
+      CheapOAuthOptions cheapOAuthOptions = new CheapOAuthOptions();
+      configure.Invoke(cheapOAuthOptions);
+      cheapOAuthOptions.Validate();
 
       CheapOAuthGrantStore grantStore = new CheapOAuthGrantStore();
-      CheapOAuthClientRegistry clientRegistry = new CheapOAuthClientRegistry(options);
-      CheapOAuthService service = new CheapOAuthService(options, grantStore, clientRegistry);
 
-      if (!string.IsNullOrWhiteSpace(options.PersistToDir)) {
-        CheapOAuthStatePersistence persistence = new CheapOAuthStatePersistence(options.PersistToDir, options.PersistencePassphrase);
+      CheapOAuthClientRegistry clientRegistry = new CheapOAuthClientRegistry(cheapOAuthOptions);
+
+      CheapOAuthService service = new CheapOAuthService(
+        cheapOAuthOptions, grantStore, clientRegistry
+      );
+
+      if (!string.IsNullOrWhiteSpace(cheapOAuthOptions.PersistToDir)) {
+
+        CheapOAuthStatePersistence persistence = new CheapOAuthStatePersistence(
+          cheapOAuthOptions.PersistToDir, cheapOAuthOptions.PersistencePassphrase
+        );
+
         clientRegistry.AttachPersistence(persistence);
         grantStore.AttachPersistence(persistence);
         service.AttachPersistence(persistence);
       }
 
-      services.AddSingleton(options);
+      services.AddSingleton(cheapOAuthOptions);
       services.AddSingleton(grantStore);
       services.AddSingleton(clientRegistry);
       services.AddSingleton(service);
       services.AddSingleton<IOAuthService>(service);
-      TemplateAuthPageBuilder pageBuilder = new TemplateAuthPageBuilder(options.LoginPageTitle, null, null);
-      pageBuilder.BackgroundCiColor = options.LoginPageBackgroundCiColor;
-      pageBuilder.CustomBackgroundImageUrl = options.LoginPageCustomBackgroundImageUrl;
+
+      TemplateAuthPageBuilder pageBuilder = new TemplateAuthPageBuilder(
+        cheapOAuthOptions.LoginPageTitle, null, null
+      );
+
+      //HACK: raum eine extra prop?
+      pageBuilder.BackgroundCiColor = cheapOAuthOptions.LoginPageBackgroundCiColor;
+      pageBuilder.CustomBackgroundImageUrl = cheapOAuthOptions.LoginPageCustomBackgroundImageUrl;
+      
       services.TryAddSingleton<IAuthPageBuilder>(
+        //HACK: warum dieser wrapper???
         new CheapOAuthAuthPageBuilder(pageBuilder, clientRegistry)
       );
 
       //OAuth2Controller (incl. RFC 7591 registration) + OAuthDiscoverController (RFC 8414) - both delegate to 'IOAuthService'
       services.AddOAuthServerController();
 
-      if (options.RegisterProtectedResourceMetadata && WellKnownOAuthProtectedResourceRegistry.GetOptions() == null) {
+      if (cheapOAuthOptions.RegisterProtectedResourceMetadata && WellKnownOAuthProtectedResourceRegistry.GetOptions() == null) {
         services.AddWellKnownOAuthProtectedResourceEndpoint((o) => {
-          o.ScopesSupported = options.ScopesSupported;
+          o.ScopesSupported = cheapOAuthOptions.ScopesSupported;
           o.ApplyApiPermissionPrefixToScopesSupported = true;
           //the Cheap OAuth Server itself is opt-in, so it may enable the challenge for all adapters ("one line, everything works")
           o.EmitChallengeForAllAdapters = true;
@@ -73,10 +90,10 @@ namespace Security.AccessTokenHandling {
 
       //the token source is created from its config (open detail 4): the factory resolves the own
       //introspection endpoint to the in-process service instead of an HTTP call
-      AuthTokenConfig config = CreateSelfDescribingConfig(options);
+      AuthTokenConfig config = CreateSelfDescribingConfig(cheapOAuthOptions);
       IntrospectorFactory.RegisterInProcessIntrospector(config.ValidationEndpointUrl, service);
       AccessTokenManager.ConfigureTokenSupply((c) => {
-        c.ApplyFromConfiguration(options.TokenSourceId, config);
+        c.ApplyFromConfiguration(cheapOAuthOptions.TokenSourceId, config);
       });
 
       return service;
@@ -113,26 +130,43 @@ namespace Security.AccessTokenHandling.OAuth.Server {
   /// </summary>
   internal sealed class CheapOAuthAuthPageBuilder : IAuthPageBuilder {
 
-    private readonly IAuthPageBuilder _Inner;
-    private readonly CheapOAuthClientRegistry _ClientRegistry;
+    private readonly IAuthPageBuilder _InnerAuthPageBuilder;
 
-    public CheapOAuthAuthPageBuilder(IAuthPageBuilder inner, CheapOAuthClientRegistry clientRegistry) {
-      _Inner = inner;
-      _ClientRegistry = clientRegistry;
+    private readonly Func<string, string> _ConcreteClientNameResolver;
+
+    public CheapOAuthAuthPageBuilder(IAuthPageBuilder inner, Func<string, string> concreteClientNameResolver) {
+      _InnerAuthPageBuilder = inner;
+      _ConcreteClientNameResolver = concreteClientNameResolver;
+    }
+
+    public CheapOAuthAuthPageBuilder(IAuthPageBuilder inner) {
+      _InnerAuthPageBuilder = inner;
+      _ConcreteClientNameResolver = (clientId) => clientId;
+    }
+
+    public CheapOAuthAuthPageBuilder(IAuthPageBuilder inner, CheapOAuthClientRegistry clientRegistry) {  
+      _InnerAuthPageBuilder = inner;
+      _ConcreteClientNameResolver = (clientId) => {
+        string clientName = clientRegistry.GetClientName(clientId);
+        if (string.IsNullOrWhiteSpace(clientName)) {
+          clientName = clientId;
+        }
+        return clientName;
+      };
     }
 
     public string GetAuthForm(
       string responseType, string prompt, string login, string state, string clientId, string redirectUri,
       string requestedScopes, AuthPageViewModeOptions viewMode, string error
     ) {
-      return _Inner.GetAuthForm(responseType, prompt, login, state, clientId, redirectUri, requestedScopes, viewMode, error);
+      return _InnerAuthPageBuilder.GetAuthForm(responseType, prompt, login, state, clientId, redirectUri, requestedScopes, viewMode, error);
     }
 
     public string GetWinAuthForm(
       string responseType, string prompt, string login, string state, string clientId, string redirectUri,
       string requestedScopes, AuthPageViewModeOptions viewMode, string error
     ) {
-      return _Inner.GetWinAuthForm(responseType, prompt, login, state, clientId, redirectUri, requestedScopes, viewMode, error);
+      return _InnerAuthPageBuilder.GetWinAuthForm(responseType, prompt, login, state, clientId, redirectUri, requestedScopes, viewMode, error);
     }
 
     /// <summary>
@@ -142,31 +176,36 @@ namespace Security.AccessTokenHandling.OAuth.Server {
       string responseType, string prompt, string otp, string state, string clientId, string redirectUri,
       string requestedScopes, ScopeDescriptor[] availableScopes, AuthPageViewModeOptions viewMode, string error
     ) {
-      string clientName = _ClientRegistry.GetClientName(clientId);
+
+      string clientName = _ConcreteClientNameResolver(clientId);
       if (string.IsNullOrWhiteSpace(clientName)) {
         clientName = clientId;
       }
+
       string redirectHost = redirectUri;
       Uri uri;
       if (Uri.TryCreate(redirectUri, UriKind.Absolute, out uri)) {
         redirectHost = uri.Host;
       }
+
       string extendedPrompt = "Grant access for '" + WebUtility.HtmlEncode(clientName) + "' (" + WebUtility.HtmlEncode(redirectHost) + ")? " + prompt;
-      return _Inner.GetScopeConfirmationForm(
+     
+      return _InnerAuthPageBuilder.GetScopeConfirmationForm(
         responseType, extendedPrompt, otp, state, clientId, redirectUri, requestedScopes, availableScopes, viewMode, error
       );
+
     }
 
     public string GetErrorPage(string message, AuthPageViewModeOptions viewMode) {
-      return _Inner.GetErrorPage(message, viewMode);
+      return _InnerAuthPageBuilder.GetErrorPage(message, viewMode);
     }
 
     public string GetTokenDisplayPage(TokenIssuingResult tokenResult, AuthPageViewModeOptions viewMode) {
-      return _Inner.GetTokenDisplayPage(tokenResult, viewMode);
+      return _InnerAuthPageBuilder.GetTokenDisplayPage(tokenResult, viewMode);
     }
 
     public string GetCustomPage(string customHtmlBodyTemplate, AuthPageViewModeOptions viewMode) {
-      return _Inner.GetCustomPage(customHtmlBodyTemplate, viewMode);
+      return _InnerAuthPageBuilder.GetCustomPage(customHtmlBodyTemplate, viewMode);
     }
 
   }
