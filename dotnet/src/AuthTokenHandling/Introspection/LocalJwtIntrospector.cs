@@ -9,7 +9,7 @@ using System.Text;
 namespace Security.AccessTokenHandling {
 
   public class LocalJwtIntrospector : IAccessTokenIntrospector {
-
+    
     /// <summary>
     /// The retuned object can be a byte[] or a JWK stucture
     /// </summary>
@@ -19,25 +19,50 @@ namespace Security.AccessTokenHandling {
 
     private JwtSignatureValidationDelegate _JwtSignatureValidationMethod;
     private Action<Dictionary<string, object>> _ClaimCustomizer = null;
+    private TimeSpan _MaxExp;
 
     public LocalJwtIntrospector(string signKey, Action<Dictionary<string, object>> claimCustomizer = null) {
       _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, new Jwk(Encoding.ASCII.GetBytes(signKey)));
       _ClaimCustomizer = claimCustomizer;
+      _MaxExp = TimeSpan.MaxValue;
+    }
+    public LocalJwtIntrospector(string signKey, TimeSpan maxExp, Action<Dictionary<string, object>> claimCustomizer = null) {
+      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, new Jwk(Encoding.ASCII.GetBytes(signKey)));
+      _ClaimCustomizer = claimCustomizer;
+      _MaxExp = maxExp;
     }
 
     public LocalJwtIntrospector(byte[] signKey, Action<Dictionary<string, object>> claimCustomizer = null) {
       _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, new Jwk(signKey));
       _ClaimCustomizer = claimCustomizer;
+      _MaxExp = TimeSpan.MaxValue;
+    }
+    public LocalJwtIntrospector(byte[] signKey, TimeSpan maxExp, Action<Dictionary<string, object>> claimCustomizer = null) {
+      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, new Jwk(signKey));
+      _ClaimCustomizer = claimCustomizer;
+      _MaxExp = maxExp;
     }
 
     public LocalJwtIntrospector(Jwk jsonWebKey, Action<Dictionary<string, object>> claimCustomizer = null) {
       _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, jsonWebKey);
       _ClaimCustomizer = claimCustomizer;
+      _MaxExp = TimeSpan.MaxValue;
+    }
+    public LocalJwtIntrospector(Jwk jsonWebKey, TimeSpan maxExp, Action<Dictionary<string, object>> claimCustomizer = null) {
+      _JwtSignatureValidationMethod = (string rawToken) => VerifySignature(rawToken, jsonWebKey);
+      _ClaimCustomizer = claimCustomizer;
+      _MaxExp = maxExp;
     }
 
     public LocalJwtIntrospector(JwtSignatureValidationDelegate jwtSignatureValidationMethod, Action<Dictionary<string, object>> claimCustomizer = null) {
       _JwtSignatureValidationMethod = jwtSignatureValidationMethod;
       _ClaimCustomizer = claimCustomizer;
+      _MaxExp = TimeSpan.MaxValue;
+    }
+    public LocalJwtIntrospector(JwtSignatureValidationDelegate jwtSignatureValidationMethod, TimeSpan maxExp, Action<Dictionary<string, object>> claimCustomizer = null) {
+      _JwtSignatureValidationMethod = jwtSignatureValidationMethod;
+      _ClaimCustomizer = claimCustomizer;
+      _MaxExp = maxExp;
     }
 
     private static bool VerifySignature(string rawJwt, Jwk jsonWebKey) {
@@ -99,6 +124,18 @@ namespace Security.AccessTokenHandling {
           claims["inactive_reason"] = $"Expired (at {expirationTimeUtc.ToLocalTime().ToString("u")})";
           return;
         }
+        else if (_MaxExp != TimeSpan.MaxValue && expirationTimeUtc > DateTime.UtcNow.Add(_MaxExp)) {
+          isActive = false;
+          claims = new Dictionary<string, object>();
+          claims["inactive_reason"] = "Expiration 'exp' too far in future (at " + expirationTimeUtc.ToLocalTime().ToString("u") + ")";
+          return;
+        }
+      }
+      else if (_MaxExp != TimeSpan.MaxValue) {
+        isActive = false;
+        claims = new Dictionary<string, object>();
+        claims["inactive_reason"] = "Expiration 'exp' is missing";
+        return;
       }
 
       if (jwtContent.ContainsKey("nbf")) {
