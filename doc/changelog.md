@@ -10,6 +10,13 @@ This files contains a version history including all changes relevant for semanti
 
 
 
+## v 6.0.7
+released **2026-11-13**, including:
+ - LocalJwtIntrospector - maxExp (treat tokens as invalid if expiration time is too far in future)
+ - code-beauty
+
+
+
 ## v 6.0.6
 released **2026-10-30**, including:
  - Breaking Change: OAuth Controller PKCE support
